@@ -152,6 +152,38 @@ EntityFormDialog:
 3. **Dashboard Flow**: User opens Dashboard → multiple GET /api/{entity}/stats (aggregated counts/charts via backend endpoints) → recharts renders KPIs + charts.
 4. **RTL/i18n Flow**: i18next detects language → loads ar/en JSON → MUI ThemeProvider with direction="rtl" → all components re-render.
 
+## [DEPLOYMENT]
+
+| Resource | Location |
+|----------|----------|
+| GitHub Repo | [Ahmed-Gaffer/ahmed-engineering-erp](https://github.com/Ahmed-Gaffer/ahmed-engineering-erp) |
+| Hugging Face Space | [Tablets/ahmed-engineering-erp](https://huggingface.co/spaces/Tablets/ahmed-engineering-erp) |
+
+### Architecture (HF Space)
+
+```
+Space Repo (only Dockerfile + README)
+  │
+  ├── Dockerfile  (multi-stage build)
+  │   ├── Stage 1: node:20-slim → git clone (GH_TOKEN) → npm ci → npm run build
+  │   └── Stage 2: python:3.13-slim → copy frontend dist + backend → pip install → uvicorn :7860
+  │
+  └── README.md (Space metadata)
+```
+
+### Secrets (configured in HF Space Settings)
+
+| Secret | Description |
+|--------|-------------|
+| `GH_TOKEN` | GitHub Personal Access Token with `repo` scope for cloning during Docker build |
+
+### Environment Variables (set in Dockerfile, overridable in HF Space)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `sqlite+aiosqlite:////tmp/engineering.db` | SQLite DB path (persisted in /tmp) |
+| `SECRET_KEY` | `change-this-secret-key-in-production` | JWT signing key |
+
 ## [ORPHANS & PENDING]
 
 All MVP items implemented. Deferred for future enhancements:
