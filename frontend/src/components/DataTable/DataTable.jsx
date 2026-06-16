@@ -50,7 +50,7 @@ export default function DataTable({
 }) {
   const { t, i18n } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
-  const [selected, setSelected] = useState([]);
+  const [selected, setSelected] = useState({ type: 'include', ids: new Set() });
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -118,8 +118,8 @@ export default function DataTable({
 
   const handleBulkDelete = async () => {
     try {
-      await service.bulkDelete(selected);
-      setSelected([]);
+      await service.bulkDelete([...selected.ids]);
+      setSelected({ type: 'include', ids: new Set() });
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
       onDelete?.();
     } catch {
@@ -149,9 +149,9 @@ export default function DataTable({
             </Button>
           </Stack>
           <Stack direction="row" spacing={1}>
-            {selected.length > 0 && (
+            {selected.ids.size > 0 && (
               <Button variant="outlined" color="error" size="small" onClick={handleBulkDelete}>
-                {t('delete')} ({selected.length})
+                {t('delete')} ({selected.ids.size})
               </Button>
             )}
             {data.length > 0 && (
