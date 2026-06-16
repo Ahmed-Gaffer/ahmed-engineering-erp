@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 from typing import Any, Generic, TypeVar
 from fastapi import HTTPException, status

@@ -27,6 +27,28 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("DB tables created, upload dir ready")
+
+    from app.database import async_session
+    from app.auth.models import User
+    from app.auth.utils import hash_password
+    from sqlalchemy import select
+
+    async with async_session() as session:
+        result = await session.execute(select(User).where(User.username == "admin"))
+        if not result.scalar_one_or_none():
+            admin = User(
+                username="admin",
+                email="admin@engineering.local",
+                hashed_password=hash_password("admin123"),
+                role="admin",
+                is_active=True,
+            )
+            session.add(admin)
+            await session.commit()
+            logger.info("Default admin user created (admin / admin123)")
+        else:
+            logger.info("Admin user already exists")
+
     yield
 
 
