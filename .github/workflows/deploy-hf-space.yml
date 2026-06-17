@@ -24,15 +24,14 @@ jobs:
         with:
           token: ${{ secrets.HF_TOKEN }}
 
-      - name: Build and push Docker image to HF Space
+      - name: Build and push Docker image to HF Space (no cache)
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.HF_SPACE_REPO }}:latest
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
 
       - name: Trigger Space rebuild
         run: |
