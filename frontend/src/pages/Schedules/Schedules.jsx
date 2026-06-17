@@ -103,7 +103,7 @@ export default function Schedules() {
         </TextField>
         {!selectedProjectId ? <EmptyState title={t('selectProject')} description={t('selectProjectDescription')} /> : loading ? <DataGridSkeleton /> : (
           <Card sx={{ bgcolor: '#1e293b', borderRadius: 2, overflow: 'hidden' }}>
-            <DataGrid rows={data} columns={columns} autoHeight disableRowSelectionOnClick getRowId={(r) => r.id} pageSizeOptions={[10, 25, 50]} initialState={{ pagination: { paginationModel: { pageSize: 10 } } }} sx={{ border: 'none', '& .MuiDataGrid-cell': { color: '#e2e8f0' }, '& .MuiDataGrid-columnHeaders': { bgcolor: '#0f172a', color: '#94a3b8' } }} />
+            <DataGrid rows={data} columns={columns} autoHeight disableRowSelectionOnClick getRowId={(r) => r.id} pageSizeOptions={[10, 25, 50]} paginationModel={{ page: 0, pageSize: 20 }} initialState={{ pagination: { paginationModel: { pageSize: 20 } } }} localeText={i18n.language === 'ar' ? arSD : enUS} sx={{ border: 'none', '& .MuiDataGrid-cell': { color: '#e2e8f0' }, '& .MuiDataGrid-columnHeaders': { bgcolor: '#0f172a', color: '#94a3b8' } }} />
             {data.length === 0 && <EmptyState title={t('noData')} action onAction={() => setFormOpen(true)} actionLabel={t('create')} />}
           </Card>
         )}

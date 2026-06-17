@@ -1,3 +1,13 @@
+---
+title: Ahmed Engineering Erp
+emoji: 🏗️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # Engineering Management System v3
 
 ## نظام إدارة المشاريع الهندسية — LEGO v2

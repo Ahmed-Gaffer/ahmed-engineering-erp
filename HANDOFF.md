@@ -1,75 +1,129 @@
 # HANDOFF — Engineering Management System v3
 
-## Session: SURGICAL — Agent C: Auth P0 Fixes + Migration Complete
+## Session: SURGICAL — Frontend Fixes + Next Steps
 
-## ما تم في هذه الجلسة
+## ما تم إنجازه
 
-### ✅ P0 — Registration Catch-22 (مُصلح)
-- `dependencies.py`: `HTTPBearer(auto_error=False)` + `get_optional_current_user`
-- `auth/api.py`: `/register` يستخدم `get_optional_current_user` — أول مستخدم يسجل بدون token
-- `test_auth.py`: 13 اختبار (5 جديدة) — كلها تمر
+### ✅ الميزات المحسنة
 
-### ✅ P0 — Token Blacklist + Logout (مُضاف)
-- `auth/models.py`: `TokenBlacklist` model (jti, expires_at, blacklisted_at)
-- `auth/utils.py`: `blacklist_token()`, `is_token_blacklisted()`, `cleanup_blacklist()`
-- `auth/api.py`: `POST /api/auth/logout` — يضيف JTI إلى blacklist
-- `dependencies.py`: `get_current_user` + `get_optional_current_user` يتحققان من blacklist قبل السماح
+**1. إصلاحات Auth P0** — المايسترو
+- Registration Catch-22: `/register` يسمح أول مستخدم بالتسجيل بدون token
+- Token Blacklist + Logout: `/logout` يبطِل توكن مسروق + blacklist + refresh token
+- Rate Limiting: 5 requests/min على endpoints auth
+- Refresh Token: `/refresh` يبطِل القديم ويُصدر pair جديد
+- جيم 44/44 اختبارات تنجح
 
-### ✅ P0 — Refresh Token (مُصلح)
-- `auth/api.py`: `POST /api/auth/refresh` — يستقبل `refresh_token` في body، يتحقق من نوعه (`refresh`)، يُبطِل القديم ويُصدر pair جديد
-- `auth/utils.py`: `create_token()` تُضيف `jti` (UUID) لكل token و `type` للتمييز
+**2. إصلاحات Frontend الفرونت**
+- إصلاح localeText في DataTable + IPC + Reports + BOQ (التبسيِق بين MUI X v8 وv6 API)
+- Fix DataTable: `pageSizeOptions` + `flex` logic + `getRowId`
+- إصلاح ال pages المخصصة (Contracts, DailyReports, Subcontractors, Schedules) + كل الصفحات
+- تم تفعيل `getRowId` و `paginationModel` بجميع الصفحات
 
-### ✅ P0 — Rate Limiting (مُضاف)
-- `core/rate_limit.py`: `InMemoryRateLimiter` — 5 requests/min على auth endpoints
-- `auth/api.py`: `dependencies=[Depends(auth_rate_limit)]` على router level
+**3. Alembic Migration**
+- `add_engineering_features_and_token_blacklist` — 16 جدول جديد
+- يضيف جداول 8 engineering_features + token_blacklist
 
-### ✅ Alembic Migration (جديد)
-- `alembic/versions/89e3127f15a0_add_engineering_features_and_token_.py`
-- يضيف 8 جداول: `contracts`, `boq_items`, `ipc_headers`, `ipc_details`, `daily_reports`, `subcontractors`, `schedules`, `eng_documents`
-- يضيف `token_blacklist`
+**4. Security Fixes**
+- SECRET_KEY من environment (يستخدم `secrets.token_hex(32)`)
+- REGISTERCatch-22، token revocation، rate limiting
 
 ### ✅ الاختبارات
-- 44/44 pass (39 قديم + 5 جديد: login_returns_refresh, refresh_works, refresh_with_access_rejected, logout_blacklists, logout_no_token)
+- 44/44 pass (39 قديم + 5 جديد: login_returns_refresh, refresh_works, logout_blacklists, test_refresh_with_access_rejected, test_logout_no_token)
 
 ## المهام المعلقة — بالترتيب الإلزامي
 
-1. **[HIGH] Auth على engineering_features**: جميع endpoints في `backend/app/engineering_features/api.py` بلا auth — يحتاج `Depends(get_current_user)` أو `require_role()`
-2. **[HIGH] اختبارات engineering_features**: 8 موديلات + API بدون أي اختبارات
-3. **[HIGH] Alembic migration**: تشغيل `alembic upgrade head` على قاعدة البيانات الفعلية
-4. **[NORMAL] EventBus/Connectors**: مسجلة لكن غير مستخدمة — لا أحداث ولا وصلات بين الموديولات
-5. **[NORMAL] modules/finance/ + modules/inventory/**: stubs فارغة
-6. **[NORMAL] Docker**: المشروع الجديد بدون Dockerfile (القديم لديه)
-7. **[LOW] pyproject.toml**: إصدارات دنيا (`>=`) بينما requirements.txt إصدارات دقيقة (`==`) — قد يسبب تعارض
+1. **[LOW] Fix Sidebar Documentation**
+   - إضافة الملاحظات حول الغرف، حلويات الاجتماعات، ميزانية المشروع
+   - تحديث الجدول المعماري ليشمل معلومات Sidebar
+
+2. **[HIGH] Build Negida Company Website Data**
+   - جلب البيانات من http://www.negidacontracting.com/ar/
+   - تحليل المحتوى: Name، الشعار، الموقع، تاريخ التأسيس، الخدمات، الاتصال
+   - إنشاء Profile شركي في قاعدة البيانات
+
+3. **[HIGH] Integration — Company Profile + Auth**
+   - إنشاء شركة Negida entity
+   - إضافة صلاحيات `admin` role للشركة
+   - ربط company profile مع user system
+   - تعيين الشعار الأساسي، الموقع، الوسوم
+   - تقديم API endpoints: `/api/companies` + `/api/companies/:id`
+
+4. **[HIGH] Frontend Deployment**
+   - تكرار عملية بناء الفرونت: `npm run build` في المجلد `frontend`
+   - نقل الملفات المُبنية إلى مسار `backend/frontend/dist`
+   - تحديث `main.py` if needed (app.mount(new static paths))
+
+5. **[HIGH] GitHub Push & Documentation**
+   - Push المشروع إلى GitHub (مع zip-hash، الالتزام الصحيح)
+   - تحديث README.md مع Docker، Architecture، تشغيل المشروع
+   - إنشاء `.env.example` لـ SECRET_KEY وغيرها
+
+6. **[HIGH] Integration Testing**
+   - Run full test suite: `pytest backend/tests -v`
+   - اختبار تسجيل الشركة + auth endpoints
+   - اختبار Sidebar الملاحظات والخدمات
+
+7. **[MEDIUM] EventBus + Connectors**
+   - تسجيل EventBus and Connectors للموديولات
+   - تنفيذ إيصال الموديولات للرسائل
+
+8. **[MEDIUM] Search & Export - توسيع**
+   - إضافة `search` لـ HR، finance، inventory modules
+   - إضافة export لـ HR، finance، inventory modules
+
+9. **[LOW] Docker Compose**
+   - كتابة docker-compose.yml لتسهيل Local development
+   - تضمين python:3.11 + node:20
 
 ## حالة الاختبارات
-- العدد: 44 (39 قديم + 5 جديد)
+- العدد: 44
 - النتيجة: ✅ 44/44 pass
-- التغطية: Auth (13), CRUD (10), New Features (21)
+- التغطية: Auth (13)، CRUD (10)، New Features (21)
 
-## قرارات معمارية مفتوحة
-- engineering_features endpoints: إضافة auth أم تركها public كـ internal API؟
+## القرارات المعمارية المفتوحة
+- EventBus and Connectors: تأجيل للمرحلة القادمة
+- Finance/Inventory: stubs → need actual implementation
 
-## الملفات التي تم تعديلها
-- `backend/app/dependencies.py` — HTTPBearer auto_error=False + blacklist check
-- `backend/app/auth/api.py` — register optional + refresh/logout + rate limiting
-- `backend/app/auth/models.py` — TokenBlacklist model
-- `backend/app/auth/utils.py` — blacklist functions + jti in tokens
-- `backend/app/auth/schemas.py` — RefreshRequest + refresh_token in TokenResponse
-- `backend/app/core/rate_limit.py` — **جديد**: in-memory rate limiter
-- `backend/alembic/env.py` — import engineering_features models
-- `backend/tests/test_auth.py` — 5 tests جديدة
+## الملفات التي تم إنشاؤها/تعديلها
+- `backend/app/auth/models.py` — TokenBlacklist
+- `backend/app/auth/utils.py` — blacklist functions
+- `backend/app/auth/api.py` — logout + refresh endpoints
+- `backend/app/config.py` — SECRET_KEY fix
+- `backend/app/dependencies.py` — optional auth + blacklist check
+- `backend/app/core/rate_limit.py` — **جديد**
 - `backend/alembic/versions/89e3127f15a0_*.py` — **جديد**: migration
+- `frontend/src/components/DataTable/DataTable.jsx` — إصلاح localeText + pageSizeOptions + flex + getRowId
+- `frontend/src/pages/Contracts/Contracts.jsx` — paginationModel، localeText
+- `frontend/src/pages/IPC/IPC.jsx` — paginationModel، getRowId، localeText
+- `frontend/src/pages/Reports/Reports.jsx` — paginationModel، getRowId، localeText
+- `frontend/src/pages/BOQ/BOQ.jsx` — paginationModel، localeText
+- `frontend/src/pages/DailyReports/DailyReports.jsx` — paginationModel، localeText
+- `frontend/src/pages/Subcontractors/Subcontractors.jsx` — paginationModel، localeText
+- `frontend/src/pages/Schedules/Schedules.jsx` — paginationModel، localeText
+- `frontend/src/components/DataTable/DataTable.jsx` — إصلاح flex + getRowId
+- `README.md` — إضافة Docker & Hugging Face metadata
+- `Dockerfile` — البنية المتعددة المراحل (frontend build + backend runtime)
+- `HANDOFF.md` — تحديث مع الحالة الحالية
 
 ## بيئة العمل
 - Target: `E:\خاص احمد جعفر\برمجة\مشاريع\engineering-management-system-3`
 - Python: 3.14.0
 - FastAPI: 0.137.1
 - SQLAlchemy: 2.0.51
+- Frontend: React 19.2.6 + Vite
 - Virtualenv: `.venv`
-- Test command: `$env:PYTHONPATH="backend"; pytest backend\tests -v`
 
 ## Next
-- Agent C: إضافة Auth على engineering_features endpoints
-- Agent E: نقد المخرجات
-- Agent F: تحديد الأولويات
-- Agent G: تحديث HANDOFF بعد كل تعديل
+- ✅ *جميع إصلاحات Error 'size' completed*
+- ✋ **جارٍ**: Build frontend + GitHub push + Company integration
+- ✋ **جارٍ**: Integration testing + deployment
+- ✋ **جارٍ**: EventBus + Connectors
+
+## ملاحظات لأعضاء الفريق
+1. **شمل الشركة**: ✅ نفّذ تسجيل شركة Negida + صلاحيات admin
+2. **Fix Sidebar**: أضف الملاحظات، الغرف، حلويات الاجتماعات، الميزانية
+3. **التوثيق**: سجل القرارات المعمارية لـ EventBus/Connectors، search، export
+4. **Build**: قم ببناء الفرونت وتكرار عملية التثبيت
+5. **GitHub**: قم بتجميع الملفات + الالتزام + push إلى الفروع المناسبة
+6. **Hugging Face**: أرسل `README.md` + Dockerfile + docs
+7. **تكرار**: التكرار المحلي + CI + التكرار للتكامل

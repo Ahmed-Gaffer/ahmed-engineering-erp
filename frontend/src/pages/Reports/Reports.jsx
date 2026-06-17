@@ -226,16 +226,17 @@ export default function Reports() {
           <CardContent>
             <Typography variant="subtitle1" fontWeight={600} mb={2}>{t('projectComparison')}</Typography>
             <Box sx={{ height: 420 }}>
-              <DataGrid
-                rows={projects}
-                columns={projectColumns}
-                getRowId={(r) => r.id || r.code}
-                pageSizeOptions={[5, 10, 25]}
-                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-                disableRowSelectionOnClick
-                localeText={i18n.language === 'ar' ? arSD.components.MuiDataGrid.defaultProps.localeText : enUS.components.MuiDataGrid.defaultProps.localeText}
-                sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
-              />
+               <DataGrid
+                 rows={projects}
+                 columns={projectColumns}
+                 getRowId={(r) => r.id || r.code}
+                 pageSizeOptions={[5, 10, 25]}
+                 paginationModel={{ page: 0, pageSize: 5 }}
+                 initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                 disableRowSelectionOnClick
+                 localeText={i18n.language === 'ar' ? arSD : enUS}
+                 sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
+               />
             </Box>
           </CardContent>
         </Card>

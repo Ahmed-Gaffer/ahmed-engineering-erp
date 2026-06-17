@@ -337,7 +337,10 @@ export default function IPC() {
                 loading={loading}
                 disableRowSelectionOnClick
                 pageSizeOptions={[20, 50, 100]}
-                localeText={i18n.language === 'ar' ? arSD.components.MuiDataGrid.defaultProps.localeText : enUS.components.MuiDataGrid.defaultProps.localeText}
+                paginationModel={{ page: 0, pageSize: 20 }}
+                initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+                getRowId={(row) => row.id}
+                localeText={i18n.language === 'ar' ? arSD : enUS}
                 sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
               />
             </Box>

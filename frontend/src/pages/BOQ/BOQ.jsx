@@ -339,22 +339,20 @@ export default function BOQ() {
         ) : (
           <Card sx={{ overflow: 'visible' }}>
             <Box sx={{ height: 600, px: 0.5 }}>
-              <DataGrid
-                treeData
-                getTreeDataPath={getTreeDataPath}
-                rows={processedData}
-                columns={columns}
-                loading={loading}
-                getRowId={(row) => row.id}
-                disableRowSelectionOnClick
-                pageSizeOptions={[20, 50, 100]}
-                localeText={
-                  i18n.language === 'ar'
-                    ? arSD.components.MuiDataGrid.defaultProps.localeText
-                    : enUS.components.MuiDataGrid.defaultProps.localeText
-                }
-                sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
-              />
+               <DataGrid
+                 treeData
+                 getTreeDataPath={getTreeDataPath}
+                 rows={processedData}
+                 columns={columns}
+                 loading={loading}
+                 getRowId={(row) => row.id}
+                 disableRowSelectionOnClick
+                 pageSizeOptions={[20, 50, 100]}
+                 paginationModel={{ page: 0, pageSize: 20 }}
+                 initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+                 localeText={i18n.language === 'ar' ? arSD : enUS}
+                 sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
+               />
             </Box>
             {rows.length > 0 && (
               <Box sx={{ px: 3, py: 1.5, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end' }}>
