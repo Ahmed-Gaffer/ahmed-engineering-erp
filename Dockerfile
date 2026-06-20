@@ -44,5 +44,5 @@ EXPOSE 8000
 ENV PORT=8000
 ENV DATABASE_URL=sqlite+aiosqlite:////app/backend/engineering.db
 
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run seed on startup, then start the application
+CMD python /app/backend/seed.py && uvicorn main:app --host 0.0.0.0 --port 8000
