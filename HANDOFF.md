@@ -2,26 +2,9 @@
 
 ## Session: GENESIS → SURGICAL — Foundation + Cleanup (2026-06-21)
 
-## Sessions Log
-
-| # | التاريخ | النوع | الوصف | الحالة |
-|---|---------|-------|-------|--------|
-| 1 | 2026-06-21 | GENESIS + SURGICAL | Foundation + Remove dead code + HF Space workflow | ✅ Complete |
-| 2 | 2026-06-21 | SURGICAL | Fix HF Space name → engineering-management-system + push | ✅ Complete |
-
----
-
 ## ما تم إنجازه
 
-### ✅ Session 2 — SURGICAL: تصحيح اسم HF Space
-- تم تغيير git remote من `Tablets/ahmed-engineering-erp` إلى `Tablets/engineering-management-system`
-- تحديث `.github/workflows/deploy-hf-space.yml` — اسم Space الجديد
-- تحديث `GITHUB_ACTIONS_SETUP.md` — كل المراجع
-- تحديث `README.md` — لا تغيير (لم يكن به reference خاطئ)
-- Commit: `91daf5ef` — دفع إلى GitHub origin/master
-- الاختبارات: 44/44 ✅ بعد التعديل
-
-### ✅ SURGICAL — إزالة الكود المكرر (من Session 1)
+### ✅ SURGICAL — إزالة الكود المكرر
 - **`modules/auth/auth/`** — ❌ حُذف (6 ملفات، كان __init__.py فارغاً، ولا يوجد import واحد يشير إليه)
 - **`modules/core/core/`** — ❌ حُذف (9 ملفات، كان __init__.py فارغاً)
 - **`modules/contractors/contractors/`** — ❌ حُذف (5 ملفات، كان __init__.py فارغاً)
