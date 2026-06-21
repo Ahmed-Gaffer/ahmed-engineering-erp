@@ -5,8 +5,8 @@ WORKDIR /app/frontend
 # Copy frontend configuration files
 COPY frontend/package*.json ./
 
-# Install dependencies and build
-RUN npm install
+# Install dependencies with legacy peer deps (MUI v9 + MUI X v8 conflict)
+RUN npm install --legacy-peer-deps
 COPY frontend/ ./
 RUN npm run build
 
