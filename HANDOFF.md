@@ -1,129 +1,84 @@
 # HANDOFF — Engineering Management System v3
 
-## Session: SURGICAL — Frontend Fixes + Next Steps
+## Session: GENESIS → SURGICAL — Foundation + Cleanup (2026-06-21)
 
 ## ما تم إنجازه
 
-### ✅ الميزات المحسنة
+### ✅ SURGICAL — إزالة الكود المكرر
+- **`modules/auth/auth/`** — ❌ حُذف (6 ملفات، كان __init__.py فارغاً، ولا يوجد import واحد يشير إليه)
+- **`modules/core/core/`** — ❌ حُذف (9 ملفات، كان __init__.py فارغاً)
+- **`modules/contractors/contractors/`** — ❌ حُذف (5 ملفات، كان __init__.py فارغاً)
+- الاختبارات: 44/44 ✅ بعد الحذف
+- `modules/<name>/__init__.py` wrappers كانت تستورد مباشرة من `backend/app/` — لم تتأثر
 
-**1. إصلاحات Auth P0** — المايسترو
-- Registration Catch-22: `/register` يسمح أول مستخدم بالتسجيل بدون token
-- Token Blacklist + Logout: `/logout` يبطِل توكن مسروق + blacklist + refresh token
-- Rate Limiting: 5 requests/min على endpoints auth
-- Refresh Token: `/refresh` يبطِل القديم ويُصدر pair جديد
-- جيم 44/44 اختبارات تنجح
+### ✅ Phase 1 — الاستطلاع (Reconnaissance)
+- فحص كامل للـ workspace: البنية، التبعيات، الاختبارات، Git
+- قراءة جميع ملفات .ai/ (AGENT_0_MAESTRO, AGENT_VACCINE, AGENT_ACTIVE_STATE, PROTOCOLS)
+- تحليل المعمارية: LEGO v2 + legacy backend/app/
+- تحديد الكود المكرر: `modules/auth/auth/`, `modules/core/core/`, `modules/contractors/contractors/`
 
-**2. إصلاحات Frontend الفرونت**
-- إصلاح localeText في DataTable + IPC + Reports + BOQ (التبسيِق بين MUI X v8 وv6 API)
-- Fix DataTable: `pageSizeOptions` + `flex` logic + `getRowId`
-- إصلاح ال pages المخصصة (Contracts, DailyReports, Subcontractors, Schedules) + كل الصفحات
-- تم تفعيل `getRowId` و `paginationModel` بجميع الصفحات
+### ✅ Phase 3 — القرار (Keep / Discard / Refactor)
+| المكون | الحكم | السبب |
+|--------|-------|-------|
+| `backend/app/` entities | ✅ KEEP | يعمل، مختبر، مستقر |
+| `modules/<name>/__init__.py` (wrappers) | ✅ KEEP | النمط الصحيح لـ LEGO v2 |
+| `modules/<name>/<name>/` duplicates | ❌ DISCARD | كود مكرر من `backend/app/` |
+| EventBus/ModuleRegistry/Connectors | ✅ KEEP | بنية تحتية عاملة، تحتاج تفعيل |
+| GenericCRUD | ✅ KEEP | أقوى نمط في المشروع |
+| Frontend React | ✅ KEEP | واجهة عاملة مع MUI X |
+| SQLite (dev) | 🔄 REFACTOR | PostgreSQL للإنتاج |
 
-**3. Alembic Migration**
-- `add_engineering_features_and_token_blacklist` — 16 جدول جديد
-- يضيف جداول 8 engineering_features + token_blacklist
+### ✅ Phase 4 — التأسيس (Foundation Files)
+الملفات التي أُنشئت:
+1. `.ai/SYSTEM_DNA.md` — الحمض النووي للنظام (من الاستخراج الفعلي)
+2. `ENGINEERING_BUSINESS_RULES.md` — قواعد منطق الأعمال (17 كياناً)
+3. `.TASKS_PLAN.md` — قائمة المهام الأولى (مرتبة حسب الأولوية)
+4. `CRITIQUE.md` — سجل المشاكل المفتوحة (15 مشكلة + 6 محلولة)
+5. `DB_SCHEMA.md` — مخطط قاعدة البيانات الكامل (24 جدولاً)
+6. `.cursorrules` — تحديث القسم 3 بقواعد المشروع
 
-**4. Security Fixes**
-- SECRET_KEY من environment (يستخدم `secrets.token_hex(32)`)
-- REGISTERCatch-22، token revocation، rate limiting
-
-### ✅ الاختبارات
-- 44/44 pass (39 قديم + 5 جديد: login_returns_refresh, refresh_works, logout_blacklists, test_refresh_with_access_rejected, test_logout_no_token)
+## حالة النظام
+- Frontend: React 19 + Vite + MUI X (18 صفحة) | Backend: FastAPI + SQLAlchemy 2.0 | Build: جاهز
+- الاختبارات: 44/44 ✅
+- Git: 8 commits, آخرها `6212cce`
 
 ## المهام المعلقة — بالترتيب الإلزامي
 
-1. **[LOW] Fix Sidebar Documentation**
-   - إضافة الملاحظات حول الغرف، حلويات الاجتماعات، ميزانية المشروع
-   - تحديث الجدول المعماري ليشمل معلومات Sidebar
-
-2. **[HIGH] Build Negida Company Website Data**
-   - جلب البيانات من http://www.negidacontracting.com/ar/
-   - تحليل المحتوى: Name، الشعار، الموقع، تاريخ التأسيس، الخدمات، الاتصال
-   - إنشاء Profile شركي في قاعدة البيانات
-
-3. **[HIGH] Integration — Company Profile + Auth**
-   - إنشاء شركة Negida entity
-   - إضافة صلاحيات `admin` role للشركة
-   - ربط company profile مع user system
-   - تعيين الشعار الأساسي، الموقع، الوسوم
-   - تقديم API endpoints: `/api/companies` + `/api/companies/:id`
-
-4. **[HIGH] Frontend Deployment**
-   - تكرار عملية بناء الفرونت: `npm run build` في المجلد `frontend`
-   - نقل الملفات المُبنية إلى مسار `backend/frontend/dist`
-   - تحديث `main.py` if needed (app.mount(new static paths))
-
-5. **[HIGH] GitHub Push & Documentation**
-   - Push المشروع إلى GitHub (مع zip-hash، الالتزام الصحيح)
-   - تحديث README.md مع Docker، Architecture، تشغيل المشروع
-   - إنشاء `.env.example` لـ SECRET_KEY وغيرها
-
-6. **[HIGH] Integration Testing**
-   - Run full test suite: `pytest backend/tests -v`
-   - اختبار تسجيل الشركة + auth endpoints
-   - اختبار Sidebar الملاحظات والخدمات
-
-7. **[MEDIUM] EventBus + Connectors**
-   - تسجيل EventBus and Connectors للموديولات
-   - تنفيذ إيصال الموديولات للرسائل
-
-8. **[MEDIUM] Search & Export - توسيع**
-   - إضافة `search` لـ HR، finance، inventory modules
-   - إضافة export لـ HR، finance، inventory modules
-
-9. **[LOW] Docker Compose**
-   - كتابة docker-compose.yml لتسهيل Local development
-   - تضمين python:3.11 + node:20
-
-## حالة الاختبارات
-- العدد: 44
-- النتيجة: ✅ 44/44 pass
-- التغطية: Auth (13)، CRUD (10)، New Features (21)
-
-## القرارات المعمارية المفتوحة
-- EventBus and Connectors: تأجيل للمرحلة القادمة
-- Finance/Inventory: stubs → need actual implementation
+1. ~~**[HIGH] إزالة الكود المكرر** — `modules/auth/auth/`, `modules/core/core/`, `modules/contractors/contractors/`~~ ✅ **تم**
+2. **[HIGH] بناء بيانات شركة Negida** — جلب + إنشاء Company Profile + API
+3. **[HIGH] Frontend Deployment** — `npm run build` + نقل dist
+4. **[HIGH] GitHub Push** — README + .env.example + push
+5. **[HIGH] Integration Testing** — `pytest backend/tests -v`
+6. **[MEDIUM] EventBus + Connectors** — تفعيل أحداث بين الموديولات
+7. **[MEDIUM] Search & Export** — توسيع لكل الموديولات
+8. **[LOW] Docker Compose** — للتطوير المحلي
+9. **[LOW] PostgreSQL Migration** — SQLite → PostgreSQL
 
 ## الملفات التي تم إنشاؤها/تعديلها
-- `backend/app/auth/models.py` — TokenBlacklist
-- `backend/app/auth/utils.py` — blacklist functions
-- `backend/app/auth/api.py` — logout + refresh endpoints
-- `backend/app/config.py` — SECRET_KEY fix
-- `backend/app/dependencies.py` — optional auth + blacklist check
-- `backend/app/core/rate_limit.py` — **جديد**
-- `backend/alembic/versions/89e3127f15a0_*.py` — **جديد**: migration
-- `frontend/src/components/DataTable/DataTable.jsx` — إصلاح localeText + pageSizeOptions + flex + getRowId
-- `frontend/src/pages/Contracts/Contracts.jsx` — paginationModel، localeText
-- `frontend/src/pages/IPC/IPC.jsx` — paginationModel، getRowId، localeText
-- `frontend/src/pages/Reports/Reports.jsx` — paginationModel، getRowId، localeText
-- `frontend/src/pages/BOQ/BOQ.jsx` — paginationModel، localeText
-- `frontend/src/pages/DailyReports/DailyReports.jsx` — paginationModel، localeText
-- `frontend/src/pages/Subcontractors/Subcontractors.jsx` — paginationModel، localeText
-- `frontend/src/pages/Schedules/Schedules.jsx` — paginationModel، localeText
-- `frontend/src/components/DataTable/DataTable.jsx` — إصلاح flex + getRowId
-- `README.md` — إضافة Docker & Hugging Face metadata
-- `Dockerfile` — البنية المتعددة المراحل (frontend build + backend runtime)
-- `HANDOFF.md` — تحديث مع الحالة الحالية
+- `.ai/SYSTEM_DNA.md` — **جديد**: الحمض النووي للنظام
+- `ENGINEERING_BUSINESS_RULES.md` — **جديد**: قواعد منطق الأعمال
+- `.TASKS_PLAN.md` — **جديد**: قائمة المهام
+- `CRITIQUE.md` — **جديد** + **تحديث**: إضافة 3 مشاكل محلولة (الكود المكرر)
+- `DB_SCHEMA.md` — **جديد**: مخطط قاعدة البيانات
+- `.cursorrules` — **تحديث**: إضافة قواعد المشروع في القسم 3
+- `modules/auth/auth/` — ❌ **حُذف**: 6 ملفات مكررة
+- `modules/core/core/` — ❌ **حُذف**: 9 ملفات مكررة
+- `modules/contractors/contractors/` — ❌ **حُذف**: 5 ملفات مكررة
+- `HANDOFF.md` — **تحديث**: إضافة جلسة SURGICAL
+
+## قرارات معمارية مفتوحة
+- هل `modules/<name>/<name>/` تُحذف مباشرة أم يُعاد توجيه imports أولاً؟
+- EventBus: ما الأحداث الأولى التي يجب ربطها؟
+- PostgreSQL: هل ننتقل فوراً أم في مرحلة لاحقة؟
 
 ## بيئة العمل
 - Target: `E:\خاص احمد جعفر\برمجة\مشاريع\engineering-management-system-3`
-- Python: 3.14.0
-- FastAPI: 0.137.1
-- SQLAlchemy: 2.0.51
+- Python: 3.14.0 | FastAPI: 0.137.1 | SQLAlchemy: 2.0.51
 - Frontend: React 19.2.6 + Vite
 - Virtualenv: `.venv`
 
-## Next
-- ✅ *جميع إصلاحات Error 'size' completed*
-- ✋ **جارٍ**: Build frontend + GitHub push + Company integration
-- ✋ **جارٍ**: Integration testing + deployment
-- ✋ **جارٍ**: EventBus + Connectors
-
-## ملاحظات لأعضاء الفريق
-1. **شمل الشركة**: ✅ نفّذ تسجيل شركة Negida + صلاحيات admin
-2. **Fix Sidebar**: أضف الملاحظات، الغرف، حلويات الاجتماعات، الميزانية
-3. **التوثيق**: سجل القرارات المعمارية لـ EventBus/Connectors، search، export
-4. **Build**: قم ببناء الفرونت وتكرار عملية التثبيت
-5. **GitHub**: قم بتجميع الملفات + الالتزام + push إلى الفروع المناسبة
-6. **Hugging Face**: أرسل `README.md` + Dockerfile + docs
-7. **تكرار**: التكرار المحلي + CI + التكرار للتكامل
+## ملاحظات الاستعادة
+- تم إنشاء جميع ملفات التأسيس المطلوبة حسب PROTOCOL_GENESIS.md
+- SYSTEM_DNA.md مبني على الاستخراج الفعلي من الكود (وليس من template)
+- Session type: GENESIS — اكتملت جميع المراحل 1-4
+- الجلسة القادمة: PROMPT_INIT ثم SURGICAL لتنفيذ المهام المعلقة

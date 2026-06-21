@@ -64,14 +64,16 @@ for mod_name in ENTITY_MODULES:
         logger.warning("Could not mount %s: %s", mod_name, e)
 
 
-FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
-if FRONTEND_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-    logger.info("Serving frontend from %s", FRONTEND_DIR)
-else:
-    logger.warning("Frontend dist not found at %s", FRONTEND_DIR)
-
-
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+base = Path(__file__).resolve().parent
+for candidate in [base.parent.parent / "frontend" / "dist", base.parent / "frontend" / "dist"]:
+    if candidate.is_dir():
+        app.mount("/", StaticFiles(directory=str(candidate), html=True), name="frontend")
+        logger.info("Serving frontend from %s", candidate)
+        break
+else:
+    logger.warning("Frontend dist not found (tried: %s, %s)", base.parent.parent / "frontend" / "dist", base.parent / "frontend" / "dist")
