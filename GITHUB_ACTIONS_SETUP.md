@@ -13,8 +13,8 @@ Auto-deploy to Hugging Face Space on every push to GitHub `master`/`main` branch
 3. Copy the token (starts with `hf_`)
 
 ### 2. Hugging Face Space
-- Your Space: `https://huggingface.co/spaces/Tablets/ahmed-engineering-erp`
-- Space repo name: `Tablets/ahmed-engineering-erp`
+- Your Space: `https://huggingface.co/spaces/Tablets/engineering-management-system`
+- Space repo name: `Tablets/engineering-management-system`
 
 ---
 
@@ -27,7 +27,7 @@ Add these two secrets:
 | Secret Name | Value | Description |
 |-------------|-------|-------------|
 | `HF_TOKEN` | `hf_xxxxxxxxxxxxxxxxxxxx` | Your Hugging Face token with Write access |
-| `HF_SPACE_REPO` | `Tablets/ahmed-engineering-erp` | Your HF Space repository name |
+| `HF_SPACE_REPO` | `Tablets/engineering-management-system` | Your HF Space repository name |
 
 ---
 
@@ -61,7 +61,7 @@ After pushing to GitHub:
 3. Should complete in 3-5 minutes
 
 ### 2. Check Hugging Face Space
-1. Go to `https://huggingface.co/spaces/Tablets/ahmed-engineering-erp`
+1. Go to `https://huggingface.co/spaces/Tablets/engineering-management-system`
 2. Click **"Settings"** → **"Repository"**
 3. Should show connected to your GitHub repo
 4. Check **"Logs"** for build status
@@ -115,13 +115,13 @@ GitHub Push → GitHub Actions → Docker Build → Push to HF Space → Auto Re
 ### Space Doesn't Update
 1. Check if workflow completed successfully
 2. Verify HF_TOKEN has Write access
-3. Check Space logs: `https://huggingface.co/spaces/Tablets/ahmed-engineering-erp/logs`
+3. Check Space logs: `https://huggingface.co/spaces/Tablets/engineering-management-system/logs`
 
 ### Manual Deploy (Emergency)
 ```bash
 # Set environment variables
 export HF_TOKEN="your_hf_token"
-export HF_SPACE_REPO="Tablets/ahmed-engineering-erp"
+export HF_SPACE_REPO="Tablets/engineering-management-system"
 
 # Run deploy script
 ./deploy-to-hf.sh
@@ -131,13 +131,13 @@ export HF_SPACE_REPO="Tablets/ahmed-engineering-erp"
 
 ## 📋 Quick Checklist
 
-- [ ] GitHub repo created: `Ahmed-Gaffer/ahmed-engineering-erp`
+- [ ] GitHub repo created: `Ahmed-Gaffer/engineering-management-system`
 - [ ] Code pushed to GitHub (latest commit: `d2d56662`)
 - [ ] HF_TOKEN added to GitHub Secrets
-- [ ] HF_SPACE_REPO added to GitHub Secrets (`Tablets/ahmed-engineering-erp`)
+- [ ] HF_SPACE_REPO added to GitHub Secrets (`Tablets/engineering-management-system`)
 - [ ] GitHub Actions workflow enabled
 - [ ] First auto-deploy triggered and completed
-- [ ] Space accessible at `https://huggingface.co/spaces/Tablets/ahmed-engineering-erp`
+- [ ] Space accessible at `https://huggingface.co/spaces/Tablets/engineering-management-system`
 
 ---
 

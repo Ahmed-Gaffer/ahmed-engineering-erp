@@ -1,24 +1,20 @@
-# AGENT_ACTIVE_STATE — حالة الجلسة النشطة
-## يُحدَّث تلقائياً بواسطة Agent G · لا يُعدَّل يدوياً إلا للطوارئ
-## هذا هو القالب الافتراضي (IDLE) — يُعاد الملف لهذا الشكل عند اكتمال كل مهمة
+# AGENT_ACTIVE_STATE.md — الحالة الحية للنظام
+## آخر تحديث: 2026-06-21
 
-- **status**: IDLE
-- **task**: —
-- **started_at**: —
-- **last_updated**: —
-- **current_agent_working**: —
-- **gates**:
-  - agent_A_impact_analysis: pending
-  - agent_I_refinement_spec: pending
-  - agent_D_security_gate: pending
-  - agent_B_implementation: pending
-  - agent_C_destructive_qa: pending
-  - agent_I_integration_review: pending
-  - agent_E_critique: pending
-  - agent_F_verdict: pending
-  - state_sync: pending
-  - agent_G_handoff: pending
-- **notes_for_recovery**:
-  - active_file: —
-  - last_location: —
-  - context: —
+status: IN_PROGRESS
+session_type: SURGICAL
+task: "تصحيح اسم HF Space وإيداع التعديلات + دفع إلى GitHub"
+current_agent_working: "Agent B"
+gates:
+  agent_G_focus_guard: done
+  agent_A_impact_analysis: done
+  agent_I_refinement: done
+  agent_D_security_gate: done
+  agent_B_implementation: pending
+  agent_C_destructive_qa: pending
+  agent_I_integration_review: pending
+  agent_E_critique: pending
+  agent_F_verdict: pending
+  state_sync: pending
+  agent_G_handoff: pending
+notes_for_recovery: "التغييرات: deploy-hf-space.yml, GITHUB_ACTIONS_SETUP.md, AGENT_ACTIVE_STATE.md"

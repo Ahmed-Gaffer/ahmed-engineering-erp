@@ -26,7 +26,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: huggingface.co/${{ secrets.HF_SPACE_REPO || 'Tablets/ahmed-engineering-erp' }}:latest
+          tags: huggingface.co/${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}:latest
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -34,6 +34,6 @@ jobs:
       - name: Trigger Space rebuild
         run: |
           curl -s -X POST \
-            "https://huggingface.co/api/spaces/${{ secrets.HF_SPACE_REPO || 'Tablets/ahmed-engineering-erp' }}/rebuild" \
+            "https://huggingface.co/api/spaces/${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}/rebuild" \
             -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
             -H "Content-Type: application/json"
