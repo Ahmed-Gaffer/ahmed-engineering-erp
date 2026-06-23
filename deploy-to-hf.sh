@@ -21,7 +21,7 @@ fi
 echo "🚀 Deploying to Hugging Face Space: $SPACE_NAME"
 
 # Login to Hugging Face
-echo "$HF_TOKEN="$HF_TOKEN" huggingface-cli login --token "$HF_TOKEN"
+huggingface-cli login --token "$HF_TOKEN"
 
 # Build and push Docker image
 echo "🔨 Building Docker image..."

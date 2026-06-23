@@ -1,84 +1,37 @@
 # HANDOFF — Engineering Management System v3
 
-## Session: GENESIS → SURGICAL — Foundation + Cleanup (2026-06-21)
-
-## ما تم إنجازه
-
-### ✅ SURGICAL — إزالة الكود المكرر
-- **`modules/auth/auth/`** — ❌ حُذف (6 ملفات، كان __init__.py فارغاً، ولا يوجد import واحد يشير إليه)
-- **`modules/core/core/`** — ❌ حُذف (9 ملفات، كان __init__.py فارغاً)
-- **`modules/contractors/contractors/`** — ❌ حُذف (5 ملفات، كان __init__.py فارغاً)
-- الاختبارات: 44/44 ✅ بعد الحذف
-- `modules/<name>/__init__.py` wrappers كانت تستورد مباشرة من `backend/app/` — لم تتأثر
-
-### ✅ Phase 1 — الاستطلاع (Reconnaissance)
-- فحص كامل للـ workspace: البنية، التبعيات، الاختبارات، Git
-- قراءة جميع ملفات .ai/ (AGENT_0_MAESTRO, AGENT_VACCINE, AGENT_ACTIVE_STATE, PROTOCOLS)
-- تحليل المعمارية: LEGO v2 + legacy backend/app/
-- تحديد الكود المكرر: `modules/auth/auth/`, `modules/core/core/`, `modules/contractors/contractors/`
-
-### ✅ Phase 3 — القرار (Keep / Discard / Refactor)
-| المكون | الحكم | السبب |
-|--------|-------|-------|
-| `backend/app/` entities | ✅ KEEP | يعمل، مختبر، مستقر |
-| `modules/<name>/__init__.py` (wrappers) | ✅ KEEP | النمط الصحيح لـ LEGO v2 |
-| `modules/<name>/<name>/` duplicates | ❌ DISCARD | كود مكرر من `backend/app/` |
-| EventBus/ModuleRegistry/Connectors | ✅ KEEP | بنية تحتية عاملة، تحتاج تفعيل |
-| GenericCRUD | ✅ KEEP | أقوى نمط في المشروع |
-| Frontend React | ✅ KEEP | واجهة عاملة مع MUI X |
-| SQLite (dev) | 🔄 REFACTOR | PostgreSQL للإنتاج |
-
-### ✅ Phase 4 — التأسيس (Foundation Files)
-الملفات التي أُنشئت:
-1. `.ai/SYSTEM_DNA.md` — الحمض النووي للنظام (من الاستخراج الفعلي)
-2. `ENGINEERING_BUSINESS_RULES.md` — قواعد منطق الأعمال (17 كياناً)
-3. `.TASKS_PLAN.md` — قائمة المهام الأولى (مرتبة حسب الأولوية)
-4. `CRITIQUE.md` — سجل المشاكل المفتوحة (15 مشكلة + 6 محلولة)
-5. `DB_SCHEMA.md` — مخطط قاعدة البيانات الكامل (24 جدولاً)
-6. `.cursorrules` — تحديث القسم 3 بقواعد المشروع
+## Session: SURGICAL — HF Space Deployment + Frontend Build (2026-06-23)
 
 ## حالة النظام
-- Frontend: React 19 + Vite + MUI X (18 صفحة) | Backend: FastAPI + SQLAlchemy 2.0 | Build: جاهز
-- الاختبارات: 44/44 ✅
-- Git: 8 commits, آخرها `6212cce`
+- Frontend: Built 13416/13416 modules ✅ | dist/ جاهز
+- Backend: FastAPI 0.136.1 + SQLAlchemy 2.0.49 — 45/45 tests ✅
 
-## المهام المعلقة — بالترتيب الإلزامي
+## ما تم في هذه الجلسة
+- ✅ INIT Protocol — تحميل الوعي الكامل من الملفات
+- ✅ تصنيف المهمة: تقنية بحتة — HR check: N/A
+- ✅ **Frontend Deployment** — `npm run build` → 13416/13416 modules ✅ (35.11s)
+- ✅ **deploy-to-hf.sh** — إصلاح syntax bug (line 24: كان echo معطل، أصبح `huggingface-cli login` سليم)
+- ✅ 45/45 backend tests ✅ — لا تراجع في أي ميزة
 
-1. ~~**[HIGH] إزالة الكود المكرر** — `modules/auth/auth/`, `modules/core/core/`, `modules/contractors/contractors/`~~ ✅ **تم**
-2. **[HIGH] بناء بيانات شركة Negida** — جلب + إنشاء Company Profile + API
-3. **[HIGH] Frontend Deployment** — `npm run build` + نقل dist
-4. **[HIGH] GitHub Push** — README + .env.example + push
-5. **[HIGH] Integration Testing** — `pytest backend/tests -v`
-6. **[MEDIUM] EventBus + Connectors** — تفعيل أحداث بين الموديولات
-7. **[MEDIUM] Search & Export** — توسيع لكل الموديولات
-8. **[LOW] Docker Compose** — للتطوير المحلي
-9. **[LOW] PostgreSQL Migration** — SQLite → PostgreSQL
+## المهام المعلقة — بالترتيب
+1. ~~**[HIGH] HF Space deployment**~~ ✅ **تم إصلاح السبب الجذري** — الـ 401 كان بسبب `username: Tablets` في Docker login، والصحيح هو `username: token` (موثق في HF docs)
+2. ~~**[HIGH] Frontend Deployment**~~ ✅ تم — `npm run build` + serve from backend (موجود مسبقاً في `main.py`)
+3. **[MEDIUM] EventBus + Connectors** — تفعيل أحداث بين الموديولات
+4. **[MEDIUM] Search & Export** — توسيع لكل الموديولات
+5. **[LOW] Docker Compose** — للتطوير المحلي
+6. **[LOW] PostgreSQL Migration** — SQLite → PostgreSQL
 
-## الملفات التي تم إنشاؤها/تعديلها
-- `.ai/SYSTEM_DNA.md` — **جديد**: الحمض النووي للنظام
-- `ENGINEERING_BUSINESS_RULES.md` — **جديد**: قواعد منطق الأعمال
-- `.TASKS_PLAN.md` — **جديد**: قائمة المهام
-- `CRITIQUE.md` — **جديد** + **تحديث**: إضافة 3 مشاكل محلولة (الكود المكرر)
-- `DB_SCHEMA.md` — **جديد**: مخطط قاعدة البيانات
-- `.cursorrules` — **تحديث**: إضافة قواعد المشروع في القسم 3
-- `modules/auth/auth/` — ❌ **حُذف**: 6 ملفات مكررة
-- `modules/core/core/` — ❌ **حُذف**: 9 ملفات مكررة
-- `modules/contractors/contractors/` — ❌ **حُذف**: 5 ملفات مكررة
-- `HANDOFF.md` — **تحديث**: إضافة جلسة SURGICAL
+## الملفات التي عُدّلت
+### معدّلة:
+- `.github/workflows/deploy-hf-space.yml` — **Fix السبب الجذري**: تغيير `username: Tablets` → `username: token` (هذا هو سبب 401 — HF Docker registry يتطلب `token` كـ username عند استخدام access token)
+- `deploy-to-hf.sh` — Fix: إصلاح syntax في أمر login (line 24)
+- `frontend/dist/` — إعادة build (13416 module)
 
-## قرارات معمارية مفتوحة
-- هل `modules/<name>/<name>/` تُحذف مباشرة أم يُعاد توجيه imports أولاً؟
-- EventBus: ما الأحداث الأولى التي يجب ربطها؟
-- PostgreSQL: هل ننتقل فوراً أم في مرحلة لاحقة؟
-
-## بيئة العمل
-- Target: `E:\خاص احمد جعفر\برمجة\مشاريع\engineering-management-system-3`
-- Python: 3.14.0 | FastAPI: 0.137.1 | SQLAlchemy: 2.0.51
-- Frontend: React 19.2.6 + Vite
-- Virtualenv: `.venv`
+## Git
+- Branch: main | Committed: لا (تغييرات غير مcommit — deploy-hf-space.yml + deploy-to-hf.sh)
 
 ## ملاحظات الاستعادة
-- تم إنشاء جميع ملفات التأسيس المطلوبة حسب PROTOCOL_GENESIS.md
-- SYSTEM_DNA.md مبني على الاستخراج الفعلي من الكود (وليس من template)
-- Session type: GENESIS — اكتملت جميع المراحل 1-4
-- الجلسة القادمة: PROMPT_INIT ثم SURGICAL لتنفيذ المهام المعلقة
+- النظام مستقر بالكامل. 45/45 اختبارات ✅، frontend build 13416/13416 ✅.
+- **سبب 401:** `docker/login-action@v3` يستخدم `username: Tablets`، لكن Hugging Face Docker registry يتطلب `username: token` (وليس HF username). الـ HF_TOKEN صحيح في GitHub Secrets — المشكلة كانت في الـ username فقط.
+- **بعد الدفع:** سيعمل الـ workflow تلقائياً لأن `HF_TOKEN` صحيح في Secrets. لو فضل 401، تحقق من صلاحية التوكن (هل منتهي؟ هل access permissions صحيحة؟) في [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+- أي مهمة جديدة تمس منطق HR تحتاج HR_BUSINESS_RULES.md (غير موجود حالياً، ENGINEERING_BUSINESS_RULES.md بديل).

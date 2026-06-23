@@ -18,7 +18,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: huggingface.co
-          username: ${{ vars.HF_USERNAME || 'Tablets' }}
+          username: token
           password: ${{ secrets.HF_TOKEN }}
 
       - name: Build and push Docker image
