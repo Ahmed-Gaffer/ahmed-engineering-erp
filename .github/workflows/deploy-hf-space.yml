@@ -18,14 +18,25 @@ jobs:
 
       - name: Ensure Space exists
         run: |
+          set -x
           pip install -q huggingface_hub
           SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
           SPACE_NAME="$(echo "$SPACE" | cut -d/ -f2)"
           SPACE_OWNER="$(echo "$SPACE" | cut -d/ -f1)"
-          huggingface-cli space-info "$SPACE" --token "${{ secrets.HF_TOKEN }}" 2>/dev/null || \
+          echo "Checking Space: $SPACE"
+          HTTP_CODE=$(curl -s -o /tmp/hf_response.json -w "%{http_code}" \
+            "https://huggingface.co/api/spaces/$SPACE" \
+            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
+          echo "API response code: $HTTP_CODE"
+          cat /tmp/hf_response.json 2>/dev/null || true
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Space exists"
+          else
+            echo "Creating Space..."
             huggingface-cli create-space "$SPACE_NAME" \
               --type docker --user "$SPACE_OWNER" --yes \
               --token "${{ secrets.HF_TOKEN }}"
+          fi
 
       - name: Debug token
         run: |
