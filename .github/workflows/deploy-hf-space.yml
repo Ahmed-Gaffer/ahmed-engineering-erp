@@ -18,51 +18,33 @@ jobs:
 
       - name: Ensure Space exists
         run: |
-          set -x
           pip install -q huggingface_hub
           SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
           SPACE_NAME="$(echo "$SPACE" | cut -d/ -f2)"
           SPACE_OWNER="$(echo "$SPACE" | cut -d/ -f1)"
-          echo "Checking Space: $SPACE"
-          HTTP_CODE=$(curl -s -o /tmp/hf_response.json -w "%{http_code}" \
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
             "https://huggingface.co/api/spaces/$SPACE" \
             -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
-          echo "API response code: $HTTP_CODE"
-          cat /tmp/hf_response.json 2>/dev/null || true
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "Space exists"
-          else
-            echo "Creating Space..."
+          if [ "$HTTP_CODE" != "200" ]; then
             huggingface-cli create-space "$SPACE_NAME" \
               --type docker --user "$SPACE_OWNER" --yes \
               --token "${{ secrets.HF_TOKEN }}"
           fi
 
-      - name: Debug token
+      - name: Push to Hugging Face Space
         run: |
-          echo "Token length: ${{ secrets.HF_TOKEN != '' && '${#secrets.HF_TOKEN}' || 'EMPTY' }} characters"
-          echo "Space: ${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://huggingface.co/api/whoami-v2" \
-            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
-          echo "Token validation: HTTP $RESPONSE"
+          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
+          rm -rf frontend/node_modules frontend/dist .venv __pycache__ .pytest_cache
+          git init
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add -A
+          git commit -m "Deploy $(date -u)"
+          git remote add hf "https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE"
+          git push --force hf HEAD:main 2>&1
 
-      - name: Login to Hugging Face Hub
-        run: docker login -u token -p "${{ secrets.HF_TOKEN }}" huggingface.co 2>&1
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: huggingface.co/${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}:latest
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Trigger Space rebuild
+      - name: Wait for build
         run: |
-          curl -s -X POST \
-            "https://huggingface.co/api/spaces/${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}/rebuild" \
-            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
-            -H "Content-Type: application/json"
+          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
+          echo "Building at https://huggingface.co/spaces/$SPACE"
+          sleep 5
