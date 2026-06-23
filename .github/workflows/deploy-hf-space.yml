@@ -22,7 +22,7 @@ jobs:
           SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
           SPACE_NAME="$(echo "$SPACE" | cut -d/ -f2)"
           SPACE_OWNER="$(echo "$SPACE" | cut -d/ -f1)"
-          huggingface-cli space-info "$SPACE" 2>/dev/null || \
+          huggingface-cli space-info "$SPACE" --token "${{ secrets.HF_TOKEN }}" 2>/dev/null || \
             huggingface-cli create-space "$SPACE_NAME" \
               --type docker --user "$SPACE_OWNER" --yes \
               --token "${{ secrets.HF_TOKEN }}"
