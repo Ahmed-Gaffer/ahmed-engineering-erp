@@ -27,15 +27,17 @@ jobs:
               --type docker --user "$SPACE_OWNER" --yes \
               --token "${{ secrets.HF_TOKEN }}"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Debug token
+        run: |
+          echo "Token length: ${{ secrets.HF_TOKEN != '' && '${#secrets.HF_TOKEN}' || 'EMPTY' }} characters"
+          echo "Space: ${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://huggingface.co/api/whoami-v2" \
+            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
+          echo "Token validation: HTTP $RESPONSE"
 
       - name: Login to Hugging Face Hub
-        uses: docker/login-action@v3
-        with:
-          registry: huggingface.co
-          username: token
-          password: ${{ secrets.HF_TOKEN }}
+        run: docker login -u token -p "${{ secrets.HF_TOKEN }}" huggingface.co 2>&1
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
