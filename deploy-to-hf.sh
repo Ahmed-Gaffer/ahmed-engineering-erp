@@ -1,40 +1,27 @@
 #!/bin/bash
-# Deploy to Hugging Face Space
+# Deploy to Hugging Face Space (git push approach)
 # Usage: ./deploy-to-hf.sh [space-name] [hf-token]
 
 set -e
 
-SPACE_NAME="${1:-${HF_SPACE_REPO}}"
+SPACE_NAME="${1:-${HF_SPACE_REPO:-Tablets/engineering-erp}}"
 HF_TOKEN="${2:-${HF_TOKEN}}"
-
-if [ -z "$SPACE_NAME" ]; then
-    echo "Usage: $0 <space-name> [hf-token]"
-    echo "Or set HF_SPACE_REPO and HF_TOKEN environment variables"
-    exit 1
-fi
 
 if [ -z "$HF_TOKEN" ]; then
     echo "Error: HF_TOKEN is required"
     exit 1
 fi
 
-echo "🚀 Deploying to Hugging Face Space: $SPACE_NAME"
+echo "Deploying to: $SPACE_NAME"
 
-# Login to Hugging Face
-huggingface-cli login --token "$HF_TOKEN"
+rm -rf frontend/node_modules frontend/dist .venv __pycache__ .pytest_cache
 
-# Build and push Docker image
-echo "🔨 Building Docker image..."
-docker buildx build \
-    --platform linux/amd64 \
-    --tag "$SPACE_NAME:latest" \
-    --push \
-    .
+git init
+git config user.email "deploy@bot.com"
+git config user.name "Deploy Bot"
+git add -A
+git commit -m "Deploy $(date -u)"
 
-# Trigger Space rebuild
-echo "🔄 Triggering Space rebuild..."
-curl -X POST "https://huggingface.co/api/spaces/$SPACE_NAME/rebuild" \
-    -H "Authorization: Bearer $HF_TOKEN" \
-    -H "Content-Type: application/json"
+git push "https://user:$HF_TOKEN@huggingface.co/spaces/$SPACE_NAME" HEAD:main --force
 
-echo "✅ Deployment complete! Check your Space at: https://huggingface.co/spaces/$SPACE_NAME"
+echo "Done: https://huggingface.co/spaces/$SPACE_NAME"

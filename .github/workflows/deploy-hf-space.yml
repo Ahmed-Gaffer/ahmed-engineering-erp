@@ -11,29 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Ensure Space exists
+      - name: Push code to Hugging Face Space
         run: |
-          pip install -q huggingface_hub
-          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
-          SPACE_NAME="$(echo "$SPACE" | cut -d/ -f2)"
-          SPACE_OWNER="$(echo "$SPACE" | cut -d/ -f1)"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://huggingface.co/api/spaces/$SPACE" \
-            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
-          if [ "$HTTP_CODE" != "200" ]; then
-            huggingface-cli create-space "$SPACE_NAME" \
-              --type docker --user "$SPACE_OWNER" --yes \
-              --token "${{ secrets.HF_TOKEN }}"
-          fi
-
-      - name: Push to Hugging Face Space
-        run: |
-          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
+          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-erp' }}"
           rm -rf frontend/node_modules frontend/dist .venv __pycache__ .pytest_cache
           git init
           git config user.email "github-actions@github.com"
@@ -43,8 +23,8 @@ jobs:
           git remote add hf "https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE"
           git push --force hf HEAD:main 2>&1
 
-      - name: Wait for build
+      - name: Check build status
         run: |
-          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-management-system' }}"
-          echo "Building at https://huggingface.co/spaces/$SPACE"
-          sleep 5
+          SPACE="${{ secrets.HF_SPACE_REPO || 'Tablets/engineering-erp' }}"
+          echo "Deployed to: https://huggingface.co/spaces/$SPACE"
+          echo "App URL: https://$(echo $SPACE | tr '/' '-').hf.space"
