@@ -41,36 +41,24 @@ jobs:
             --raw-field visibility=public --jq '.visibility' 2>&1 || \
             echo "gh api repo-scoped failed"
 
-      - name: Push clean README to HF Space
+          echo "=== Attempt with GH_PAT if available ==="
+          if [ -n "${{ secrets.GH_PAT }}" ]; then
+            echo "GH_PAT found, trying to make package public..."
+            gh api -X PATCH /users/ahmed-gaffer/packages/container/engineering-erp/visibility \
+              --raw-field visibility=public --jq '.visibility' --token "${{ secrets.GH_PAT }}" 2>&1 || \
+            gh api -X PATCH /repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility \
+              --raw-field visibility=public --jq '.visibility' --token "${{ secrets.GH_PAT }}" 2>&1
+          else
+            echo "No GH_PAT secret. Package may remain private."
+            echo "Create a PAT at: https://github.com/settings/tokens"
+            echo "Add as GH_PAT secret in repo settings."
+          fi
+
+      - name: Verify build
         run: |
-          SPACE_PATH="Tablets/engineering-erp"
-          AUTH_URL="https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE_PATH"
-          TMPDIR=$(mktemp -d)
-          cd "$TMPDIR"
-
-          cat > README.md << 'EOF'
----
-title: Engineering ERP
-emoji: 🏗️
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 8000
-dockerImage: ghcr.io/ahmed-gaffer/ahmed-engineering-erp/engineering-erp:latest
-pinned: false
----
-EOF
-
-          git init
-          git config user.email "github-actions@github.com"
-          git config user.name "GitHub Actions"
-          git add README.md
-          git commit -m "Deploy via GHCR Docker image"
-          git push --force "$AUTH_URL" HEAD:main
-          echo "HF Space pushed successfully"
-
-      - name: Verify deployment
-        run: |
-          echo "Image: ${{ env.GHCR_IMAGE }}:latest"
-          echo "App: https://tablets-engineering-erp.hf.space"
-          echo "Space: https://huggingface.co/spaces/Tablets/engineering-erp"
+          echo "Image pushed to ${{ env.GHCR_IMAGE }}:latest"
+          echo "To make clean deploy (no source on HF Space):"
+          echo "  1. Create GitHub PAT with write:packages scope"
+          echo "  2. Add as GH_PAT secret to this repo"
+          echo "  3. Create GH_PAT secret"
+          echo "  4. Re-enable the Push-clean step in this workflow"
