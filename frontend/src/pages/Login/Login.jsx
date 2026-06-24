@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Card, CardContent, TextField, Button, Typography, Alert, Stack } from '@mui/material';
+import { Box, Card, CardContent, TextField, Button, Typography, Alert, Stack, Tabs, Tab } from '@mui/material';
 import { Engineering, Construction, AccountTree } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { auth as authApi } from '../../services/api';
 
 export default function Login() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,13 +21,32 @@ export default function Login() {
     setError('');
     try {
       const form = new FormData(e.target);
+      if (tab === 1) {
+        const pass = form.get('password');
+        const confirm = form.get('confirmPassword');
+        if (pass !== confirm) {
+          setError(t('passwordsDoNotMatch'));
+          setLoading(false);
+          return;
+        }
+        await authApi.register({
+          username: form.get('username'),
+          email: form.get('email'),
+          password: pass,
+        });
+      }
       await login(form.get('username'), form.get('password'));
       navigate('/engineering/dashboard');
-    } catch {
-      setError(t('operationFailed'));
+    } catch (err) {
+      setError(err.response?.data?.detail || t('operationFailed'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTabChange = (_, v) => {
+    setTab(v);
+    setError('');
   };
 
   return (
@@ -65,12 +86,10 @@ export default function Login() {
             },
           }}>
             <CardContent sx={{ p: 4 }}>
-              <Typography variant="h5" fontWeight={700} textAlign="center" mb={0.5}>
-                {t('welcomeBack')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" textAlign="center" mb={3.5}>
-                {t('signInToAccount')}
-              </Typography>
+              <Tabs value={tab} onChange={handleTabChange} variant="fullWidth" sx={{ mb: 3 }}>
+                <Tab label={t('login')} />
+                <Tab label={t('register')} />
+              </Tabs>
               {error && (
                 <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>
               )}
@@ -80,16 +99,30 @@ export default function Login() {
                   size="small" autoComplete="username" autoFocus
                   sx={{ mb: 2.5 }}
                 />
+                {tab === 1 && (
+                  <TextField
+                    name="email" label={t('email')} type="email" fullWidth required
+                    size="small" autoComplete="email"
+                    sx={{ mb: 2.5 }}
+                  />
+                )}
                 <TextField
                   name="password" label={t('password')} type="password"
-                  fullWidth required size="small" autoComplete="current-password"
-                  sx={{ mb: 3.5 }}
+                  fullWidth required size="small" autoComplete={tab === 1 ? 'new-password' : 'current-password'}
+                  sx={{ mb: tab === 1 ? 2.5 : 3.5 }}
                 />
+                {tab === 1 && (
+                  <TextField
+                    name="confirmPassword" label={t('confirmPassword')} type="password"
+                    fullWidth required size="small" autoComplete="new-password"
+                    sx={{ mb: 3.5 }}
+                  />
+                )}
                 <Button
                   type="submit" variant="contained" fullWidth size="large"
                   disabled={loading} disableElevation
                 >
-                  {loading ? t('loading') : t('login')}
+                  {loading ? t('loading') : (tab === 1 ? t('register') : t('login'))}
                 </Button>
               </form>
             </CardContent>

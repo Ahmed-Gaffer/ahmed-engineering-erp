@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 from app.notifications.crud import notification_crud
 from app.notifications.schemas import NotificationCreate
 
@@ -20,9 +20,12 @@ async def list_notifications(
 
 
 @router.get("/unread-count")
-async def unread_count(db: AsyncSession = Depends(get_db), user=Depends(require_role("admin", "engineer"))):
-    count = await notification_crud.unread_count(db, user_id=user.id)
-    return {"count": count}
+async def unread_count(db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    try:
+        count = await notification_crud.unread_count(db, user_id=user.id)
+        return {"count": count}
+    except Exception:
+        return {"count": 0}
 
 
 @router.post("/")

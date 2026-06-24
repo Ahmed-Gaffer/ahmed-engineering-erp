@@ -16,12 +16,20 @@ class TestAuth:
         assert data["user"]["role"] == "engineer"
 
     @pytest.mark.asyncio
-    async def test_register_anonymous_rejected_when_users_exist(self, client):
+    async def test_anonymous_can_register_viewer(self, client):
         resp = await client.post("/api/auth/register", json={
-            "username": "hacker", "email": "hack@test.com",
+            "username": "viewer1", "email": "viewer@test.com",
             "password": "pass123",
         })
-        assert resp.status_code in (401, 403)
+        assert resp.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_anonymous_cannot_register_admin(self, client):
+        resp = await client.post("/api/auth/register", json={
+            "username": "hacker", "email": "hack@test.com",
+            "password": "pass123", "role": "admin",
+        })
+        assert resp.status_code == 403
 
     @pytest.mark.asyncio
     async def test_register_duplicate(self, client, admin_token):

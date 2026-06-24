@@ -34,6 +34,11 @@ const breadcrumbMap = {
   boq: 'boq',
   ipc: 'ipc',
   employees: 'employees',
+  'contracts-list': 'contractsPage',
+  schedules: 'schedulesPage',
+  'daily-reports': 'dailyReportsPage',
+  subcontractors: 'subcontractorsPage',
+  'company-profile': 'companyProfile',
 };
 
 export default function Layout() {

@@ -22,11 +22,12 @@ async def _has_any_user(db: AsyncSession) -> bool:
 @router.post("/register")
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db), user: Optional[User] = Depends(get_optional_current_user)):
     has_users = await _has_any_user(db)
-    if has_users and (not user or user.role != "admin"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins can register new users when users exist"
-        )
+    if has_users:
+        if data.role == "admin" and (not user or user.role != "admin"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admins can register new admin users"
+            )
     return await crud.register_user(db, data)
 
 

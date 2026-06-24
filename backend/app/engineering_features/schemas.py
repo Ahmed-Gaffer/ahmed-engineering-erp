@@ -144,8 +144,7 @@ class IPCHeaderResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class IPCHeaderUpdate(BaseModel):
@@ -186,6 +185,22 @@ class SubcontractorCreate(BaseModel):
     status: str = "active"
 
 
+class DailyReportUpdate(BaseModel):
+    report_date: Optional[date] = None
+    weather: Optional[str] = None
+    manpower_count: Optional[int] = None
+    equipment_count: Optional[int] = None
+    work_description: Optional[str] = None
+    issues: Optional[str] = None
+
+
+class SubcontractorUpdate(BaseModel):
+    name: Optional[str] = None
+    trade: Optional[str] = None
+    contract_value: Optional[Decimal] = None
+    status: Optional[str] = None
+
+
 class ScheduleCreate(BaseModel):
     project_id: int
     task_name: str
@@ -195,4 +210,15 @@ class ScheduleCreate(BaseModel):
     duration_days: int = 0
     progress_percent: Decimal = Decimal("0")
     status: str = "not_started"
+    responsible: Optional[str] = None
+
+
+class ScheduleUpdate(BaseModel):
+    task_name: Optional[str] = None
+    parent_id: Optional[int] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    duration_days: Optional[int] = None
+    progress_percent: Optional[Decimal] = None
+    status: Optional[str] = None
     responsible: Optional[str] = None

@@ -1,31 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSnackbar } from 'notistack';
-import {
-  Box, Typography, Card, TextField, Button, Stack, MenuItem, Chip,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { Box, Typography, TextField, Button, Stack, MenuItem } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import EmptyState from '../../components/EmptyState/EmptyState';
+import DataTable from '../../components/DataTable/DataTable';
+import FormDialog from '../../components/FormDialog/FormDialog';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
+import EmptyState from '../../components/EmptyState/EmptyState';
 import { engineeringApi } from '../../services/api';
 import { formatNumber } from '../../utils/helpers';
 
-const chipStatus = (value) => {
-  const colors = { active: '#34d399', suspended: '#fbbf24', terminated: '#fca5a5' };
-  return <Chip label={value} size="small" sx={{ color: colors[value] || '#cbd5e1', border: `1px solid ${colors[value] || '#cbd5e1'}`, bgcolor: 'transparent', fontWeight: 500 }} />;
-};
-
 export default function Subcontractors() {
   const { t } = useTranslation();
-  const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [form, setForm] = useState({ name: '', trade: '', contract_value: '', status: 'active' });
 
@@ -39,27 +31,57 @@ export default function Subcontractors() {
 
   useEffect(() => { fetchData(); }, [selectedProjectId]);
 
-  const handleSubmit = async () => {
+  const openCreate = () => {
+    setEditItem(null);
+    setForm({ name: '', trade: '', contract_value: '', status: 'active' });
+    setFormOpen(true);
+  };
+
+  const openEdit = (row) => {
+    setEditItem(row);
+    setForm({
+      name: row.name || '',
+      trade: row.trade || '',
+      contract_value: row.contract_value?.toString() || '',
+      status: row.status || 'active',
+    });
+    setFormOpen(true);
+  };
+
+  const handleSubmit = async (formData) => {
     setFormLoading(true);
     try {
-      await engineeringApi.subcontractors.create({
+      const payload = {
         project_id: Number(selectedProjectId),
-        name: form.name,
-        trade: form.trade || null,
-        contract_value: Number(form.contract_value) || 0,
-        status: form.status,
-      });
-      enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
+        name: formData.name,
+        trade: formData.trade || null,
+        contract_value: Number(formData.contract_value) || 0,
+        status: formData.status,
+      };
+      if (editItem) await engineeringApi.subcontractors.update(editItem.id, payload);
+      else await engineeringApi.subcontractors.create(payload);
       setFormOpen(false);
       fetchData();
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); } finally { setFormLoading(false); }
+    } finally { setFormLoading(false); }
+  };
+
+  const handleDelete = async (id) => {
+    await engineeringApi.subcontractors.delete(id);
+    fetchData();
   };
 
   const columns = [
     { field: 'name', headerName: t('name'), flex: 1, minWidth: 160 },
     { field: 'trade', headerName: t('trade'), width: 130 },
     { field: 'contract_value', headerName: t('contractValue'), type: 'number', width: 140, renderCell: (p) => <Typography variant="body2" fontWeight={600}>{formatNumber(p.value)}</Typography> },
-    { field: 'status', headerName: t('status'), width: 110, renderCell: (p) => chipStatus(p.value) },
+    { field: 'status', headerName: t('status'), width: 110 },
+  ];
+
+  const fields = [
+    { name: 'name', label: t('name'), type: 'text', required: true },
+    { name: 'trade', label: t('trade'), type: 'text' },
+    { name: 'contract_value', label: t('contractValue'), type: 'number' },
+    { name: 'status', label: t('status'), type: 'select', options: [{ value: 'active', label: t('active') }, { value: 'suspended', label: t('suspended') }, { value: 'terminated', label: t('terminated') }] },
   ];
 
   return (
@@ -67,37 +89,39 @@ export default function Subcontractors() {
       <Box>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h5" fontWeight={700}>{t('subcontractorsPage')}</Typography>
-          {selectedProjectId && <Button variant="contained" startIcon={<Add />} onClick={() => { setForm({ name: '', trade: '', contract_value: '', status: 'active' }); setFormOpen(true); }}>{t('create')}</Button>}
+          {selectedProjectId && <Button variant="contained" startIcon={<Add />} onClick={openCreate}>{t('create')}</Button>}
         </Stack>
         <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ mb: 2, minWidth: 280 }}>
           <MenuItem value="">{t('all')}</MenuItem>
           {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
         </TextField>
         {!selectedProjectId ? <EmptyState title={t('selectProject')} description={t('selectProjectDescription')} /> : loading ? <DataGridSkeleton /> : (
-          <Card sx={{ bgcolor: '#1e293b', borderRadius: 2, overflow: 'hidden' }}>
-            <DataGrid rows={data} columns={columns} autoHeight disableRowSelectionOnClick getRowId={(r) => r.id} pageSizeOptions={[10, 25, 50]} paginationModel={{ page: 0, pageSize: 20 }} initialState={{ pagination: { paginationModel: { pageSize: 20 } } }} localeText={i18n.language === 'ar' ? arSD : enUS} sx={{ border: 'none', '& .MuiDataGrid-cell': { color: '#e2e8f0' }, '& .MuiDataGrid-columnHeaders': { bgcolor: '#0f172a', color: '#94a3b8' } }} />
-            {data.length === 0 && <EmptyState title={t('noData')} action onAction={() => setFormOpen(true)} actionLabel={t('create')} />}
-          </Card>
+          <DataTable
+            columns={columns}
+            data={data}
+            loading={loading}
+            total={data.length}
+            page={1}
+            pageSize={20}
+            paginationMode="client"
+            search=""
+            onSearchChange={() => {}}
+            onAdd={openCreate}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            service={{ delete: handleDelete }}
+            entityName="subcontractorsPage"
+          />
         )}
-        <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: '#1e293b', color: '#e2e8f0' } }}>
-          <DialogTitle>{t('create')} {t('subcontractorsPage')}</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} sx={{ mt: 1 }}>
-              <TextField label={t('name')} value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} required fullWidth />
-              <TextField label={t('trade')} value={form.trade} onChange={(e) => setForm({...form, trade: e.target.value})} fullWidth />
-              <TextField label={t('contractValue')} type="number" value={form.contract_value} onChange={(e) => setForm({...form, contract_value: e.target.value})} fullWidth />
-              <TextField select label={t('status')} value={form.status} onChange={(e) => setForm({...form, status: e.target.value})} fullWidth>
-                <MenuItem value="active">{t('active')}</MenuItem>
-                <MenuItem value="suspended">{t('suspended')}</MenuItem>
-                <MenuItem value="terminated">منتهي</MenuItem>
-              </TextField>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setFormOpen(false)}>{t('cancel')}</Button>
-            <Button variant="contained" onClick={handleSubmit} disabled={formLoading}>{t('save')}</Button>
-          </DialogActions>
-        </Dialog>
+        <FormDialog
+          open={formOpen}
+          onClose={() => setFormOpen(false)}
+          onSubmit={handleSubmit}
+          fields={fields}
+          initialValues={editItem}
+          title={editItem ? `${t('edit')} ${t('subcontractorsPage')}` : `${t('create')} ${t('subcontractorsPage')}`}
+          loading={formLoading}
+        />
       </Box>
     </motion.div>
   );

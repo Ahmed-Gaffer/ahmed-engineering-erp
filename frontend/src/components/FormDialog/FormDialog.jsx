@@ -62,6 +62,8 @@ export default function FormDialog({
         required={f.required}
         size="small"
         fullWidth
+        multiline={f.type === 'textarea' || f.rows > 0}
+        minRows={f.rows || (f.type === 'textarea' ? 3 : undefined)}
         error={Boolean(errors[f.name])}
         helperText={errors[f.name]}
         slotProps={f.type === 'date' ? { inputLabel: { shrink: true } } : undefined}

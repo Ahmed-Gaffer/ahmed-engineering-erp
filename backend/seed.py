@@ -16,6 +16,7 @@ from app.drawings.models import Drawing
 from app.drawing_revisions.models import DrawingRevision
 from app.documents.models import Document
 from app.payment_certificates.models import PaymentCertificate
+from app.company_profile.models import CompanyProfile
 from app.engineering_features.models import (
     BOQItem, Contract, IPCHeader, IPCDetail,
     DailyReport, Subcontractor, Schedule, EngDocument
@@ -31,11 +32,42 @@ async def seed():
     async with async_session() as db:
         existing = (await db.execute(select(User).where(User.username == "admin"))).scalar_one_or_none()
         if existing:
-            print("Data already seeded, skipping")
+            existing_profile = (await db.execute(select(CompanyProfile).limit(1))).scalar_one_or_none()
+            if not existing_profile:
+                db.add(CompanyProfile(
+                    company_name_ar="شركة نجيده للمقاولات العامة والتوريدات",
+                    company_name_en="Negida Contracting Co.", established_year=1987,
+                    about_ar="شركة نجيده للمقاولات هي شركة متخصصة في خدمات المقاولات المتكاملة.",
+                    about_en="Negida Contracting is a specialized contracting integrated services company.",
+                    address="شارع نقابة الزراعيين، شارع شبين الكوم، الإسماعيلية، مصر",
+                    phone="+20 64 322 3385", email="info@negidacontracting.com",
+                    vision_ar="أن نكون الشريك الموثوق في بناء مستقبل مصر.",
+                    vision_en="To be the trusted partner in building Egypt's future.",
+                    mission_ar="تحقيق رضا العملاء من خلال تقديم أعلى مستوى من الخدمات.",
+                    mission_en="To achieve customer satisfaction by delivering the highest level of quality services."
+                ))
+                await db.commit()
+                print("Company profile seeded")
+            else:
+                print("Data already seeded, skipping")
             return
 
         admin = User(username="admin", email="admin@ems.com", hashed_password=hash_password("admin123"), role="admin", is_active=True)
         db.add(admin)
+
+        db.add(CompanyProfile(
+            company_name_ar="شركة نجيده للمقاولات العامة والتوريدات",
+            company_name_en="Negida Contracting Co.", established_year=1987,
+            about_ar="شركة نجيده للمقاولات هي شركة متخصصة في خدمات المقاولات المتكاملة.",
+            about_en="Negida Contracting is a specialized contracting integrated services company.",
+            address="شارع نقابة الزراعيين، شارع شبين الكوم، الإسماعيلية، مصر",
+            phone="+20 64 322 3385", email="info@negidacontracting.com",
+            vision_ar="أن نكون الشريك الموثوق في بناء مستقبل مصر.",
+            vision_en="To be the trusted partner in building Egypt's future.",
+            mission_ar="تحقيق رضا العملاء من خلال تقديم أعلى مستوى من الخدمات.",
+            mission_en="To achieve customer satisfaction by delivering the highest level of quality services."
+        ))
+        await db.flush()
 
         c1 = Contractor(code="CON001", name="شركة البناء الحديث", classification="أ", specialties="مباني, طرق", phone="0501234567", email="info@modern.com", contract_value=5000000, insurance_value=250000, insurance_remaining=150000, status="active")
         c2 = Contractor(code="CON002", name="مؤسسة الأساس المتين", classification="ب", specialties="بنية تحتية", phone="0507654321", status="active")

@@ -154,7 +154,7 @@ export default function IPCPrint() {
             <TableRow>
               <TableCell sx={{ height: 80, width: '25%', textAlign: 'center', borderRight: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="body2" fontWeight={600}>{t('engineer')}</Typography>
-                <Typography variant="caption" color="text.secondary">{t('engineer')}</Typography>
+                <Typography variant="caption" color="text.secondary">{t('supervisingEngineer')}</Typography>
               </TableCell>
               <TableCell sx={{ height: 80, width: '25%', textAlign: 'center', borderRight: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="body2" fontWeight={600}>{t('contractor')}</Typography>

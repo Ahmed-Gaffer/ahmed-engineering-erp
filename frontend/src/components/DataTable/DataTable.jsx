@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, TextField, Button, Stack, IconButton, Chip, Typography, Divider, useTheme } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -49,10 +49,15 @@ export default function DataTable({
   onBulkDelete,
   service,
   entityName,
+  paginationMode = 'server',
 }) {
   const { t, i18n } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const [selected, setSelected] = useState([]);
+  const [clientPage, setClientPage] = useState(0);
+  const [clientPageSize, setClientPageSize] = useState(20);
+  // MUI X DataGrid v8 uses { type: 'include'|'exclude', ids: Set } instead of array
+  const selectionModel = useMemo(() => ({ type: 'include', ids: new Set(selected) }), [selected]);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -108,7 +113,7 @@ export default function DataTable({
 
   const handleExportExcel = async () => {
     try {
-      const entity = service?.defaults?.url?.replace('/api/', '').replace('/', '') || '';
+      const entity = entityName || service?.defaults?.url?.replace('/api/', '').replace('/', '') || '';
       if (!entity) return;
       const res = await exportApi.download(entity);
       const url = URL.createObjectURL(new Blob([res.data]));
@@ -192,17 +197,25 @@ export default function DataTable({
           rows={data}
           columns={columns}
           loading={loading}
-          rowCount={total}
+          rowCount={paginationMode === 'server' ? total : undefined}
           getRowId={(r) => r.id}
           pageSizeOptions={[10, 20, 50, 100]}
-          paginationModel={{ page: page - 1, pageSize }}
-          paginationMode="server"
+          paginationModel={paginationMode === 'server' ? { page: page - 1, pageSize } : { page: clientPage, pageSize: clientPageSize }}
+          paginationMode={paginationMode}
           onPaginationModelChange={(m) => {
-            onPageChange?.(m.page + 1);
-            onPageSizeChange?.(m.pageSize);
+            if (paginationMode === 'server') {
+              onPageChange?.(m.page + 1);
+              onPageSizeChange?.(m.pageSize);
+            } else {
+              setClientPage(m.page);
+              setClientPageSize(m.pageSize);
+            }
           }}
-          onRowSelectionModelChange={setSelected}
-          rowSelectionModel={selected}
+          onRowSelectionModelChange={(model) => {
+            if (model?.type === 'include') setSelected(Array.from(model.ids));
+            else setSelected([]);
+          }}
+          rowSelectionModel={selectionModel}
           checkboxSelection
           disableRowSelectionOnClick
           localeText={i18n.language === 'ar' ? arSD : enUS}

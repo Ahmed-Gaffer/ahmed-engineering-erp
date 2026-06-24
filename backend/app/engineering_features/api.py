@@ -11,6 +11,7 @@ import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
 from app.database import get_db
+from app.dependencies import get_current_user, require_role
 from app.projects.models import Project
 
 from .models import (
@@ -21,12 +22,13 @@ from .schemas import (
     ContractCreate, ContractUpdate,
     BOQItemCreate, BOQItemUpdate,
     IPCHeaderCreate, IPCHeaderUpdate,
-    DrawingCreate, DailyReportCreate,
-    SubcontractorCreate, ScheduleCreate,
+    DrawingCreate, DailyReportCreate, DailyReportUpdate,
+    SubcontractorCreate, SubcontractorUpdate,
+    ScheduleCreate, ScheduleUpdate,
 )
 from .dashboard import get_dashboard_summary
 
-router = APIRouter(prefix="/api/engineering", tags=["Engineering"])
+router = APIRouter(prefix="/api/engineering", tags=["Engineering"], dependencies=[Depends(get_current_user)])
 
 
 # ─── Dashboard ───
@@ -54,7 +56,7 @@ async def get_project(project_id: int, db: AsyncSession = Depends(get_db)):
 
 # ─── Contracts ───
 
-@router.post("/contracts")
+@router.post("/contracts", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_contract(data: ContractCreate, db: AsyncSession = Depends(get_db)):
     contract = Contract(**data.model_dump())
     db.add(contract)
@@ -77,7 +79,7 @@ async def get_contract(contract_id: int, db: AsyncSession = Depends(get_db)):
     return contract
 
 
-@router.patch("/contracts/{contract_id}")
+@router.patch("/contracts/{contract_id}", dependencies=[Depends(require_role("admin", "engineer"))])
 async def update_contract(contract_id: int, data: ContractUpdate, db: AsyncSession = Depends(get_db)):
     contract = await db.get(Contract, contract_id)
     if not contract:
@@ -89,9 +91,19 @@ async def update_contract(contract_id: int, data: ContractUpdate, db: AsyncSessi
     return contract
 
 
+@router.delete("/contracts/{contract_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_contract(contract_id: int, db: AsyncSession = Depends(get_db)):
+    contract = await db.get(Contract, contract_id)
+    if not contract:
+        raise HTTPException(404, "Contract not found")
+    await db.delete(contract)
+    await db.commit()
+    return {"detail": "Contract deleted successfully"}
+
+
 # ─── BOQ ───
 
-@router.post("/boq-items")
+@router.post("/boq-items", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_boq_item(data: BOQItemCreate, db: AsyncSession = Depends(get_db)):
     item_data = data.model_dump()
     item_data["total_price"] = data.quantity * data.unit_price
@@ -102,7 +114,7 @@ async def create_boq_item(data: BOQItemCreate, db: AsyncSession = Depends(get_db
     return item
 
 
-@router.post("/boq-items/bulk")
+@router.post("/boq-items/bulk", dependencies=[Depends(require_role("admin", "engineer"))])
 async def bulk_create_boq_items(items: List[BOQItemCreate], db: AsyncSession = Depends(get_db)):
     created = []
     for data in items:
@@ -124,7 +136,7 @@ async def list_project_boq(project_id: int, db: AsyncSession = Depends(get_db)):
     return items
 
 
-@router.put("/boq-items/{item_id}")
+@router.put("/boq-items/{item_id}", dependencies=[Depends(require_role("admin", "engineer"))])
 async def update_boq_item(item_id: int, data: BOQItemUpdate, db: AsyncSession = Depends(get_db)):
     item = await db.get(BOQItem, item_id)
     if not item:
@@ -139,7 +151,7 @@ async def update_boq_item(item_id: int, data: BOQItemUpdate, db: AsyncSession = 
     return item
 
 
-@router.delete("/boq-items/{item_id}")
+@router.delete("/boq-items/{item_id}", dependencies=[Depends(require_role("admin"))])
 async def delete_boq_item(item_id: int, db: AsyncSession = Depends(get_db)):
     item = await db.get(BOQItem, item_id)
     if not item:
@@ -197,7 +209,7 @@ async def export_boq_excel(project_id: int, db: AsyncSession = Depends(get_db)):
                              headers={"Content-Disposition": f"attachment; filename=boq_project_{project_id}.xlsx"})
 
 
-@router.post("/projects/{project_id}/boq/import")
+@router.post("/projects/{project_id}/boq/import", dependencies=[Depends(require_role("admin", "engineer"))])
 async def import_boq_excel(project_id: int, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
     contents = await file.read()
     wb = openpyxl.load_workbook(BytesIO(contents))
@@ -230,7 +242,7 @@ async def import_boq_excel(project_id: int, file: UploadFile = File(...), db: As
 
 # ─── IPC ───
 
-@router.post("/ipcs")
+@router.post("/ipcs", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_ipc(data: IPCHeaderCreate, db: AsyncSession = Depends(get_db)):
     header = IPCHeader(
         project_id=data.project_id,
@@ -300,7 +312,7 @@ async def get_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     return ipc
 
 
-@router.post("/ipcs/{ipc_id}/submit")
+@router.post("/ipcs/{ipc_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
 async def submit_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status != "draft":
@@ -311,7 +323,7 @@ async def submit_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     return ipc
 
 
-@router.post("/ipcs/{ipc_id}/approve")
+@router.post("/ipcs/{ipc_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
 async def approve_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status not in ("draft", "submitted"):
@@ -322,7 +334,7 @@ async def approve_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     return ipc
 
 
-@router.post("/ipcs/{ipc_id}/reject")
+@router.post("/ipcs/{ipc_id}/reject", dependencies=[Depends(require_role("admin", "engineer"))])
 async def reject_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status != "submitted":
@@ -333,7 +345,7 @@ async def reject_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     return ipc
 
 
-@router.post("/ipcs/{ipc_id}/pay")
+@router.post("/ipcs/{ipc_id}/pay", dependencies=[Depends(require_role("admin", "engineer"))])
 async def pay_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status != "approved":
@@ -344,7 +356,7 @@ async def pay_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     return ipc
 
 
-@router.delete("/ipcs/{ipc_id}")
+@router.delete("/ipcs/{ipc_id}", dependencies=[Depends(require_role("admin"))])
 async def delete_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc:
@@ -354,7 +366,7 @@ async def delete_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
     return {"detail": "IPC deleted successfully"}
 
 
-@router.put("/ipcs/{ipc_id}")
+@router.put("/ipcs/{ipc_id}", dependencies=[Depends(require_role("admin", "engineer"))])
 async def update_ipc(ipc_id: int, data: IPCHeaderUpdate, db: AsyncSession = Depends(get_db)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc:
@@ -424,7 +436,7 @@ async def export_ipc_excel(ipc_id: int, db: AsyncSession = Depends(get_db)):
 # ─── Drawings ───
 
 
-@router.post("/drawings")
+@router.post("/drawings", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_drawing(data: DrawingCreate, db: AsyncSession = Depends(get_db)):
     from app.drawings.models import Drawing
     dwg = Drawing(**data.model_dump())
@@ -442,7 +454,7 @@ async def list_project_drawings(project_id: int, db: AsyncSession = Depends(get_
 
 # ─── Daily Reports ───
 
-@router.post("/daily-reports")
+@router.post("/daily-reports", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_daily_report(data: DailyReportCreate, db: AsyncSession = Depends(get_db)):
     report = DailyReport(**data.model_dump())
     db.add(report)
@@ -457,9 +469,39 @@ async def list_daily_reports(project_id: int, db: AsyncSession = Depends(get_db)
     return result.scalars().all()
 
 
+@router.get("/daily-reports/{report_id}")
+async def get_daily_report(report_id: int, db: AsyncSession = Depends(get_db)):
+    report = await db.get(DailyReport, report_id)
+    if not report:
+        raise HTTPException(404, "Daily report not found")
+    return report
+
+
+@router.put("/daily-reports/{report_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_daily_report(report_id: int, data: DailyReportUpdate, db: AsyncSession = Depends(get_db)):
+    report = await db.get(DailyReport, report_id)
+    if not report:
+        raise HTTPException(404, "Daily report not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(report, key, val)
+    await db.commit()
+    await db.refresh(report)
+    return report
+
+
+@router.delete("/daily-reports/{report_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_daily_report(report_id: int, db: AsyncSession = Depends(get_db)):
+    report = await db.get(DailyReport, report_id)
+    if not report:
+        raise HTTPException(404, "Daily report not found")
+    await db.delete(report)
+    await db.commit()
+    return {"detail": "Daily report deleted successfully"}
+
+
 # ─── Subcontractors ───
 
-@router.post("/subcontractors")
+@router.post("/subcontractors", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_subcontractor(data: SubcontractorCreate, db: AsyncSession = Depends(get_db)):
     sub = Subcontractor(**data.model_dump())
     db.add(sub)
@@ -474,9 +516,39 @@ async def list_subcontractors(project_id: int, db: AsyncSession = Depends(get_db
     return result.scalars().all()
 
 
+@router.get("/subcontractors/{sub_id}")
+async def get_subcontractor(sub_id: int, db: AsyncSession = Depends(get_db)):
+    sub = await db.get(Subcontractor, sub_id)
+    if not sub:
+        raise HTTPException(404, "Subcontractor not found")
+    return sub
+
+
+@router.put("/subcontractors/{sub_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_subcontractor(sub_id: int, data: SubcontractorUpdate, db: AsyncSession = Depends(get_db)):
+    sub = await db.get(Subcontractor, sub_id)
+    if not sub:
+        raise HTTPException(404, "Subcontractor not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(sub, key, val)
+    await db.commit()
+    await db.refresh(sub)
+    return sub
+
+
+@router.delete("/subcontractors/{sub_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_subcontractor(sub_id: int, db: AsyncSession = Depends(get_db)):
+    sub = await db.get(Subcontractor, sub_id)
+    if not sub:
+        raise HTTPException(404, "Subcontractor not found")
+    await db.delete(sub)
+    await db.commit()
+    return {"detail": "Subcontractor deleted successfully"}
+
+
 # ─── Schedules ───
 
-@router.post("/schedules")
+@router.post("/schedules", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_schedule(data: ScheduleCreate, db: AsyncSession = Depends(get_db)):
     sched = Schedule(**data.model_dump())
     db.add(sched)
@@ -491,7 +563,7 @@ async def list_schedules(project_id: int, db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
-@router.patch("/schedules/{schedule_id}/progress")
+@router.patch("/schedules/{schedule_id}/progress", dependencies=[Depends(require_role("admin", "engineer"))])
 async def update_schedule_progress(schedule_id: int, progress: float, db: AsyncSession = Depends(get_db)):
     sched = await db.get(Schedule, schedule_id)
     if not sched:
@@ -502,9 +574,39 @@ async def update_schedule_progress(schedule_id: int, progress: float, db: AsyncS
     return sched
 
 
+@router.get("/schedules/{schedule_id}")
+async def get_schedule(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    sched = await db.get(Schedule, schedule_id)
+    if not sched:
+        raise HTTPException(404, "Schedule not found")
+    return sched
+
+
+@router.put("/schedules/{schedule_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_schedule(schedule_id: int, data: ScheduleUpdate, db: AsyncSession = Depends(get_db)):
+    sched = await db.get(Schedule, schedule_id)
+    if not sched:
+        raise HTTPException(404, "Schedule not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(sched, key, val)
+    await db.commit()
+    await db.refresh(sched)
+    return sched
+
+
+@router.delete("/schedules/{schedule_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_schedule(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    sched = await db.get(Schedule, schedule_id)
+    if not sched:
+        raise HTTPException(404, "Schedule not found")
+    await db.delete(sched)
+    await db.commit()
+    return {"detail": "Schedule deleted successfully"}
+
+
 # ─── Documents ───
 
-@router.post("/documents")
+@router.post("/documents", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_document(
     project_id: int, title: str, doc_type: str = "correspondence",
     reference_number: str = None, file_path: str = None,

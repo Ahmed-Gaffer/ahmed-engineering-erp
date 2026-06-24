@@ -7,8 +7,8 @@ import {
 } from '@mui/material';
 import {
   Dashboard, People, Folder, AccountTree, Code, Assignment, ListAlt, Image,
-  DocumentScanner, Receipt, Engineering, Construction, Badge, Timeline, Search, Assessment,
-  Description, EventNote, GroupWork, CalendarMonth,
+  DocumentScanner, Receipt, Engineering, Construction, Badge, Search, Assessment,
+  Description, EventNote, GroupWork, CalendarMonth, Business,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -26,6 +26,7 @@ const sections = [
   {
     title: 'overview', items: [
       { label: 'dashboard', icon: <Dashboard />, path: '/engineering/dashboard', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'companyProfile', icon: <Business />, path: '/engineering/company-profile', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
       { label: 'reports', icon: <Assessment />, path: '/engineering/reports', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
     ],
   },
@@ -53,8 +54,7 @@ const sections = [
   {
     title: 'documents', items: [
       { label: 'documents', icon: <DocumentScanner />, path: '/engineering/documents', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
-      { label: 'paymentCertificates', icon: <Receipt />, path: '/engineering/payment-certificates', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
-      { label: 'ipc', icon: <Timeline />, path: '/engineering/ipc', bg: 'rgba(59,130,246,0.2)', color: '#60a5fa' },
+      { label: 'ipc', icon: <Receipt />, path: '/engineering/ipc', bg: 'rgba(59,130,246,0.2)', color: '#60a5fa' },
     ],
   },
   {

@@ -12,7 +12,7 @@ import {
 import StatsCard from '../../components/StatsCard/StatsCard';
 import StatsCardSkeleton from '../../components/Skeleton/StatsCardSkeleton';
 import { engineeringApi } from '../../services/api';
-import { formatNumber } from '../../utils/helpers';
+import { formatNumber, statusColors } from '../../utils/helpers';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -82,8 +82,6 @@ const KpiCard = ({ title, value, percent, color, subtitle }) => (
     </CardContent>
   </Card>
 );
-
-const statusColors = { active: '#10b981', completed: '#6366f1', planning: '#f59e0b', draft: '#94a3b8', approved: '#06b6d4', paid: '#10b981' };
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -242,8 +240,8 @@ export default function Dashboard() {
                       <TableCell>{p.name}</TableCell>
                       <TableCell>{formatNumber(p.contract_value)}</TableCell>
                       <TableCell>
-                        <Chip label={t(p.status)} size="small"
-                          sx={{ bgcolor: statusColors[p.status] || '#94a3b8', color: '#fff', fontWeight: 600 }}
+                        <Chip label={t(p.status)} size="small" color={statusColors[p.status] || 'default'}
+                          sx={{ fontWeight: 600 }}
                         />
                       </TableCell>
                     </TableRow>

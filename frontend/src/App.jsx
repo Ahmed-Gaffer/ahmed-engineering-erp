@@ -29,6 +29,7 @@ import ContractsPage from './pages/Contracts/Contracts';
 import DailyReportsPage from './pages/DailyReports/DailyReports';
 import SubcontractorsPage from './pages/Subcontractors/Subcontractors';
 import SchedulesPage from './pages/Schedules/Schedules';
+import CompanyProfile from './pages/CompanyProfile/CompanyProfile';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -88,6 +89,7 @@ function AppContent() {
             <Route path="subcontractors" element={<MotionOutlet><SubcontractorsPage /></MotionOutlet>} />
             <Route path="schedules" element={<MotionOutlet><SchedulesPage /></MotionOutlet>} />
             <Route path="employees" element={<MotionOutlet><Employees /></MotionOutlet>} />
+            <Route path="company-profile" element={<MotionOutlet><CompanyProfile /></MotionOutlet>} />
           </Route>
           <Route path="*" element={<Navigate to="/engineering/dashboard" replace />} />
         </Routes>

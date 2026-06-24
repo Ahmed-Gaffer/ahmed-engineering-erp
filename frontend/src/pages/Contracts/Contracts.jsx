@@ -1,26 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSnackbar } from 'notistack';
-import {
-  Box, Typography, Card, TextField, Button, Stack, MenuItem, Chip,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import { Add, Edit } from '@mui/icons-material';
+import { Box, Typography, TextField, Button, Stack, MenuItem } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import EmptyState from '../../components/EmptyState/EmptyState';
+import DataTable from '../../components/DataTable/DataTable';
+import FormDialog from '../../components/FormDialog/FormDialog';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
+import EmptyState from '../../components/EmptyState/EmptyState';
 import { engineeringApi } from '../../services/api';
-import { formatNumber, formatDate } from '../../utils/helpers';
-
-const chipStatus = (value) => {
-  const colors = { active: '#34d399', draft: '#cbd5e1', completed: '#60a5fa', terminated: '#fca5a5' };
-  return <Chip label={value} size="small" sx={{ color: colors[value] || '#cbd5e1', border: `1px solid ${colors[value] || '#cbd5e1'}`, bgcolor: 'transparent', fontWeight: 500 }} />;
-};
+import { formatNumber } from '../../utils/helpers';
 
 export default function Contracts() {
   const { t } = useTranslation();
-  const { enqueueSnackbar } = useSnackbar();
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [data, setData] = useState([]);
@@ -40,7 +31,11 @@ export default function Contracts() {
 
   useEffect(() => { fetchData(); }, [selectedProjectId]);
 
-  const openCreate = () => { setEditItem(null); setForm({ contract_number: '', contract_type: 'main', party_a: '', party_b: '', value: '', duration_months: '', retention_percent: '5', status: 'draft', sign_date: '', advance_payment_percent: '0' }); setFormOpen(true); };
+  const openCreate = () => {
+    setEditItem(null);
+    setForm({ contract_number: '', contract_type: 'main', party_a: '', party_b: '', value: '', duration_months: '', retention_percent: '5', status: 'draft', sign_date: '', advance_payment_percent: '0' });
+    setFormOpen(true);
+  };
 
   const openEdit = (row) => {
     setEditItem(row);
@@ -59,16 +54,20 @@ export default function Contracts() {
     setFormOpen(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (formData) => {
     setFormLoading(true);
     try {
-      const payload = { ...form, project_id: Number(selectedProjectId), value: Number(form.value), duration_months: Number(form.duration_months), retention_percent: Number(form.retention_percent), advance_payment_percent: Number(form.advance_payment_percent), sign_date: form.sign_date || null };
+      const payload = { ...formData, project_id: Number(selectedProjectId), value: Number(formData.value), duration_months: Number(formData.duration_months), retention_percent: Number(formData.retention_percent), advance_payment_percent: Number(formData.advance_payment_percent), sign_date: formData.sign_date || null };
       if (editItem) await engineeringApi.contracts.update(editItem.id, payload);
       else await engineeringApi.contracts.create(payload);
-      enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
       setFormOpen(false);
       fetchData();
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); } finally { setFormLoading(false); }
+    } finally { setFormLoading(false); }
+  };
+
+  const handleDelete = async (id) => {
+    await engineeringApi.contracts.delete(id);
+    fetchData();
   };
 
   const columns = [
@@ -78,7 +77,20 @@ export default function Contracts() {
     { field: 'party_b', headerName: t('partyB'), flex: 1, minWidth: 140 },
     { field: 'value', headerName: t('contractValue'), type: 'number', width: 130, renderCell: (p) => <Typography variant="body2" fontWeight={600}>{formatNumber(p.value)}</Typography> },
     { field: 'duration_months', headerName: t('durationMonths'), width: 100 },
-    { field: 'status', headerName: t('status'), width: 110, renderCell: (p) => chipStatus(p.value) },
+    { field: 'status', headerName: t('status'), width: 110 },
+  ];
+
+  const fields = [
+    { name: 'contract_number', label: t('contractNumber'), type: 'text', required: true },
+    { name: 'contract_type', label: t('contractType'), type: 'select', required: true, options: [{ value: 'main', label: t('main') }, { value: 'subcontract', label: t('subcontract') }] },
+    { name: 'party_a', label: t('partyA'), type: 'text' },
+    { name: 'party_b', label: t('partyB'), type: 'text' },
+    { name: 'value', label: t('contractValue'), type: 'number' },
+    { name: 'duration_months', label: t('durationMonths'), type: 'number' },
+    { name: 'status', label: t('status'), type: 'select', options: [{ value: 'draft', label: t('draft') }, { value: 'active', label: t('active') }, { value: 'completed', label: t('completed') }, { value: 'terminated', label: t('terminated') }] },
+    { name: 'sign_date', label: t('signDate'), type: 'date' },
+    { name: 'retention_percent', label: t('retentionPercent'), type: 'number' },
+    { name: 'advance_payment_percent', label: t('advancePaymentPercent'), type: 'number' },
   ];
 
   return (
@@ -93,36 +105,32 @@ export default function Contracts() {
           {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
         </TextField>
         {!selectedProjectId ? <EmptyState title={t('selectProject')} description={t('selectProjectDescription')} /> : loading ? <DataGridSkeleton /> : (
-          <Card sx={{ bgcolor: '#1e293b', borderRadius: 2, overflow: 'hidden' }}>
-            <DataGrid rows={data} columns={columns} autoHeight disableRowSelectionOnClick getRowId={(r) => r.id} pageSizeOptions={[10, 25, 50]} initialState={{ pagination: { paginationModel: { pageSize: 10 } } }} sx={{ border: 'none', '& .MuiDataGrid-cell': { color: '#e2e8f0' }, '& .MuiDataGrid-columnHeaders': { bgcolor: '#0f172a', color: '#94a3b8' } }} />
-            {data.length === 0 && <EmptyState title={t('noData')} action onAction={openCreate} actionLabel={t('create')} />}
-          </Card>
+          <DataTable
+            columns={columns}
+            data={data}
+            loading={loading}
+            total={data.length}
+            page={1}
+            pageSize={20}
+            paginationMode="client"
+            search=""
+            onSearchChange={() => {}}
+            onAdd={openCreate}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            service={{ delete: handleDelete }}
+            entityName="contractsPage"
+          />
         )}
-        <Dialog open={formOpen} onClose={() => setFormOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { bgcolor: '#1e293b', color: '#e2e8f0' } }}>
-          <DialogTitle>{editItem ? `${t('edit')} ${t('contract')}` : `${t('create')} ${t('contract')}`}</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} sx={{ mt: 1 }}>
-              <TextField label={t('contractNumber')} value={form.contract_number} onChange={(e) => setForm({...form, contract_number: e.target.value})} required fullWidth />
-              <TextField select label={t('contractType')} value={form.contract_type} onChange={(e) => setForm({...form, contract_type: e.target.value})} fullWidth>
-                <MenuItem value="main">{t('main')}</MenuItem>
-                <MenuItem value="subcontract">{t('subcontract')}</MenuItem>
-              </TextField>
-              <TextField label={t('partyA')} value={form.party_a} onChange={(e) => setForm({...form, party_a: e.target.value})} fullWidth />
-              <TextField label={t('partyB')} value={form.party_b} onChange={(e) => setForm({...form, party_b: e.target.value})} fullWidth />
-              <TextField label={t('contractValue')} type="number" value={form.value} onChange={(e) => setForm({...form, value: e.target.value})} fullWidth />
-              <TextField label={t('durationMonths')} type="number" value={form.duration_months} onChange={(e) => setForm({...form, duration_months: e.target.value})} fullWidth />
-              <TextField select label={t('status')} value={form.status} onChange={(e) => setForm({...form, status: e.target.value})} fullWidth>
-                <MenuItem value="draft">{t('draft')}</MenuItem>
-                <MenuItem value="active">{t('active')}</MenuItem>
-                <MenuItem value="completed">{t('completed')}</MenuItem>
-              </TextField>
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setFormOpen(false)}>{t('cancel')}</Button>
-            <Button variant="contained" onClick={handleSubmit} disabled={formLoading}>{t('save')}</Button>
-          </DialogActions>
-        </Dialog>
+        <FormDialog
+          open={formOpen}
+          onClose={() => setFormOpen(false)}
+          onSubmit={handleSubmit}
+          fields={fields}
+          initialValues={editItem}
+          title={editItem ? `${t('edit')} ${t('contract')}` : `${t('create')} ${t('contract')}`}
+          loading={formLoading}
+        />
       </Box>
     </motion.div>
   );

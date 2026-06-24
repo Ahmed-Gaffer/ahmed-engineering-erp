@@ -52,10 +52,7 @@ export const drawingRevisionsService = createEntityService('drawing-revisions');
 export const documentsService = createEntityService('documents');
 export const paymentCertificatesService = createEntityService('payment-certificates');
 export const employeesService = createEntityService('employees');
-export const boqService = createEntityService('boq');
-export const ipcService = createEntityService('ipc');
-export const ipcItemsService = createEntityService('ipc-items');
-
+export const companyProfileService = createEntityService('company-profile');
 export const notificationsApi = {
   list: (params) => api.get('/notifications/', { params }),
   unreadCount: () => api.get('/notifications/unread-count'),
@@ -91,6 +88,7 @@ export const engineeringApi = {
     create: (data) => api.post('/engineering/contracts', data),
     get: (id) => api.get(`/engineering/contracts/${id}`),
     update: (id, data) => api.patch(`/engineering/contracts/${id}`, data),
+    delete: (id) => api.delete(`/engineering/contracts/${id}`),
   },
   boqItems: {
     listByProject: (projectId) => api.get(`/engineering/projects/${projectId}/boq`),
@@ -124,14 +122,23 @@ export const engineeringApi = {
   dailyReports: {
     create: (data) => api.post('/engineering/daily-reports', data),
     listByProject: (projectId) => api.get(`/engineering/projects/${projectId}/daily-reports`),
+    get: (id) => api.get(`/engineering/daily-reports/${id}`),
+    update: (id, data) => api.put(`/engineering/daily-reports/${id}`, data),
+    delete: (id) => api.delete(`/engineering/daily-reports/${id}`),
   },
   subcontractors: {
     create: (data) => api.post('/engineering/subcontractors', data),
     listByProject: (projectId) => api.get(`/engineering/projects/${projectId}/subcontractors`),
+    get: (id) => api.get(`/engineering/subcontractors/${id}`),
+    update: (id, data) => api.put(`/engineering/subcontractors/${id}`, data),
+    delete: (id) => api.delete(`/engineering/subcontractors/${id}`),
   },
   schedules: {
     create: (data) => api.post('/engineering/schedules', data),
     listByProject: (projectId) => api.get(`/engineering/projects/${projectId}/schedules`),
+    get: (id) => api.get(`/engineering/schedules/${id}`),
+    update: (id, data) => api.put(`/engineering/schedules/${id}`, data),
+    delete: (id) => api.delete(`/engineering/schedules/${id}`),
     updateProgress: (id, progress) => api.patch(`/engineering/schedules/${id}/progress`, { progress }),
   },
   documents: {

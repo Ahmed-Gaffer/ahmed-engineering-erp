@@ -40,6 +40,9 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["."]
 
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "session"
+
 [tool.black]
 line-length = 100
 target-version = ['py311']

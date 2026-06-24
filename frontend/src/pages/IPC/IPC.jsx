@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSnackbar } from 'notistack';
 import {
@@ -54,7 +54,7 @@ export default function IPC() {
   });
   const [selectedBoqItems, setSelectedBoqItems] = useState({});
   const [search, setSearch] = useState('');
-  const searchRef = useRef('');
+  const [filterModel, setFilterModel] = useState({ items: [] });
 
   const fetchProjects = async () => {
     try {
@@ -63,24 +63,24 @@ export default function IPC() {
     } catch {}
   };
 
-  const fetchData = async (s) => {
+  const fetchData = async () => {
     if (!selectedProjectId) { setData([]); setLoading(false); setInitialLoading(false); return; }
     setLoading(true);
     try {
       const res = await engineeringApi.ipcs.listByProject(selectedProjectId);
-      const items = res.data || [];
-      setData(s ? items.filter((i) =>
-        (i.ipc_number || '').toLowerCase().includes(s.toLowerCase())
-      ) : items);
+      setData(res.data || []);
     } catch {} finally { setLoading(false); setInitialLoading(false); }
   };
 
   useEffect(() => { fetchProjects(); }, []);
-  useEffect(() => { fetchData(searchRef.current); }, [selectedProjectId]);
+  useEffect(() => { fetchData(); }, [selectedProjectId]);
 
   const handleSearchChange = (val) => {
     setSearch(val);
-    searchRef.current = val;
+    setFilterModel(val
+      ? { items: [{ field: 'ipc_number', operatorValue: 'contains', value: val }] }
+      : { items: [] }
+    );
   };
 
   const handleViewDetail = async (row) => {
@@ -97,7 +97,7 @@ export default function IPC() {
     try {
       await engineeringApi.ipcs.approve(id);
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
-      fetchData(searchRef.current);
+      fetchData();
     } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
   };
 
@@ -105,7 +105,7 @@ export default function IPC() {
     try {
       await engineeringApi.ipcs.submit(id);
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
-      fetchData(searchRef.current);
+      fetchData();
     } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
   };
 
@@ -113,7 +113,7 @@ export default function IPC() {
     try {
       await engineeringApi.ipcs.reject(id);
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
-      fetchData(searchRef.current);
+      fetchData();
     } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
   };
 
@@ -121,7 +121,7 @@ export default function IPC() {
     try {
       await engineeringApi.ipcs.pay(id);
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
-      fetchData(searchRef.current);
+      fetchData();
     } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
   };
 
@@ -149,7 +149,7 @@ export default function IPC() {
       setDeleteOpen(false);
       setDeleteId(null);
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
-      fetchData(searchRef.current);
+      fetchData();
     } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
   };
 
@@ -213,7 +213,7 @@ export default function IPC() {
       });
       setCreateOpen(false);
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
-      fetchData(searchRef.current);
+      fetchData();
     } catch (err) {
       enqueueSnackbar(err.response?.data?.detail || t('operationFailed'), { variant: 'error' });
     } finally { setCreateLoading(false); }
@@ -341,6 +341,8 @@ export default function IPC() {
                 initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
                 getRowId={(row) => row.id}
                 localeText={i18n.language === 'ar' ? arSD : enUS}
+                filterModel={filterModel}
+                onFilterModelChange={setFilterModel}
                 sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
               />
             </Box>
