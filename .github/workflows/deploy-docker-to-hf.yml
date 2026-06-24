@@ -6,52 +6,66 @@ on:
   workflow_dispatch:
 
 env:
-  GHCR_IMAGE: ghcr.io/ahmed-gaffer/ahmed-engineering-erp/engineering-erp
-  PACKAGE_NAME: engineering-erp
-  GHCR_OWNER: ahmed-gaffer
-  GHCR_REPO: ahmed-engineering-erp
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Login to GitHub Container Registry
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.GHCR_IMAGE }}:latest \
-                      -t ${{ env.GHCR_IMAGE }}:${{ github.sha }} \
-                      .
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ${{ env.GHCR_IMAGE }}:latest
-          docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
 
-      - name: Make GHCR package public via gh api
+      - name: Make GHCR package public
         run: |
-          echo "Setting package visibility to public via gh api..."
-          gh api -X PATCH \
-            /repos/${{ github.repository }}/packages/container/${{ env.PACKAGE_NAME }}/visibility \
-            -f visibility=public
-          echo "Done"
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_LOWER=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          PACKAGE="${{ env.IMAGE_NAME }}"
+          PACKAGE_LOWER=$(echo "$PACKAGE" | tr '[:upper:]' '[:lower:]')
+          echo "Making package public: $OWNER_LOWER/$REPO_LOWER -> $PACKAGE_LOWER"
+          gh api -X PATCH "/repos/${{ github.repository }}/packages/container/$PACKAGE_LOWER/visibility" \
+            --raw-field visibility=public \
+            --jq '.visibility' || \
+          gh api -X PATCH "/users/$OWNER_LOWER/packages/container/$PACKAGE_LOWER/visibility" \
+            --raw-field visibility=public \
+            --jq '.visibility' || \
+          echo "WARNING: Could not make package public. App may not start on HF Space."
 
-      - name: Push clean README-only config to HF Space
+      - name: Push clean config to HF Space
         run: |
           SPACE_PATH="Tablets/engineering-erp"
           AUTH_URL="https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE_PATH"
           TMPDIR=$(mktemp -d)
           cd "$TMPDIR"
 
-          cat > README.md << 'EOF'
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_LOWER=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG="${{ env.REGISTRY }}/$OWNER_LOWER/$REPO_LOWER"
+
+          cat > README.md << EOF
 ---
 title: Engineering ERP
 emoji: 🏗️
@@ -59,10 +73,9 @@ colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_port: 8000
-dockerImage: ghcr.io/ahmed-gaffer/ahmed-engineering-erp/engineering-erp:latest
+dockerImage: ${IMAGE_TAG}:latest
 pinned: false
 ---
-
 EOF
 
           git init
@@ -75,6 +88,6 @@ EOF
 
       - name: Verify deployment
         run: |
-          echo "Image: ${{ env.GHCR_IMAGE }}:latest"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           echo "App: https://tablets-engineering-erp.hf.space"
           echo "Space: https://huggingface.co/spaces/Tablets/engineering-erp"
