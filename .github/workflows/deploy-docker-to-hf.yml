@@ -1,27 +1,49 @@
-name: Build & Push Docker to HF Space
+name: Build & Deploy Docker Image
 
 on:
   push:
     branches: [master, main]
   workflow_dispatch:
 
+env:
+  # GitHub Container Registry
+  GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/engineering-erp
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Login to Hugging Face Container Registry
+      - name: Login to GitHub Container Registry
         run: |
-          echo "${{ secrets.HF_TOKEN }}" | docker login -u user --password-stdin registry.hf.space
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build Docker image
-        run: docker build -t registry.hf.space/tablets/engineering-erp:latest .
+        run: |
+          docker build -t ${{ env.GHCR_IMAGE }}:latest \
+                      -t ${{ env.GHCR_IMAGE }}:${{ github.sha }} \
+                      .
 
-      - name: Push Docker image
-        run: docker push registry.hf.space/tablets/engineering-erp:latest
+      - name: Push Docker image to GHCR
+        run: |
+          docker push ${{ env.GHCR_IMAGE }}:latest
+          docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
 
-      - name: Clean HF Space repo (README.md only)
+      - name: Make GHCR package public
+        run: |
+          PACKAGE_URL="https://api.github.com/repos/${{ github.repository }}/packages/container/engineering-erp"
+          curl -s -X PATCH "$PACKAGE_URL" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"visibility":"public"}' || \
+          echo "Warning: Could not set package visibility (may already be public)"
+
+      - name: Push clean README.md to HF Space
         run: |
           SPACE="Tablets/engineering-erp"
           cd /tmp
@@ -34,7 +56,7 @@ colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_port: 8000
-dockerImage: registry.hf.space/tablets/engineering-erp:latest
+dockerImage: ghcr.io/ahmed-gaffer/engineering-erp:latest
 pinned: false
 ---
 ENDOFREADME
@@ -48,6 +70,6 @@ ENDOFREADME
 
       - name: Verify deployment
         run: |
-          echo "✅ Image pushed: registry.hf.space/tablets/engineering-erp:latest"
-          echo "🔗 App: https://tablets-engineering-erp.hf.space"
-          echo "🔗 Space: https://huggingface.co/spaces/Tablets/engineering-erp"
+          echo "Image: ${{ env.GHCR_IMAGE }}:latest"
+          echo "App: https://tablets-engineering-erp.hf.space"
+          echo "Space: https://huggingface.co/spaces/Tablets/engineering-erp"

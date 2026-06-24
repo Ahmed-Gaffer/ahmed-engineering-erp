@@ -10,25 +10,23 @@ RUN npm run build
 FROM python:3.11-slim AS runner
 WORKDIR /app
 
-RUN groupadd -r app && useradd -r -g app app
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/*
 
-COPY --from=frontend-builder --chown=app:app /app/frontend/dist ./frontend/dist
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-COPY --chown=app:app pyproject.toml README.md ./
+COPY pyproject.toml README.md ./
 RUN pip install --no-cache-dir .
 
-COPY --chown=app:app main.py ./
-COPY --chown=app:app core/ ./core/
-COPY --chown=app:app modules/ ./modules/
-COPY --chown=app:app backend/ ./backend/
+COPY main.py ./
+COPY core/ ./core/
+COPY modules/ ./modules/
+COPY backend/ ./backend/
 
-RUN mkdir -p /app/uploads && chown -R app:app /app/uploads
+RUN mkdir -p /app/uploads
 
+RUN groupadd -r app && useradd -r -g app app && chown -R app:app /app
 USER app
 
 EXPOSE 8000
