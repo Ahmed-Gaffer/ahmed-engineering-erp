@@ -64,6 +64,7 @@ export default function DataTable({
   const columns = [
     ...baseColumns.map((col) => ({
       ...col,
+      ...(col.type === 'date' ? { valueGetter: (value) => value ? new Date(value) : null } : {}),
       headerName: t(col.headerName || col.field) || col.headerName,
       flex: col.flex || (col.width ? undefined : 1),
       minWidth: col.minWidth || (col.width ? undefined : 120),
