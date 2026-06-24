@@ -10,7 +10,7 @@ RUN npm run build
 FROM python:3.11-slim AS runner
 WORKDIR /app
 
-RUN addgroup --system app && adduser --system --ingroup app app
+RUN groupadd -r app && useradd -r -g app app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
