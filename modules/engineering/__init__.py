@@ -19,6 +19,7 @@ from app.work_order_items.api import router as work_order_items_router
 from app.work_order_items.models import WorkOrderItem
 
 from app.engineering_features.api import router as eng_router
+from .reports_api import router as reports_router
 from app.engineering_features.models import (
     BOQItem, Contract, IPCHeader, IPCDetail,
     DailyReport, Subcontractor, Schedule, EngDocument
@@ -38,6 +39,7 @@ class EngineeringModule(BaseModule):
         self.add_router(work_orders_router)
         self.add_router(work_order_items_router)
         self.add_router(eng_router)
+        self.add_router(reports_router)
         self.add_model(Project)
         self.add_model(ProjectPhase)
         self.add_model(ProjectCode)

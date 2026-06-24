@@ -2,7 +2,7 @@ import EntityPage from '../EntityPage';
 import { contractorsService } from '../../services/api';
 
 const columns = [
-  { field: 'code', headerName: 'code', width: 100 },
+  { field: 'code', headerName: 'code', width: 100, linkTo: '/engineering/contractors' },
   { field: 'name', headerName: 'name', flex: 1.5 },
   { field: 'classification', headerName: 'classification', width: 100 },
   { field: 'phone', headerName: 'phone', width: 130 },

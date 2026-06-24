@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Card, TextField, Button, Stack, IconButton, Chip, Typography, Divider, useTheme } from '@mui/material';
+import { Box, Card, TextField, Button, Stack, IconButton, Chip, Typography, Divider, Link, useTheme } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import { arSD, enUS } from '@mui/x-data-grid/locales';
 import { Add, Edit, Delete, SearchOutlined, FilterList, Download } from '@mui/icons-material';
@@ -53,6 +54,7 @@ export default function DataTable({
 }) {
   const { t, i18n } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
   const [clientPage, setClientPage] = useState(0);
   const [clientPageSize, setClientPageSize] = useState(20);
@@ -73,6 +75,10 @@ export default function DataTable({
         if (col.type === 'date' && params.value) return <Typography variant="body2">{formatDate(params.value)}</Typography>;
         if (col.field === 'status') {
           return <ModernChip value={params.value} />;
+        }
+        if (col.linkTo && params.value != null) {
+          return <Link component="button" variant="body2" underline="hover" fontWeight={500}
+            onClick={() => navigate(col.linkTo)}>{params.value}</Link>;
         }
         return <Typography variant="body2">{params.value ?? '-'}</Typography>;
       }),

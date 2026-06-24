@@ -1,0 +1,59 @@
+name: Build & Push Docker to HF Space
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Hugging Face Container Registry
+        run: |
+          echo "${{ secrets.HF_TOKEN }}" | docker login -u user --password-stdin registry.hf.space
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: registry.hf.space/Tablets/engineering-erp:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Clean HF Space repo (README.md only)
+        run: |
+          SPACE="Tablets/engineering-erp"
+          cd /tmp
+          rm -rf space-clean && mkdir space-clean && cd space-clean
+          cat > README.md << 'ENDOFREADME'
+---
+title: Engineering ERP
+emoji: 🏗️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 8000
+dockerImage: registry.hf.space/Tablets/engineering-erp:latest
+pinned: false
+---
+ENDOFREADME
+          git init
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add -A
+          git commit -m "Deploy $(date -u)"
+          git remote add hf "https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE"
+          git push --force hf HEAD:main
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Image pushed: registry.hf.space/Tablets/engineering-erp:latest"
+          echo "🔗 App: https://tablets-engineering-erp.hf.space"
+          echo "🔗 Space: https://huggingface.co/spaces/Tablets/engineering-erp"

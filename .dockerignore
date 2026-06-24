@@ -7,3 +7,9 @@ __pycache__/
 .git/
 *.db
 .pytest_cache/
+.ai/
+.vscode/
+.idea/
+*.exe
+*.dll
+dist/

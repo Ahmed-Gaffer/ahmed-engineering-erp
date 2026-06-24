@@ -75,6 +75,13 @@ export const exportApi = {
 
 export const engineeringApi = {
   dashboard: { summary: () => api.get('/engineering/dashboard/summary') },
+  reports: {
+    financial: () => api.get('/engineering/reports/financial'),
+    progress: () => api.get('/engineering/reports/progress'),
+    workOrders: (params) => api.get('/engineering/reports/work-orders', { params }),
+    schedules: (params) => api.get('/engineering/reports/schedules', { params }),
+    daily: (params) => api.get('/engineering/reports/daily', { params }),
+  },
   projects: {
     list: () => api.get('/engineering/projects', { params: { skip: 0, limit: 100 } }),
     create: (data) => api.post('/engineering/projects', data),
