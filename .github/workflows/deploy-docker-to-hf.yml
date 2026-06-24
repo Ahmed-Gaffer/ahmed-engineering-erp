@@ -35,28 +35,49 @@ jobs:
 
       - name: Make GHCR package public
         run: |
-          PACKAGE_URL="https://api.github.com/repos/${{ github.repository }}/packages/container/engineering-erp"
-          curl -s -X PATCH "$PACKAGE_URL" \
+          echo "Setting package visibility to public..."
+          echo "Attempt 1: user-scoped endpoint"
+          curl -s -X PATCH \
+            "https://api.github.com/users/ahmed-gaffer/packages/container/engineering-erp/visibility" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
-            -d '{"visibility":"public"}' || \
-          echo "Warning: Could not set package visibility (may already be public)"
+            -d '{"visibility":"public"}'
+          echo ""
+          echo "Attempt 2: repo-scoped endpoint"
+          curl -s -X PATCH \
+            "https://api.github.com/repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"visibility":"public"}'
+          echo ""
+          echo "Attempt 3: using PAT if available"
+          if [ -n "${{ secrets.GH_PAT }}" ]; then
+            curl -s -X PATCH \
+              "https://api.github.com/users/ahmed-gaffer/packages/container/engineering-erp/visibility" \
+              -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+              -H "Accept: application/vnd.github+json" \
+              -d '{"visibility":"public"}'
+            echo ""
+            curl -s -X PATCH \
+              "https://api.github.com/repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility" \
+              -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+              -H "Accept: application/vnd.github+json" \
+              -d '{"visibility":"public"}'
+            echo ""
+          else
+            echo "No GH_PAT secret set - package may remain private"
+            echo "To fix manually, go to: https://github.com/users/ahmed-gaffer/packages/container/engineering-erp/settings"
+          fi
+          echo "Done"
 
-      - name: Clean HF Space repo and update config
+      - name: Push clean README-only config to HF Space
         run: |
           SPACE_PATH="Tablets/engineering-erp"
-          CLONE_URL="https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE_PATH"
-          cd /tmp
-          rm -rf hf-space && mkdir hf-space && cd hf-space
+          AUTH_URL="https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE_PATH"
+          TMPDIR=$(mktemp -d)
+          cd "$TMPDIR"
           
-          git clone --depth=1 "$CLONE_URL" repo
-          cd repo
-          
-          # Remove all files except .git
-          ls -A | grep -v '^\.git$' | xargs -r rm -rf
-          
-          # Create new README.md with dockerImage config
-          cat > README.md << 'ENDOFREADME'
+          cat > README.md << 'EOF'
 ---
 title: Engineering ERP
 emoji: 🏗️
@@ -67,13 +88,15 @@ app_port: 8000
 dockerImage: ghcr.io/ahmed-gaffer/engineering-erp:latest
 pinned: false
 ---
-ENDOFREADME
+EOF
           
+          git init
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
-          git add -A
-          git commit -m "تأمين النظام: سحب كود المصدر، تشغيل عبر Docker image من GHCR"
-          git push origin main
+          git add README.md
+          git commit -m "Deploy via GHCR Docker image"
+          git push --force "$AUTH_URL" HEAD:main
+          echo "HF Space pushed successfully"
 
       - name: Verify deployment
         run: |
