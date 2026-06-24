@@ -42,11 +42,20 @@ jobs:
             -d '{"visibility":"public"}' || \
           echo "Warning: Could not set package visibility (may already be public)"
 
-      - name: Push clean README.md to HF Space
+      - name: Clean HF Space repo and update config
         run: |
-          SPACE="Tablets/engineering-erp"
+          SPACE_PATH="Tablets/engineering-erp"
+          CLONE_URL="https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE_PATH"
           cd /tmp
-          rm -rf space-clean && mkdir space-clean && cd space-clean
+          rm -rf hf-space && mkdir hf-space && cd hf-space
+          
+          git clone --depth=1 "$CLONE_URL" repo
+          cd repo
+          
+          # Remove all files except .git
+          ls -A | grep -v '^\.git$' | xargs -r rm -rf
+          
+          # Create new README.md with dockerImage config
           cat > README.md << 'ENDOFREADME'
 ---
 title: Engineering ERP
@@ -59,13 +68,12 @@ dockerImage: ghcr.io/ahmed-gaffer/engineering-erp:latest
 pinned: false
 ---
 ENDOFREADME
-          git init
+          
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
           git add -A
-          git commit -m "Deploy $(date -u)"
-          git remote add hf "https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/$SPACE"
-          git push --force hf HEAD:main
+          git commit -m "تأمين النظام: سحب كود المصدر، تشغيل عبر Docker image من GHCR"
+          git push origin main
 
       - name: Verify deployment
         run: |
