@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  # GitHub Container Registry
-  GHCR_IMAGE: ghcr.io/${{ github.repository_owner }}/engineering-erp
+  GHCR_IMAGE: ghcr.io/ahmed-gaffer/engineering-erp
 
 jobs:
   deploy:
