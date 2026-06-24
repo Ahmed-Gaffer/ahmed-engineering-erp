@@ -19,13 +19,13 @@ jobs:
           echo "${{ secrets.HF_TOKEN }}" | docker login -u user --password-stdin registry.hf.space
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: registry.hf.space/Tablets/engineering-erp:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          docker buildx build \
+            --cache-from=type=gha \
+            --cache-to=type=gha,mode=max \
+            -t registry.hf.space/tablets/engineering-erp:latest \
+            --push \
+            .
 
       - name: Clean HF Space repo (README.md only)
         run: |
@@ -40,7 +40,7 @@ colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_port: 8000
-dockerImage: registry.hf.space/Tablets/engineering-erp:latest
+dockerImage: registry.hf.space/tablets/engineering-erp:latest
 pinned: false
 ---
 ENDOFREADME
@@ -54,6 +54,6 @@ ENDOFREADME
 
       - name: Verify deployment
         run: |
-          echo "✅ Image pushed: registry.hf.space/Tablets/engineering-erp:latest"
+          echo "✅ Image pushed: registry.hf.space/tablets/engineering-erp:latest"
           echo "🔗 App: https://tablets-engineering-erp.hf.space"
           echo "🔗 Space: https://huggingface.co/spaces/Tablets/engineering-erp"
