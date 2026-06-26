@@ -1,0 +1,16 @@
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: contractors
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: projects
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: phases
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: codes
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: work_orders
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: work_order_items
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: drawings
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: drawing_revisions
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: documents
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: payment_certificates
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: employees
+2026-06-24 18:35:02 | INFO     | ems:<module>:87 | Mounted router: company_profile
+2026-06-24 18:35:02 | WARNING  | ems:<module>:89 | Could not mount engineering_features: No module named 'reportlab'
+2026-06-24 18:35:02 | INFO     | ems:<module>:116 | Serving frontend from E:\Œ«’ «Õ„œ Ã⁄›—\»—„Ã…\„‘«—Ì⁄\engineering-management-system-3\frontend\dist
+2026-06-24 18:35:10 | INFO     | ems:lifespan:54 | Default company profile seeded: Negida Contracting Co.
+2026-06-24 18:35:10 | INFO     | ems:lifespan:55 | DB tables created, upload dir ready

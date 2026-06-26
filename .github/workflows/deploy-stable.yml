@@ -1,0 +1,67 @@
+name: Deploy Stable v1 to HF Space (stable branch)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: stable/v1
+
+      - name: Set GHCR image name (lowercase owner)
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "GHCR_IMAGE=ghcr.io/${OWNER}/engineering-erp" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & push Docker image (stable tag)
+        run: |
+          docker build -t ${{ env.GHCR_IMAGE }}:stable \
+                      -t ${{ env.GHCR_IMAGE }}:${{ github.sha }} \
+                      .
+          docker push ${{ env.GHCR_IMAGE }}:stable
+          docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+
+      - name: Make GHCR package public
+        run: |
+          PACKAGE_URL="https://api.github.com/repos/${{ github.repository }}/packages/container/engineering-erp"
+          curl -s -X PATCH "$PACKAGE_URL" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"visibility":"public"}' || true
+
+      - name: Push thin Dockerfile + README to HF Space (stable branch)
+        run: |
+          cd /tmp
+          rm -rf space-clean && mkdir space-clean && cd space-clean
+          cat > Dockerfile << 'ENDOFDOCKER'
+FROM ${{ env.GHCR_IMAGE }}:stable
+ENDOFDOCKER
+          cat > README.md << 'ENDOFREADME'
+---
+title: Engineering ERP (Stable v1)
+emojii: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 8000
+pinned: false
+---
+ENDOFREADME
+          git init
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add -A
+          git commit -m "Deploy stable v1 ${{ github.sha }} [skip ci]"
+          git remote add hf "https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_SPACE_REPO }}"
+          git push --force hf HEAD:stable
