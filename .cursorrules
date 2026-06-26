@@ -120,7 +120,7 @@
 ### بيئة التشغيل
 - Python 3.11+ · FastAPI · SQLAlchemy 2.0 async · SQLite (تطوير)
 - Frontend: React 19 + Vite + MUI X DataGrid
-- اختبارات: `pytest backend/tests -v` (حالياً 44)
+- اختبارات: `pytest backend/tests -v` (حالياً 56)
 - virtualenv: `.venv/`
 
 ### نمط الـ Entity
