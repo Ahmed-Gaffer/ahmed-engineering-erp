@@ -47,19 +47,19 @@ jobs:
           cd /tmp
           rm -rf space-clean && mkdir space-clean && cd space-clean
           cat > Dockerfile << 'ENDOFDOCKER'
-FROM ${{ env.GHCR_IMAGE }}:${{ github.sha }}
-ENDOFDOCKER
+          FROM ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+          ENDOFDOCKER
           cat > README.md << 'ENDOFREADME'
----
-title: Engineering ERP
-emojii: 🚀
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 8000
-pinned: false
----
-ENDOFREADME
+          ---
+          title: Engineering ERP
+          emojii: 🚀
+          colorFrom: blue
+          colorTo: indigo
+          sdk: docker
+          app_port: 8000
+          pinned: false
+          ---
+          ENDOFREADME
           git init
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
