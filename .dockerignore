@@ -1,0 +1,11 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.env
+.git/
+*.db
+.pytest_cache/
+.ai/
+.vscode/
+.idea/

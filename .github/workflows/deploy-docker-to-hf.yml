@@ -1,0 +1,64 @@
+name: Build & Deploy Docker Image
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+env:
+  GHCR_IMAGE: ghcr.io/ahmed-gaffer/ahmed-engineering-erp/engineering-erp
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & push Docker image
+        run: |
+          docker build -t ${{ env.GHCR_IMAGE }}:latest \
+                      -t ${{ env.GHCR_IMAGE }}:${{ github.sha }} \
+                      .
+          docker push ${{ env.GHCR_IMAGE }}:latest
+          docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
+
+      - name: Set GHCR package visibility (best-effort)
+        continue-on-error: true
+        run: |
+          echo "=== Attempt via gh api (user-scoped) ==="
+          gh api -X PATCH /users/ahmed-gaffer/packages/container/engineering-erp/visibility \
+            --raw-field visibility=public --jq '.visibility' 2>&1 || \
+            echo "gh api user-scoped failed"
+          
+          echo "=== Attempt via gh api (repo-scoped) ==="
+          gh api -X PATCH /repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility \
+            --raw-field visibility=public --jq '.visibility' 2>&1 || \
+            echo "gh api repo-scoped failed"
+
+          echo "=== Attempt with GH_PAT if available ==="
+          if [ -n "${{ secrets.GH_PAT }}" ]; then
+            echo "GH_PAT found, trying to make package public..."
+            gh api -X PATCH /users/ahmed-gaffer/packages/container/engineering-erp/visibility \
+              --raw-field visibility=public --jq '.visibility' --token "${{ secrets.GH_PAT }}" 2>&1 || \
+            gh api -X PATCH /repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility \
+              --raw-field visibility=public --jq '.visibility' --token "${{ secrets.GH_PAT }}" 2>&1
+          else
+            echo "No GH_PAT secret. Package may remain private."
+            echo "Create a PAT at: https://github.com/settings/tokens"
+            echo "Add as GH_PAT secret in repo settings."
+          fi
+
+      - name: Verify build
+        run: |
+          echo "Image pushed to ${{ env.GHCR_IMAGE }}:latest"
+          echo "To make clean deploy (no source on HF Space):"
+          echo "  1. Create GitHub PAT with write:packages scope"
+          echo "  2. Add as GH_PAT secret to this repo"
+          echo "  3. Create GH_PAT secret"
+          echo "  4. Re-enable the Push-clean step in this workflow"
