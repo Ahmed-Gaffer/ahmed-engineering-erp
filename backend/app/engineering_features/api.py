@@ -22,6 +22,7 @@ from .models import (
     MaterialApprovalRequest,
     NonConformanceReport,
     VOBOQItem, VOScheduleImpact,
+    MeetingMinute,
 )
 from app.notifications.models import Notification
 from .schemas import (
@@ -43,6 +44,7 @@ from .schemas import (
     VOBOQItemCreate, VOBOQItemResponse,
     VOScheduleImpactCreate, VOScheduleImpactResponse,
     VOImpactSummary,
+    MeetingMinuteCreate, MeetingMinuteUpdate, MeetingMinuteResponse,
 )
 from app.core.audit import AuditLog
 from app.auth.models import User
