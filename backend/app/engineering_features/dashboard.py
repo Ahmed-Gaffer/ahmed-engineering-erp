@@ -8,7 +8,7 @@ from app.projects.models import Project
 from app.drawings.models import Drawing
 from app.workflow.models import WorkflowLog
 from app.notifications.models import Notification
-from app.activities.models import Activity
+from app.core.audit import AuditLog as Activity
 
 from .models import (
     BOQItem, Contract, IPCHeader, DailyReport, Subcontractor, Schedule, EngDocument,
@@ -115,7 +115,7 @@ async def get_dashboard_summary(db: AsyncSession) -> DashboardSummary:
             "user_id": a.user_id,
             "action": a.action,
             "entity_type": a.entity_type,
-            "description": a.description,
+            "description": a.details,
             "created_at": a.created_at.isoformat() if a.created_at else None,
         }
         for a in recent_activity_result.scalars().all()
