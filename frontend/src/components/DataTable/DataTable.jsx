@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Card, TextField, Button, Stack, IconButton, Chip, Typography, Divider, Link, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Card, TextField, Button, Stack, IconButton, Chip, Typography, Divider, Link, Tooltip, useTheme, useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import { arSD, enUS } from '@mui/x-data-grid/locales';
@@ -16,19 +16,19 @@ const ModernChip = ({ value }) => {
   if (!value) return <Chip label="-" size="small" variant="outlined" sx={{ opacity: 0.5 }} />;
   const color = statusColors[value] || 'default';
   const chipColors = {
-    success: { bg: isDark ? 'rgba(16,185,129,0.2)' : 'rgba(16,185,129,0.1)', text: isDark ? '#6ee7b7' : '#059669', border: isDark ? 'rgba(16,185,129,0.3)' : 'rgba(16,185,129,0.2)' },
-    primary: { bg: isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.1)', text: isDark ? '#a5b4fc' : '#4f46e5', border: isDark ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)' },
-    warning: { bg: isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.1)', text: isDark ? '#fcd34d' : '#b45309', border: isDark ? 'rgba(245,158,11,0.3)' : 'rgba(245,158,11,0.2)' },
-    error: { bg: isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.1)', text: isDark ? '#fca5a5' : '#dc2626', border: isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.2)' },
-    info: { bg: isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)', text: isDark ? '#93c5fd' : '#2563eb', border: isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)' },
-    default: { bg: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.1)', text: isDark ? '#cbd5e1' : '#475569', border: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.2)' },
+    success: { bg: isDark ? 'rgba(16,185,129,0.25)' : 'rgba(16,185,129,0.12)', text: isDark ? '#6ee7b7' : '#059669', border: isDark ? 'rgba(16,185,129,0.35)' : 'rgba(16,185,129,0.25)', shadow: '0 1px 3px rgba(16,185,129,0.15)' },
+    primary: { bg: isDark ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', text: isDark ? '#a5b4fc' : '#4f46e5', border: isDark ? 'rgba(99,102,241,0.35)' : 'rgba(99,102,241,0.25)', shadow: '0 1px 3px rgba(99,102,241,0.15)' },
+    warning: { bg: isDark ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.12)', text: isDark ? '#fcd34d' : '#b45309', border: isDark ? 'rgba(245,158,11,0.35)' : 'rgba(245,158,11,0.25)', shadow: '0 1px 3px rgba(245,158,11,0.15)' },
+    error: { bg: isDark ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.12)', text: isDark ? '#fca5a5' : '#dc2626', border: isDark ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.25)', shadow: '0 1px 3px rgba(239,68,68,0.15)' },
+    info: { bg: isDark ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', text: isDark ? '#93c5fd' : '#2563eb', border: isDark ? 'rgba(59,130,246,0.35)' : 'rgba(59,130,246,0.25)', shadow: '0 1px 3px rgba(59,130,246,0.15)' },
+    default: { bg: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.12)', text: isDark ? '#cbd5e1' : '#475569', border: isDark ? 'rgba(148,163,184,0.25)' : 'rgba(100,116,139,0.25)', shadow: '0 1px 3px rgba(100,116,139,0.15)' },
   };
   const cc = chipColors[color] || chipColors.default;
   return (
     <Chip
       label={value}
       size="small"
-      sx={{ backgroundColor: cc.bg, color: cc.text, border: `1px solid ${cc.border}`, fontWeight: 500, borderRadius: 1 }}
+      sx={{ backgroundColor: cc.bg, color: cc.text, border: `1px solid ${cc.border}`, boxShadow: cc.shadow, fontWeight: 500, borderRadius: 1 }}
     />
   );
 };
@@ -93,12 +93,16 @@ export default function DataTable({
       sortable: false,
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
-          <IconButton size={isMobile ? 'medium' : 'small'} onClick={() => onEdit?.(params.row)} sx={{ color: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', '&:hover': { backgroundColor: 'rgba(99,102,241,0.16)' } }}>
-            <Edit fontSize={isMobile ? 'medium' : 'small'} />
-          </IconButton>
-          <IconButton size={isMobile ? 'medium' : 'small'} onClick={() => { setDeleteId(params.row.id); setDeleteOpen(true); }} sx={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', '&:hover': { backgroundColor: 'rgba(239,68,68,0.16)' } }}>
-            <Delete fontSize={isMobile ? 'medium' : 'small'} />
-          </IconButton>
+          <Tooltip title={t('edit')}>
+            <IconButton size="medium" onClick={() => onEdit?.(params.row)} sx={{ color: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', '&:hover': { backgroundColor: 'rgba(99,102,241,0.16)' } }}>
+              <Edit fontSize="medium" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('delete')}>
+            <IconButton size="medium" onClick={() => { setDeleteId(params.row.id); setDeleteOpen(true); }} sx={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', '&:hover': { backgroundColor: 'rgba(239,68,68,0.16)' } }}>
+              <Delete fontSize="medium" />
+            </IconButton>
+          </Tooltip>
         </Stack>
       ),
     },
@@ -158,6 +162,7 @@ export default function DataTable({
 
   return (
     <Card sx={{ overflow: 'visible' }}>
+      <Box sx={{ height: 3, background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)', borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
       <Box sx={{ px: { xs: 1.5, sm: 2.5 }, pt: { xs: 1.5, sm: 2 }, pb: 1.5 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={1.5}>
           <Stack direction="row" alignItems="center" spacing={1.5} flex={1}>
@@ -171,7 +176,7 @@ export default function DataTable({
                   startAdornment: <SearchOutlined fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
                 },
               }}
-              sx={{ minWidth: { xs: '100%', sm: 280 }, maxWidth: { xs: '100%', sm: 400 } }}
+              sx={{ minWidth: { xs: '100%', sm: 280 }, maxWidth: { xs: '100%', sm: 400 }, '& .MuiOutlinedInput-root': { '&.Mui-focused': { boxShadow: '0 2px 8px rgba(99,102,241,0.15)', backgroundColor: (theme) => theme.palette.action.hover } } }}
             />
             <Button size="small" variant="text" color="inherit" startIcon={<FilterList fontSize="small" />} sx={{ display: { xs: 'none', sm: 'flex' } }}>
               {t('filter')}
@@ -185,10 +190,10 @@ export default function DataTable({
             )}
             {data.length > 0 && (
               <>
-                <Button variant="text" startIcon={<Download />} onClick={handleExportCSV} size="small" sx={{ color: 'text.secondary' }}>
+                <Button variant="text" startIcon={<Download />} onClick={handleExportCSV} size="small" sx={{ color: '#059669', '&:hover': { backgroundColor: 'rgba(5,150,105,0.08)' } }}>
                   CSV
                 </Button>
-                <Button variant="text" startIcon={<Download />} onClick={handleExportExcel} size="small" sx={{ color: 'text.secondary' }}>
+                <Button variant="text" startIcon={<Download />} onClick={handleExportExcel} size="small" sx={{ color: '#2563eb', '&:hover': { backgroundColor: 'rgba(37,99,235,0.08)' } }}>
                   Excel
                 </Button>
               </>
@@ -210,6 +215,10 @@ export default function DataTable({
           rowCount={paginationMode === 'server' ? total : undefined}
           getRowId={(r) => r.id}
           pageSizeOptions={[10, 20, 50, 100]}
+          sx={{
+            '& .MuiDataGrid-row.Mui-selected': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.18)' } },
+            '& .MuiDataGrid-cell:focus': { outline: 'none' },
+          }}
           paginationModel={paginationMode === 'server' ? { page: page - 1, pageSize } : { page: clientPage, pageSize: clientPageSize }}
           paginationMode={paginationMode}
           onPaginationModelChange={(m) => {

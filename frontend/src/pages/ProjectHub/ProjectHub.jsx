@@ -7,13 +7,16 @@ import {
 import {
   FolderOpen, Business, Image, WarningAmber, QuestionAnswer, CheckCircle,
   CalendarMonth, Description, Schedule, Receipt, CompareArrows, Engineering,
-  Add, ArrowForward, TrendingUp,
+  Add, ArrowForward, TrendingUp, Bolt,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StatsCard from '../../components/StatsCard/StatsCard';
 import { engineeringApi } from '../../services/api';
 import { formatNumber } from '../../utils/helpers';
+
+const ncrStatusColor = { open: 'error', in_progress: 'warning', closed: 'success', resolved: 'success' };
+const rfiStatusColor = { open: 'warning', answered: 'success', closed: 'default' };
 
 const entityCards = [
   { key: 'contracts', icon: <Business />, color: '#6366f1', labelKey: 'contractsPage', link: (pid) => `/engineering/contracts-list?project_id=${pid}` },
@@ -48,7 +51,7 @@ const itemVariants = {
 function EVMStat({ label, value, color }) {
   return (
     <Grid item xs={4} sm={2}>
-      <Box sx={{ textAlign: 'center', py: 0.5 }}>
+      <Box sx={{ pl: 1.5, py: 0.75, borderLeft: '3px solid', borderColor: color, borderRadius: '0 6px 6px 0', bgcolor: alpha(color, 0.04) }}>
         <Typography variant="caption" color="text.secondary" fontWeight={600}>{label}</Typography>
         <Typography variant="body1" fontWeight={700} sx={{ color }}>{value}</Typography>
       </Box>
@@ -94,26 +97,29 @@ export default function ProjectHub() {
   }
 
   const { project, counts, recent_ncrs, recent_rfis } = data;
-  const statusColor = { planned: 'info', in_progress: 'primary', completed: 'success', on_hold: 'warning', cancelled: 'error' }[project.status] || 'default';
+  const projectStatusBg = { planned: '#06b6d4', in_progress: '#6366f1', completed: '#10b981', on_hold: '#f59e0b', cancelled: '#ef4444' }[project.status] || '#6b7280';
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show">
       <Stack spacing={3}>
         {/* Project Info Header */}
         <motion.div variants={itemVariants}>
-          <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'visible' }}>
+          <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'visible', position: 'relative' }}>
+            <Box sx={{ height: 4, background: 'linear-gradient(90deg, #6366f1, #818cf8, #a5b4fc)', borderRadius: '12px 12px 0 0' }} />
             <Box sx={{ p: { xs: 2.5, md: 3 } }}>
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
-                <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main', fontSize: '1.3rem', fontWeight: 700 }}>
-                  {project.code?.charAt(0) || 'P'}
-                </Avatar>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2.5} alignItems={{ md: 'center' }}>
+                <Box sx={{ p: '2px', borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #818cf8, #c7d2fe)', flexShrink: 0 }}>
+                  <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main', fontSize: '1.3rem', fontWeight: 700 }}>
+                    {project.code?.charAt(0) || 'P'}
+                  </Avatar>
+                </Box>
                 <Box flex={1}>
                   <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap">
                     <Typography variant="h5" fontWeight={700}>{project.name}</Typography>
-                    <Chip label={t(project.status)} size="small" color={statusColor} sx={{ fontWeight: 600 }} />
+                    <Chip label={t(project.status)} size="small" sx={{ fontWeight: 700, bgcolor: alpha(projectStatusBg, 0.12), color: projectStatusBg, border: '1px solid', borderColor: alpha(projectStatusBg, 0.25) }} />
                     <Chip label={project.project_type} size="small" variant="outlined" sx={{ opacity: 0.7 }} />
                   </Stack>
-                  <Stack direction="row" spacing={2} mt={0.5} flexWrap="wrap">
+                  <Stack direction="row" spacing={3} mt={1} flexWrap="wrap">
                     <Typography variant="body2" color="text.secondary">
                       <Typography component="span" fontWeight={600}>{t('code')}:</Typography> {project.code}
                     </Typography>
@@ -128,7 +134,7 @@ export default function ProjectHub() {
                       </Typography>
                     )}
                   </Stack>
-                  <Stack direction="row" spacing={2} mt={0.3} flexWrap="wrap">
+                  <Stack direction="row" spacing={3} mt={0.5} flexWrap="wrap">
                     {project.consultant_name && (
                       <Typography variant="body2" color="text.secondary">
                         <Typography component="span" fontWeight={600}>{t('consultantName')}:</Typography> {project.consultant_name}
@@ -142,7 +148,7 @@ export default function ProjectHub() {
                   </Stack>
                 </Box>
                 <Button variant="contained" startIcon={<Add />} size="small"
-                  sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' }, whiteSpace: 'nowrap' }}
+                  sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' }, whiteSpace: 'nowrap', borderRadius: 2, boxShadow: '0 4px 14px rgba(99,102,241,0.25)' }}
                   onClick={() => navigate(`/engineering/projects`)}
                 >
                   {t('edit')}
@@ -162,15 +168,23 @@ export default function ProjectHub() {
 
         {/* Quick Actions */}
         <motion.div variants={itemVariants}>
-          <Stack direction="row" spacing={1.5} flexWrap="wrap">
-            {quickActions.map(({ labelKey, icon, color, link }) => (
-              <Button key={labelKey} variant="outlined" size="small" startIcon={icon}
-                onClick={() => navigate(link(projectId))}
-                sx={{ borderColor: alpha(color, 0.3), color, '&:hover': { borderColor: color, bgcolor: alpha(color, 0.05) }, fontWeight: 500 }}
-              >
-                {t(labelKey)}
-              </Button>
-            ))}
+          <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Bolt sx={{ color: '#6366f1', fontSize: '1rem' }} />
+              <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing="0.06em">
+                Quick Actions
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} flexWrap="wrap">
+              {quickActions.map(({ labelKey, icon, color, link }) => (
+                <Button key={labelKey} variant="outlined" size="small" startIcon={icon}
+                  onClick={() => navigate(link(projectId))}
+                  sx={{ borderColor: alpha(color, 0.35), color, '&:hover': { borderColor: color, bgcolor: alpha(color, 0.08), transform: 'translateY(-1px)', boxShadow: `0 4px 12px ${alpha(color, 0.15)}` }, fontWeight: 600, borderRadius: 2, transition: 'all 0.2s ease' }}
+                >
+                  {t(labelKey)}
+                </Button>
+              ))}
+            </Stack>
           </Stack>
         </motion.div>
 
@@ -178,7 +192,8 @@ export default function ProjectHub() {
         <motion.div variants={itemVariants}>
           <Grid container spacing={2}>
             {entityCards.map(({ key, icon, color, labelKey, link }) => (
-              <Grid key={key} item xs={6} sm={4} md={3} lg={2}>
+              <Grid key={key} item xs={6} sm={4} md={3} lg={2} sx={{ position: 'relative' }}>
+                <Box sx={{ position: 'absolute', bottom: 8, right: 8, width: 8, height: 8, borderRadius: '50%', bgcolor: color, opacity: 0.5, zIndex: 2 }} />
                 <StatsCard
                   title={t(labelKey)}
                   value={counts[key] ?? 0}
@@ -194,7 +209,8 @@ export default function ProjectHub() {
         {/* EVM Summary */}
         {evm && (
           <motion.div variants={itemVariants}>
-            <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+            <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', position: 'relative' }}>
+              <Box sx={{ height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8)', borderRadius: '12px 12px 0 0' }} />
               <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                 <TrendingUp sx={{ color: '#6366f1', fontSize: '1.1rem' }} />
                 <Typography variant="subtitle2" fontWeight={600} flex={1}>{t('evmTitle')}</Typography>
@@ -222,7 +238,8 @@ export default function ProjectHub() {
           {recent_ncrs?.length > 0 && (
             <Grid item xs={12} md={6}>
               <motion.div variants={itemVariants}>
-                <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', position: 'relative' }}>
+                  <Box sx={{ height: 3, background: 'linear-gradient(90deg, #ef4444, #f87171)', borderRadius: '12px 12px 0 0' }} />
                   <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <WarningAmber sx={{ color: '#ef4444', fontSize: '1.1rem' }} />
@@ -235,7 +252,7 @@ export default function ProjectHub() {
                   {recent_ncrs.map((n, i) => (
                     <Box key={n.id}>
                       {i > 0 && <Divider sx={{ mx: 2 }} />}
-                      <Box sx={{ px: 2.5, py: 1.25, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate(`/engineering/ncr?project_id=${projectId}`)}>
+                      <Box sx={{ px: 2.5, py: 1.25, cursor: 'pointer', '&:hover': { bgcolor: alpha('#ef4444', 0.04) } }} onClick={() => navigate(`/engineering/ncr?project_id=${projectId}`)}>
                         <Stack direction="row" alignItems="center" spacing={1.5}>
                           <Avatar sx={{ width: 28, height: 28, bgcolor: { minor: alpha('#10b981', 0.15), major: alpha('#f59e0b', 0.15), critical: alpha('#ef4444', 0.15) }[n.severity] || alpha('#6b7280', 0.15), color: { minor: '#10b981', major: '#f59e0b', critical: '#ef4444' }[n.severity] || '#6b7280', fontSize: '0.65rem', fontWeight: 700 }}>
                             {n.ncr_number?.slice(-2) || 'N'}
@@ -244,7 +261,7 @@ export default function ProjectHub() {
                             <Typography variant="body2" fontWeight={500} noWrap>{n.title}</Typography>
                             <Typography variant="caption" color="text.secondary">{n.ncr_number}</Typography>
                           </Box>
-                          <Chip label={n.status} size="small" sx={{ fontSize: '0.65rem', fontWeight: 600, bgcolor: alpha('#6366f1', 0.1), color: '#6366f1' }} />
+                          <Chip label={n.status} size="small" sx={{ fontSize: '0.65rem', fontWeight: 600 }} color={ncrStatusColor[n.status] || 'default'} />
                         </Stack>
                       </Box>
                     </Box>
@@ -258,7 +275,8 @@ export default function ProjectHub() {
           {recent_rfis?.length > 0 && (
             <Grid item xs={12} md={6}>
               <motion.div variants={itemVariants}>
-                <Card sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', position: 'relative' }}>
+                  <Box sx={{ height: 3, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)', borderRadius: '12px 12px 0 0' }} />
                   <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <QuestionAnswer sx={{ color: '#8b5cf6', fontSize: '1.1rem' }} />
@@ -271,7 +289,7 @@ export default function ProjectHub() {
                   {recent_rfis.map((r, i) => (
                     <Box key={r.id}>
                       {i > 0 && <Divider sx={{ mx: 2 }} />}
-                      <Box sx={{ px: 2.5, py: 1.25, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => navigate(`/engineering/rfis?project_id=${projectId}`)}>
+                      <Box sx={{ px: 2.5, py: 1.25, cursor: 'pointer', '&:hover': { bgcolor: alpha('#8b5cf6', 0.04) } }} onClick={() => navigate(`/engineering/rfis?project_id=${projectId}`)}>
                         <Stack direction="row" alignItems="center" spacing={1.5}>
                           <Avatar sx={{ width: 28, height: 28, bgcolor: alpha('#8b5cf6', 0.15), color: '#8b5cf6', fontSize: '0.65rem', fontWeight: 700 }}>
                             {r.rfi_number?.slice(-2) || 'R'}
@@ -280,7 +298,7 @@ export default function ProjectHub() {
                             <Typography variant="body2" fontWeight={500} noWrap>{r.title}</Typography>
                             <Typography variant="caption" color="text.secondary">{r.rfi_number}</Typography>
                           </Box>
-                          <Chip label={r.status} size="small" sx={{ fontSize: '0.65rem', fontWeight: 600 }} color={r.status === 'open' ? 'warning' : r.status === 'answered' ? 'success' : 'default'} />
+                          <Chip label={r.status} size="small" sx={{ fontSize: '0.65rem', fontWeight: 600 }} color={rfiStatusColor[r.status] || 'default'} />
                         </Stack>
                       </Box>
                     </Box>

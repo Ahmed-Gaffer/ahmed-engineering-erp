@@ -18,8 +18,8 @@ const DRAWER_WIDTH = 280;
 const DRAWER_MINI = 72;
 const isActive = (path, location) => location.pathname === path;
 
-const iconBg = (color) => ({
-  width: 32, height: 32, borderRadius: 1.5, display: 'flex', alignItems: 'center',
+const iconBg = (color, mini) => ({
+  width: mini ? 36 : 32, height: mini ? 36 : 32, borderRadius: 1.5, display: 'flex', alignItems: 'center',
   justifyContent: 'center', backgroundColor: color,
 });
 
@@ -123,13 +123,21 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
         )}
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)', my: 0 }} />
-      <Box sx={{ flex: 1, overflow: 'auto', px: mini ? 1 : 1.5, py: 1 }}>
+      <Box sx={{
+  flex: 1, overflow: 'auto', px: mini ? 1 : 1.5, py: 1,
+  '&::-webkit-scrollbar': { width: 4 },
+  '&::-webkit-scrollbar-track': { background: 'transparent' },
+  '&::-webkit-scrollbar-thumb': { background: 'rgba(255,255,255,0.08)', borderRadius: 10 },
+  '&::-webkit-scrollbar-thumb:hover': { background: 'rgba(255,255,255,0.16)' },
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'rgba(255,255,255,0.08) transparent',
+}}>
         {sections.map((section) => (
           <Box key={section.title} sx={{ mb: 1.5 }}>
             {!mini && (
               <Typography
                 variant="caption" noWrap
-                sx={{ px: 1, py: 0.75, display: 'block', color: 'rgba(255,255,255,0.3)', fontWeight: 600, fontSize: '0.65rem', letterSpacing: '0.08em' }}
+                sx={{ px: 1, py: 1, display: 'block', color: 'rgba(255,255,255,0.35)', fontWeight: 600, fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}
               >
                 {t(section.title)}
               </Typography>
@@ -141,36 +149,38 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
                   key={item.path}
                   selected={active}
                   onClick={() => handleNav(item.path)}
-                  sx={{
-                    borderRadius: 1.5, mb: 0.25, px: mini ? 1 : 1.5, py: 0.75,
-                    justifyContent: mini ? 'center' : 'flex-start',
-                    position: 'relative', overflow: 'hidden',
-                    transition: 'all 0.2s ease',
-                    '&::before': active ? {
-                      content: '""', position: 'absolute', insetInline: 0, top: 0, bottom: 0,
-                      background: 'linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)',
-                      borderRadius: 1.5,
-                    } : {},
-                    '&::after': active ? {
-                      content: '""', position: 'absolute', insetInlineStart: 0, top: '20%', bottom: '20%', width: 3,
-                      background: 'linear-gradient(180deg, #6366f1, #818cf8)', borderRadius: '0 4px 4px 0',
-                      ...(i18n.language === 'ar' ? { right: 0, left: 'auto', borderRadius: '4px 0 0 4px' } : {}),
-                    } : {},
-                    '&.Mui-selected': { backgroundColor: 'transparent' },
-                    '&:hover': { backgroundColor: 'rgba(255,255,255,0.04)' },
-                    minWidth: mini ? 48 : 'auto',
-                  }}
+                    sx={{
+                      borderRadius: 1.5, mb: 0.25, px: mini ? 1 : 1.5, py: 0.75,
+                      justifyContent: mini ? 'center' : 'flex-start',
+                      position: 'relative', overflow: 'hidden',
+                      transition: 'all 0.2s ease',
+                      ...(active ? { boxShadow: `0 0 12px ${item.color}26` } : {}),
+                      '&::before': active ? {
+                        content: '""', position: 'absolute', insetInline: 0, top: 0, bottom: 0,
+                        background: 'linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)',
+                        borderRadius: 1.5,
+                      } : {},
+                      '&::after': active ? {
+                        content: '""', position: 'absolute', insetInlineStart: 0, top: '20%', bottom: '20%', width: 4,
+                        background: 'linear-gradient(180deg, #6366f1, #818cf8)', borderRadius: '0 4px 4px 0',
+                        boxShadow: '0 0 6px rgba(99,102,241,0.3)',
+                        ...(i18n.language === 'ar' ? { right: 0, left: 'auto', borderRadius: '4px 0 0 4px' } : {}),
+                      } : {},
+                      '&.Mui-selected': { backgroundColor: 'transparent' },
+                      '&:hover': { backgroundColor: `${item.color}14` },
+                      minWidth: mini ? 48 : 'auto',
+                    }}
                 >
                   <ListItemIcon sx={{ color: item.color, minWidth: mini ? 'auto' : 40 }}>
-                    <Box sx={iconBg(item.bg)}>
+                    <Box sx={iconBg(item.bg, mini)}>
                       {React.cloneElement(item.icon, { sx: { fontSize: mini ? 20 : 20 } })}
                     </Box>
                   </ListItemIcon>
                   {!mini && (
                     <motion.span
-                      initial={false}
+                      initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.25, ease: 'easeOut' }}
                     >
                       <Typography
                         variant="body2"

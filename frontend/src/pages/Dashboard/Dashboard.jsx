@@ -53,61 +53,70 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-const ChartCard = ({ title, children, action, subtitle }) => (
-  <Card sx={{ height: '100%' }}>
-    <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: { xs: 2, md: 2.5 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
-        <Box>
-          <Typography fontWeight={700} variant="body1" fontSize="0.95rem">{title}</Typography>
-          {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
+const ChartCard = ({ title, children, action, subtitle }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  return (
+    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8, #6366f1)', opacity: 0.7 }} />
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: { xs: 2, md: 2.5 } }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
+          <Box>
+            <Typography fontWeight={700} variant="body1" fontSize="0.95rem">{title}</Typography>
+            {subtitle && <Typography variant="caption" color="text.secondary" fontSize="0.7rem">{subtitle}</Typography>}
+          </Box>
+          {action}
+        </Stack>
+        <Box sx={{ flex: 1, minHeight: 0 }}>
+          {children}
         </Box>
-        {action}
-      </Stack>
-      <Box sx={{ flex: 1, minHeight: 0 }}>
-        {children}
-      </Box>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
-const KpiCard = ({ title, value, percent, color, subtitle, icon, trend }) => (
-  <Card sx={{ height: '100%', position: 'relative', overflow: 'visible' }}>
-    <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={500} fontSize="0.75rem">{title}</Typography>
-          <Typography variant="h4" fontWeight={800} mt={0.25} fontSize={{ xs: '1.5rem', md: '1.75rem' }}>{value}</Typography>
-          {subtitle && <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.8 }}>{subtitle}</Typography>}
-          {trend !== undefined && (
-            <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
-              {trend >= 0 ? <TrendingUp sx={{ fontSize: 14, color: '#10b981' }} /> : <TrendingDown sx={{ fontSize: 14, color: '#ef4444' }} />}
-              <Typography variant="caption" fontWeight={600} color={trend >= 0 ? '#10b981' : '#ef4444'}>
-                {Math.abs(trend)}% {trend >= 0 ? 'up' : 'down'}
-              </Typography>
-            </Stack>
-          )}
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-          {icon && (
-            <Avatar sx={{ bgcolor: `${color || '#6366f1'}15`, color: color || '#6366f1', width: 40, height: 40 }}>
-              {icon}
-            </Avatar>
-          )}
-          {percent !== undefined && (
-            <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-              <CircularProgress variant="determinate" value={Number(percent)} size={52} thickness={5}
-                sx={{ color: percent > 50 ? (percent > 80 ? '#10b981' : '#f59e0b') : '#ef4444' }}
+const KpiCard = ({ title, value, percent, color, subtitle, icon, trend }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const c = color || '#6366f1';
+  return (
+    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? '0 12px 28px rgba(0,0,0,0.5)' : '0 12px 28px rgba(0,0,0,0.06)' } }}>
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c}, ${c}88)`, opacity: 0.7 }} />
+      <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} fontSize="0.75rem" letterSpacing="0.04em">{title}</Typography>
+            <Typography variant="h4" fontWeight={800} mt={0.25} fontSize={{ xs: '1.5rem', md: '1.75rem' }}>{value}</Typography>
+            {subtitle && <Typography variant="caption" color="text.secondary" sx={{ opacity: 0.8 }}>{subtitle}</Typography>}
+            {trend !== undefined && (
+              <Chip icon={trend >= 0 ? <TrendingUp sx={{ fontSize: 14 }} /> : <TrendingDown sx={{ fontSize: 14 }} />}
+                label={`${Math.abs(trend)}%`} size="small"
+                sx={{ mt: 0.5, fontWeight: 600, fontSize: '0.7rem', bgcolor: trend >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: trend >= 0 ? '#10b981' : '#ef4444', '& .MuiChip-icon': { color: 'inherit' } }}
               />
-              <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography variant="caption" fontWeight={700} fontSize="0.7rem">{Math.round(Number(percent))}%</Typography>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+            {icon && (
+              <Box sx={{ width: 40, height: 40, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDark ? `linear-gradient(135deg, ${c}22, ${c}11)` : `linear-gradient(135deg, ${c}15, ${c}08)`, color: c, backdropFilter: 'blur(8px)', border: `1px solid ${c}22` }}>
+                {icon}
               </Box>
-            </Box>
-          )}
-        </Box>
-      </Stack>
-    </CardContent>
-  </Card>
-);
+            )}
+            {percent !== undefined && (
+              <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                <CircularProgress variant="determinate" value={Number(percent)} size={52} thickness={5}
+                  sx={{ color: percent > 50 ? (percent > 80 ? '#10b981' : '#f59e0b') : '#ef4444', filter: 'drop-shadow(0 0 4px currentColor)', opacity: 0.9 }}
+                />
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="caption" fontWeight={700} fontSize="0.7rem">{Math.round(Number(percent))}%</Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
 
 const NotificationPanel = ({ open, onClose, notifications, onMarkRead }) => {
   const { t } = useTranslation();
@@ -315,30 +324,32 @@ export default function Dashboard() {
         <Box>
           <Typography variant="h5" fontWeight={800} letterSpacing="-0.02em">
             <Stack direction="row" alignItems="center" spacing={1}>
-              <DashboardIcon sx={{ color: '#6366f1' }} />
+              <Box sx={{ width: 34, height: 34, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+                <DashboardIcon sx={{ fontSize: 20 }} />
+              </Box>
               <span>{t('dashboard')}</span>
             </Stack>
           </Typography>
-          <Typography variant="body2" color="text.secondary" mt={0.25}>
+          <Typography variant="body2" color="text.secondary" mt={0.25} ml={5.25}>
             {t('dashboardSubtitle')}
           </Typography>
         </Box>
         <Stack direction="row" spacing={1} alignItems="center">
-          <Chip icon={<TrendingUp />} label={t('realTime')} size="small" variant="outlined" color="primary" />
+          <Chip icon={<TrendingUp />} label={t('realTime')} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
           <Badge badgeContent={pending_approvals || 0} color="warning">
-            <IconButton size="small" onClick={() => setNotifOpen(true)} sx={{ bgcolor: 'rgba(99,102,241,0.08)' }}>
-              <Notifications />
+            <IconButton size="small" onClick={() => setNotifOpen(true)} sx={{ bgcolor: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.08)', '&:hover': { bgcolor: isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.12)' } }}>
+              <Notifications sx={{ fontSize: 20 }} />
             </IconButton>
           </Badge>
           <Badge badgeContent={unreadCount || unread_notifications || 0} color="error">
-            <IconButton size="small" onClick={() => setNotifOpen(true)} sx={{ bgcolor: 'rgba(239,68,68,0.08)' }}>
-              <NotificationsActive />
+            <IconButton size="small" onClick={() => setNotifOpen(true)} sx={{ bgcolor: isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)', '&:hover': { bgcolor: isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.12)' } }}>
+              <NotificationsActive sx={{ fontSize: 20 }} />
             </IconButton>
           </Badge>
-          <IconButton size="small" onClick={handleRefresh} sx={{ bgcolor: 'rgba(99,102,241,0.08)' }}>
-            <Refresh />
+          <IconButton size="small" onClick={handleRefresh} sx={{ bgcolor: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)', '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.12)' } }}>
+            <Refresh sx={{ fontSize: 20 }} />
           </IconButton>
-          <Button variant="outlined" size="small" startIcon={<Download />} onClick={(e) => setExportAnchor(e.currentTarget)}>
+          <Button variant="outlined" size="small" startIcon={<Download />} onClick={(e) => setExportAnchor(e.currentTarget)} sx={{ fontWeight: 600 }}>
             {t('export')}
           </Button>
           <Menu anchorEl={exportAnchor} open={Boolean(exportAnchor)} onClose={() => setExportAnchor(null)}>
@@ -353,10 +364,12 @@ export default function Dashboard() {
       {/* Pending Approvals Alert */}
       {warnings.length > 0 && (
         <motion.div variants={itemVariants}>
-          <Card sx={{ mb: 2.5, border: '1px solid', borderColor: 'rgba(245,158,11,0.3)', bgcolor: 'rgba(245,158,11,0.04)' }}>
+          <Card sx={{ mb: 2.5, border: '1px solid', borderColor: 'rgba(245,158,11,0.4)', bgcolor: isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)', boxShadow: isDark ? '0 0 20px rgba(245,158,11,0.08)' : '0 0 20px rgba(245,158,11,0.06)' }}>
             <CardContent sx={{ py: 1.5, px: 2.5, '&:last-child': { pb: 1.5 } }}>
               <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" gap={1}>
-                <Warning sx={{ color: '#f59e0b' }} />
+                <Box sx={{ width: 32, height: 32, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
+                  <Warning sx={{ fontSize: 18 }} />
+                </Box>
                 <Typography variant="body2" fontWeight={600}>{warnings.length} pending approval{warnings.length > 1 ? 's' : ''}</Typography>
                 {warnings.slice(0, 3).map((w) => (
                   <Chip key={w.id} label={`${w.entity_type} #${w.entity_id}`} size="small" variant="outlined" color="warning" onClick={() => {
@@ -406,25 +419,28 @@ export default function Dashboard() {
                   <Box textAlign="center" py={4}><History sx={{ fontSize: 36, color: 'text.disabled' }} /><Typography variant="caption" color="text.secondary">No recent activity</Typography></Box>
                 ) : (
                   <AnimatePresence>
-                    {recentActivity.map((a, i) => (
-                      <motion.div key={a.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-                        <Stack direction="row" spacing={1.5} sx={{ py: 1, px: 0.5, borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 0 } }}>
-                          <Avatar sx={{ width: 28, height: 28, bgcolor: a.action === 'create' ? '#10b98115' : a.action === 'update' ? '#6366f115' : a.action === 'delete' ? '#ef444415' : '#f59e0b15', color: a.action === 'create' ? '#10b981' : a.action === 'update' ? '#6366f1' : a.action === 'delete' ? '#ef4444' : '#f59e0b', fontSize: '0.75rem', fontWeight: 700 }}>
-                            {a.action?.charAt(0).toUpperCase()}
-                          </Avatar>
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="body2" fontWeight={500} noWrap fontSize="0.8rem">
-                              <Box component="span" sx={{ textTransform: 'capitalize', fontWeight: 600 }}>{a.action}</Box>
-                              {a.entity_type ? ` ${a.entity_type}` : ''}
-                            </Typography>
-                            {a.description && <Typography variant="caption" color="text.secondary" noWrap fontSize="0.7rem">{a.description}</Typography>}
-                            <Typography variant="caption" color="text.disabled" fontSize="0.65rem">
-                              {a.created_at ? new Date(a.created_at).toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US') : ''}
-                            </Typography>
-                          </Box>
-                        </Stack>
-                      </motion.div>
-                    ))}
+                    <Box sx={{ position: 'relative', ml: 0.5 }}>
+                      <Box sx={{ position: 'absolute', left: 13.5, top: 14, bottom: 14, width: 1.5, bgcolor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: 1 }} />
+                      {recentActivity.map((a, i) => (
+                        <motion.div key={a.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                          <Stack direction="row" spacing={1.5} sx={{ py: 1, px: 0.5, borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 0 }, position: 'relative' }}>
+                            <Avatar sx={{ width: 28, height: 28, bgcolor: a.action === 'create' ? '#10b98115' : a.action === 'update' ? '#6366f115' : a.action === 'delete' ? '#ef444415' : '#f59e0b15', color: a.action === 'create' ? '#10b981' : a.action === 'update' ? '#6366f1' : a.action === 'delete' ? '#ef4444' : '#f59e0b', fontSize: '0.75rem', fontWeight: 700, border: '2px solid', borderColor: a.action === 'create' ? 'rgba(16,185,129,0.2)' : a.action === 'update' ? 'rgba(99,102,241,0.2)' : a.action === 'delete' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', position: 'relative', zIndex: 1 }}>
+                              {a.action?.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography variant="body2" fontWeight={500} noWrap fontSize="0.8rem">
+                                <Box component="span" sx={{ textTransform: 'capitalize', fontWeight: 600 }}>{a.action}</Box>
+                                {a.entity_type ? ` ${a.entity_type}` : ''}
+                              </Typography>
+                              {a.description && <Typography variant="caption" color="text.secondary" noWrap fontSize="0.7rem">{a.description}</Typography>}
+                              <Typography variant="caption" color="text.disabled" fontSize="0.65rem">
+                                {a.created_at ? new Date(a.created_at).toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US') : ''}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </motion.div>
+                      ))}
+                    </Box>
                   </AnimatePresence>
                 )}
               </Box>
@@ -519,32 +535,38 @@ export default function Dashboard() {
         {/* Top Projects */}
         <Grid item xs={12} md={6}>
           <motion.div variants={itemVariants}>
-            <Card sx={{ height: '100%' }}>
+            <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8)', opacity: 0.6 }} />
               <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Box>
-                    <Typography fontWeight={700} variant="body1">{t('topProjects')}</Typography>
-                    <Typography variant="caption" color="text.secondary">By contract value</Typography>
+                    <Typography fontWeight={700} variant="body1" fontSize="0.95rem">{t('topProjects')}</Typography>
+                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem">By contract value</Typography>
                   </Box>
                   <Button size="small" variant="text" endIcon={<ArrowForward />} onClick={() => navigate('/engineering/projects')}>View All</Button>
                 </Stack>
-                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, overflowX: 'auto', maxHeight: 280 }}>
+                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, overflowX: 'auto', maxHeight: 280, '&::-webkit-scrollbar': { height: 4 } }}>
                   <Table size="small" stickyHeader>
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('code')}</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('name')}</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }} align="right">{t('contractValue')}</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('status')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('code')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('name')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }} align="right">{t('contractValue')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('status')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {(top_projects || []).map((p) => (
-                        <TableRow key={p.id} hover sx={{ cursor: 'pointer' }} onClick={() => navigate(`/engineering/projects/${p.id}`)}>
-                          <TableCell sx={{ fontSize: '0.8rem' }}>{p.code}</TableCell>
+                      {(top_projects || []).map((p, idx) => (
+                        <TableRow key={p.id} hover sx={{ cursor: 'pointer', '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.02)' }, bgcolor: idx % 2 === 0 ? 'transparent' : (isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)') }} onClick={() => navigate(`/engineering/projects/${p.id}`)}>
+                          <TableCell sx={{ fontSize: '0.8rem', fontWeight: 600 }}>{p.code}</TableCell>
                           <TableCell sx={{ fontSize: '0.8rem' }}>{p.name}</TableCell>
-                          <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>{formatNumber(p.contract_value)}</TableCell>
-                          <TableCell><Chip label={t(p.status)} size="small" color={statusColors[p.status] || 'default'} sx={{ fontWeight: 600, fontSize: '0.7rem' }} /></TableCell>
+                          <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>{formatNumber(p.contract_value)}</TableCell>
+                          <TableCell>
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: statusColors[p.status] === 'success' ? '#10b981' : statusColors[p.status] === 'warning' ? '#f59e0b' : statusColors[p.status] === 'error' ? '#ef4444' : statusColors[p.status] === 'info' ? '#3b82f6' : '#94a3b8' }} />
+                              <Chip label={t(p.status)} size="small" color={statusColors[p.status] || 'default'} sx={{ fontWeight: 600, fontSize: '0.7rem', height: 22 }} />
+                            </Stack>
+                          </TableCell>
                         </TableRow>
                       ))}
                       {(!top_projects || top_projects.length === 0) && (
@@ -561,33 +583,37 @@ export default function Dashboard() {
         {/* Recent IPCs */}
         <Grid item xs={12} md={6}>
           <motion.div variants={itemVariants}>
-            <Card sx={{ height: '100%' }}>
+            <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #06b6d4, #22d3ee)', opacity: 0.6 }} />
               <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Box>
-                    <Typography fontWeight={700} variant="body1">Recent IPCs</Typography>
-                    <Typography variant="caption" color="text.secondary">Last 6 payment certificates</Typography>
+                    <Typography fontWeight={700} variant="body1" fontSize="0.95rem">Recent IPCs</Typography>
+                    <Typography variant="caption" color="text.secondary" fontSize="0.7rem">Last 6 payment certificates</Typography>
                   </Box>
                   <Button size="small" variant="text" endIcon={<ArrowForward />} onClick={() => navigate('/engineering/ipc')}>View All</Button>
                 </Stack>
-                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, overflowX: 'auto', maxHeight: 280 }}>
+                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, overflowX: 'auto', maxHeight: 280, '&::-webkit-scrollbar': { height: 4 } }}>
                   <Table size="small" stickyHeader>
                     <TableHead>
                       <TableRow>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>#</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }} align="right">Works</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }} align="right">Net</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>{t('status')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }}>#</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }} align="right">Works</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }} align="right">Net</TableCell>
+                        <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('status')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {recentIpcs.map((ipc) => (
-                        <TableRow key={ipc.id} hover sx={{ cursor: 'pointer' }} onClick={() => navigate('/engineering/ipc')}>
-                          <TableCell sx={{ fontSize: '0.8rem', fontWeight: 600 }}>{ipc.ipc_number}</TableCell>
+                      {recentIpcs.map((ipc, idx) => (
+                        <TableRow key={ipc.id} hover sx={{ cursor: 'pointer', '&:hover': { bgcolor: isDark ? 'rgba(6,182,212,0.04)' : 'rgba(6,182,212,0.02)' }, bgcolor: idx % 2 === 0 ? 'transparent' : (isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)') }} onClick={() => navigate('/engineering/ipc')}>
+                          <TableCell sx={{ fontSize: '0.8rem', fontWeight: 700 }}>{ipc.ipc_number}</TableCell>
                           <TableCell align="right" sx={{ fontSize: '0.8rem' }}>{formatNumber(ipc.total_works)}</TableCell>
-                          <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'success.main' }}>{formatNumber(ipc.net_amount)}</TableCell>
+                          <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'success.main' }}>{formatNumber(ipc.net_amount)}</TableCell>
                           <TableCell>
-                            <Chip label={ipc.status} size="small" color={statusColors[ipc.status] || 'default'} sx={{ fontWeight: 600, fontSize: '0.7rem' }} />
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: statusColors[ipc.status] === 'success' ? '#10b981' : statusColors[ipc.status] === 'warning' ? '#f59e0b' : statusColors[ipc.status] === 'error' ? '#ef4444' : '#94a3b8' }} />
+                              <Chip label={ipc.status} size="small" color={statusColors[ipc.status] || 'default'} sx={{ fontWeight: 600, fontSize: '0.7rem', height: 22 }} />
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -606,17 +632,20 @@ export default function Dashboard() {
       {/* EVM Widget */}
       {evm && (
         <motion.div variants={itemVariants}>
-          <Card sx={{ mt: 2.5 }}>
+          <Card sx={{ mt: 2.5, position: 'relative', overflow: 'hidden' }}>
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)', opacity: 0.6 }} />
             <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                  <Assessment sx={{ color: '#6366f1' }} />
-                  <Typography fontWeight={700} variant="body1">Earned Value Management (EVM)</Typography>
+                  <Box sx={{ width: 34, height: 34, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+                    <Assessment sx={{ fontSize: 18 }} />
+                  </Box>
+                  <Typography fontWeight={700} variant="body1" fontSize="0.95rem">Earned Value Management (EVM)</Typography>
                 </Stack>
                 <Stack direction="row" spacing={1}>
-                  <Chip label={`CPI: ${Number(evm.cpi).toFixed(2)}`} size="small" color={evm.cpi >= 1 ? 'success' : 'error'} />
-                  <Chip label={`SPI: ${Number(evm.spi).toFixed(2)}`} size="small" color={evm.spi >= 1 ? 'success' : 'error'} />
-                  <Chip label={`VAC: ${formatNumber(evm.variance_at_completion)}`} size="small" color={evm.variance_at_completion >= 0 ? 'success' : 'error'} />
+                  <Chip label={`CPI: ${Number(evm.cpi).toFixed(2)}`} size="small" color={evm.cpi >= 1 ? 'success' : 'error'} sx={{ fontWeight: 600 }} />
+                  <Chip label={`SPI: ${Number(evm.spi).toFixed(2)}`} size="small" color={evm.spi >= 1 ? 'success' : 'error'} sx={{ fontWeight: 600 }} />
+                  <Chip label={`VAC: ${formatNumber(evm.variance_at_completion)}`} size="small" color={evm.variance_at_completion >= 0 ? 'success' : 'error'} sx={{ fontWeight: 600 }} />
                 </Stack>
               </Stack>
               <Grid container spacing={2}>
@@ -629,9 +658,9 @@ export default function Dashboard() {
                   { label: 'VAC', value: evm.variance_at_completion, color: '#06b6d4' },
                 ].map((item) => (
                   <Grid key={item.label} item xs={6} sm={4} md={2}>
-                    <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-                      <Typography variant="caption" color="text.secondary" fontSize="0.65rem">{item.label}</Typography>
-                      <Typography variant="h6" fontWeight={700} sx={{ color: item.color, fontSize: '1rem' }}>
+                    <Box sx={{ pl: 1.5, py: 1.5, pr: 1, borderRadius: '0 8px 8px 0', borderLeft: `3px solid ${item.color}`, bgcolor: isDark ? `${item.color}08` : `${item.color}06` }}>
+                      <Typography variant="caption" color="text.secondary" fontSize="0.65rem" fontWeight={500}>{item.label}</Typography>
+                      <Typography variant="h6" fontWeight={700} sx={{ color: item.color, fontSize: '1rem', mt: 0.25 }}>
                         {formatNumber(item.value)}
                       </Typography>
                     </Box>
