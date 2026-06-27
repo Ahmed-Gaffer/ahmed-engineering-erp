@@ -163,6 +163,7 @@ export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [data, setData] = useState(null);
