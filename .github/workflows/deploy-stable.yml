@@ -32,14 +32,6 @@ jobs:
           docker push ${{ env.GHCR_IMAGE }}:stable
           docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
 
-      - name: Make GHCR package public
-        run: |
-          PACKAGE_URL="https://api.github.com/repos/${{ github.repository }}/packages/container/engineering-erp"
-          curl -s -X PATCH "$PACKAGE_URL" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            -d '{"visibility":"public"}' || true
-
       - name: Push thin Dockerfile + README to HF Space (stable branch)
         run: |
           cd /tmp

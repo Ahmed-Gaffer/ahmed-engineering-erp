@@ -496,5 +496,21 @@
   "technical": "فني",
   "site": "موقع",
   "mmStatus_draft": "مسودة",
-  "mmStatus_final": "معتمد"
+  "mmStatus_final": "معتمد",
+  "searchResults": "نتائج البحث",
+  "resultsFor": "نتائج عن",
+  "results": "نتيجة",
+  "searching": "جارٍ البحث...",
+  "noResultsFound": "لا توجد نتائج",
+  "enterSearchQuery": "أدخل مصطلح البحث",
+  "tryDifferentSearch": "جرّب مصطلح بحث مختلف",
+  "useSearchBarAbove": "استخدم شريط البحث أعلاه للعثور على المشاريع والمقاولين والموظفين",
+  "viewAll": "عرض الكل",
+  "recentNcrs": "آخر تقارير عدم المطابقة",
+  "recentRfis": "آخر طلبات المعلومات",
+  "addNcr": "+ تقرير عدم مطابقة",
+  "addRfi": "+ طلب معلومات",
+  "addMar": "+ طلب اعتماد مادة",
+  "addDrawing": "+ رسمة",
+  "evmTitle": "القيمة المكتسبة"
 }

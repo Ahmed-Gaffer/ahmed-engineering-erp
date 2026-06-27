@@ -1,4 +1,4 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.notifications.models import Notification
 
@@ -8,14 +8,13 @@ class NotificationCRUD:
         query = select(Notification).where(Notification.user_id == user_id)
         if unread_only:
             query = query.where(Notification.is_read == False)
+
+        count_result = await db.execute(select(func.count()).select_from(query.subquery()))
+        total = count_result.scalar() or 0
+
         query = query.order_by(Notification.created_at.desc()).offset((page - 1) * limit).limit(limit)
         result = await db.execute(query)
         items = result.scalars().all()
-
-        count_query = select(Notification).where(Notification.user_id == user_id)
-        if unread_only:
-            count_query = count_query.where(Notification.is_read == False)
-        total = len(items)
 
         return {"items": [{"id": n.id, "title": n.title, "message": n.message, "type": n.type, "is_read": n.is_read, "link": n.link, "created_at": n.created_at.isoformat()} for n in items], "total": total, "page": page, "limit": limit, "pages": max(1, (total + limit - 1) // limit)}
 
@@ -37,7 +36,7 @@ class NotificationCRUD:
         return result.rowcount
 
     async def unread_count(self, db: AsyncSession, user_id: int) -> int:
-        result = await db.execute(select(Notification).where(Notification.user_id == user_id, Notification.is_read == False))
-        return len(result.scalars().all())
+        result = await db.execute(select(func.count()).select_from(Notification).where(Notification.user_id == user_id, Notification.is_read == False))
+        return result.scalar() or 0
 
 notification_crud = NotificationCRUD()

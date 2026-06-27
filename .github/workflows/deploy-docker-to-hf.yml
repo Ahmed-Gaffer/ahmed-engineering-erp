@@ -28,32 +28,6 @@ jobs:
           docker push ${{ env.GHCR_IMAGE }}:latest
           docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
 
-      - name: Set GHCR package visibility (best-effort)
-        continue-on-error: true
-        run: |
-          echo "=== Attempt via gh api (user-scoped) ==="
-          gh api -X PATCH /users/ahmed-gaffer/packages/container/engineering-erp/visibility \
-            --raw-field visibility=public --jq '.visibility' 2>&1 || \
-            echo "gh api user-scoped failed"
-          
-          echo "=== Attempt via gh api (repo-scoped) ==="
-          gh api -X PATCH /repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility \
-            --raw-field visibility=public --jq '.visibility' 2>&1 || \
-            echo "gh api repo-scoped failed"
-
-          echo "=== Attempt with GH_PAT if available ==="
-          if [ -n "${{ secrets.GH_PAT }}" ]; then
-            echo "GH_PAT found, trying to make package public..."
-            gh api -X PATCH /users/ahmed-gaffer/packages/container/engineering-erp/visibility \
-              --raw-field visibility=public --jq '.visibility' --token "${{ secrets.GH_PAT }}" 2>&1 || \
-            gh api -X PATCH /repos/Ahmed-Gaffer/ahmed-engineering-erp/packages/container/engineering-erp/visibility \
-              --raw-field visibility=public --jq '.visibility' --token "${{ secrets.GH_PAT }}" 2>&1
-          else
-            echo "No GH_PAT secret. Package may remain private."
-            echo "Create a PAT at: https://github.com/settings/tokens"
-            echo "Add as GH_PAT secret in repo settings."
-          fi
-
       - name: Verify build
         run: |
           echo "Image pushed to ${{ env.GHCR_IMAGE }}:latest"

@@ -45,6 +45,9 @@ class DashboardSummary(BaseModel):
     projects_completed: int = 0
     projects_planning: int = 0
     top_projects: List[dict] = []
+    pending_approvals: int = 0
+    unread_notifications: int = 0
+    recent_activity: List[dict] = []
 
 
 class ContractCreate(BaseModel):

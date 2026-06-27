@@ -3,7 +3,7 @@ import { phasesService } from '../../services/api';
 
 const columns = [
   { field: 'name', headerName: 'name', flex: 1.5 },
-  { field: 'project_id', headerName: 'project', type: 'number', width: 80 },
+  { field: 'project_id', headerName: 'project', type: 'number', width: 80, linkTo: (row) => `/engineering/projects/${row.project_id}` },
   { field: 'order_index', headerName: 'orderIndex', type: 'number', width: 80 },
   { field: 'progress_percentage', headerName: 'progressPercentage', type: 'number', width: 120 },
   { field: 'status', headerName: 'status', width: 110 },

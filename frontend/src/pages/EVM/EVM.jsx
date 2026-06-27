@@ -5,6 +5,7 @@ import {
   LinearProgress, Table, TableBody, TableCell, TableContainer, TableRow, Paper,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Legend,
@@ -92,10 +93,16 @@ export default function EVM() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Box>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5" fontWeight={700}>Earned Value Management (EVM)</Typography>
-        </Stack>
-
+        <PageHeader
+          title="Earned Value Management (EVM)"
+          subtitle="Analyze project performance with Planned vs Earned vs Actual metrics"
+          icon=""
+          stats={evm ? [
+            { label: 'SPI', value: formatPercent(evm.spi) },
+            { label: 'CPI', value: formatPercent(evm.cpi) },
+            { label: 'Status', value: status === 'good' ? 'On Track' : status === 'warning' ? 'At Risk' : 'Critical' },
+          ] : [{ label: 'Select Project', value: '' }]}
+        />
         <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ mb: 3, minWidth: 280 }}>
           <MenuItem value="">{t('all')}</MenuItem>
           {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}

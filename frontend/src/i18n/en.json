@@ -496,5 +496,21 @@
   "technical": "Technical",
   "site": "Site",
   "mmStatus_draft": "Draft",
-  "mmStatus_final": "Finalized"
+  "mmStatus_final": "Finalized",
+  "searchResults": "Search Results",
+  "resultsFor": "Results for",
+  "results": "results",
+  "searching": "Searching...",
+  "noResultsFound": "No results found",
+  "enterSearchQuery": "Enter a search query",
+  "tryDifferentSearch": "Try a different search term",
+  "useSearchBarAbove": "Use the search bar above to find projects, contractors, and employees",
+  "viewAll": "View All",
+  "recentNcrs": "Recent NCRs",
+  "recentRfis": "Recent RFIs",
+  "addNcr": "+ NCR",
+  "addRfi": "+ RFI",
+  "addMar": "+ MAR",
+  "addDrawing": "+ Drawing",
+  "evmTitle": "Earned Value"
 }

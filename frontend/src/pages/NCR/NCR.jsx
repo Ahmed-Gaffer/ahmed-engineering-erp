@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Typography, Card, Stack, Button, IconButton, Tooltip, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
+import { Box, Card, Stack, Button, IconButton, Tooltip, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { arSD, enUS } from '@mui/x-data-grid/locales';
-import { Add, Send, CheckCircle, Cancel, PictureAsPdf, UploadFile, Flag } from '@mui/icons-material';
+import { Add, Send, CheckCircle, Cancel, Flag, ReportProblem } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
 import { engineeringApi, projectsService } from '../../services/api';
 import { useSnackbar } from 'notistack';
@@ -19,12 +21,21 @@ const statusColors = {
   rejected: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
 };
 
+const statusFlow = {
+  open: ['investigate', 'reject'],
+  investigation: ['apply_action', 'reject'],
+  corrective_action: ['close'],
+  closed: [],
+  rejected: [],
+};
+
 export default function NCR() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(searchParams.get('project_id') || '');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -39,7 +50,12 @@ export default function NCR() {
     projectsService.list({ limit: 100 }).then((r) => {
       const items = r.data.items || [];
       setProjects(items);
-      if (items.length && !selectedProjectId) setSelectedProjectId(items[0].id);
+      const urlPid = searchParams.get('project_id');
+      if (urlPid && items.some((p) => p.id === Number(urlPid))) {
+        setSelectedProjectId(Number(urlPid));
+      } else if (items.length && !selectedProjectId) {
+        setSelectedProjectId(items[0].id);
+      }
     });
   }, []);
 
@@ -49,7 +65,9 @@ export default function NCR() {
     try {
       const res = await engineeringApi.ncr.listByProject(selectedProjectId);
       setRows(res.data || []);
-    } catch { setRows([]); }
+    } catch {
+      setRows([]);
+    }
     setLoading(false);
   }, [selectedProjectId]);
 
@@ -66,7 +84,9 @@ export default function NCR() {
       }
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
       fetchData();
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
+    } catch {
+      enqueueSnackbar(t('operationFailed'), { variant: 'error' });
+    }
   };
 
   const handleApplyAction = async () => {
@@ -79,25 +99,9 @@ export default function NCR() {
       setActionDialog({ open: false, ncr: null });
       setActionText({ corrective: '', preventive: '' });
       fetchData();
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
-  };
-
-  const handleUpload = async (ncrId, file) => {
-    if (!file) return;
-    try {
-      await engineeringApi.ncr.upload(ncrId, file);
-      enqueueSnackbar(t('uploadSuccess'), { variant: 'success' });
-      fetchData();
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
-  };
-
-  const downloadPdf = async (ncrId) => {
-    try {
-      const res = await engineeringApi.ncr.exportPdf(ncrId);
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement('a'); a.href = url; a.download = 'ncr_report.pdf'; a.click();
-      window.URL.revokeObjectURL(url);
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
+    } catch {
+      enqueueSnackbar(t('operationFailed'), { variant: 'error' });
+    }
   };
 
   const handleSubmit = async (formData) => {
@@ -118,75 +122,76 @@ export default function NCR() {
       enqueueSnackbar(t('operationSuccess'), { variant: 'success' });
       setDeleteId(null);
       fetchData();
-    } catch { enqueueSnackbar(t('operationFailed'), { variant: 'error' }); }
+    } catch {
+      enqueueSnackbar(t('operationFailed'), { variant: 'error' });
+    }
   };
 
+  const openCount = rows.filter(r => r.status === 'open').length;
+  const criticalCount = rows.filter(r => r.severity === 'critical' && r.status !== 'closed' && r.status !== 'rejected').length;
+
   const columns = [
-    { field: 'ncr_number', headerName: t('ncrNumber'), width: 110, sortable: true },
-    { field: 'title', headerName: t('title'), flex: 1.5, minWidth: 150, sortable: true },
-    { field: 'severity', headerName: t('severity'), width: 90,
+    { field: 'ncr_number', headerName: 'ncrNumber', width: 110 },
+    { field: 'title', headerName: 'title', flex: 1.5, minWidth: 150 },
+    {
+      field: 'severity', headerName: 'severity', width: 90,
       renderCell: (params) => <Chip label={t(params.value)} size="small" color={severityColors[params.value] || 'default'} />,
     },
-    { field: 'status', headerName: t('status'), width: 120,
+    {
+      field: 'status', headerName: 'status', width: 120,
       renderCell: (params) => {
         const sc = statusColors[params.value] || statusColors.open;
-        return <Chip label={t(`ncrStatus_${params.value}`)} size="small" sx={{ backgroundColor: sc.bg, color: sc.color, fontWeight: 500 }} />;
+        return <Chip label={t(`ncrStatus_${params.value}`)} size="small" sx={{ backgroundColor: sc.bg, color: sc.color, fontWeight: 500, borderRadius: 1 }} />;
       },
     },
-    { field: 'source', headerName: t('source'), width: 100 },
-    { field: 'identified_date', headerName: t('identifiedDate'), width: 110, type: 'date' },
-    { field: 'actions', headerName: t('actions'), width: 280, sortable: false,
-      renderCell: (params) => (
-        <Stack direction="row" spacing={0.5}>
-          {params.row.status === 'open' && (
-            <Tooltip title={t('investigate')}>
-              <IconButton size="small" color="warning" onClick={() => handleAction(params.row.id, 'investigate')}>
-                <Send fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
-          {params.row.status === 'investigation' && (
-            <Tooltip title={t('applyAction')}>
-              <IconButton size="small" color="info" onClick={() => {
-                setActionDialog({ open: true, ncr: params.row });
-                setActionText({ corrective: params.row.corrective_action || '', preventive: params.row.preventive_action || '' });
-              }}>
-                <Flag fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
-          {params.row.status === 'corrective_action' && (
-            <Tooltip title={t('close')}>
-              <IconButton size="small" color="success" onClick={() => handleAction(params.row.id, 'close')}>
-                <CheckCircle fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
-          {(params.row.status === 'open' || params.row.status === 'investigation') && (
-            <Tooltip title={t('reject')}>
-              <IconButton size="small" color="error" onClick={() => handleAction(params.row.id, 'reject')}>
+    { field: 'source', headerName: 'source', width: 90 },
+    { field: 'identified_date', headerName: 'identifiedDate', width: 110, type: 'date' },
+    { field: 'location', headerName: 'location', width: 120 },
+    {
+      field: 'actions', headerName: 'actions', width: 200, sortable: false,
+      renderCell: (params) => {
+        const actions = statusFlow[params.row.status] || [];
+        return (
+          <Stack direction="row" spacing={0.5}>
+            {actions.includes('investigate') && (
+              <Tooltip title={t('investigate')}>
+                <IconButton size="small" sx={{ color: '#f59e0b', bgcolor: 'rgba(245,158,11,0.12)', '&:hover': { bgcolor: 'rgba(245,158,11,0.2)' } }} onClick={() => handleAction(params.row.id, 'investigate')}>
+                  <Send fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {actions.includes('apply_action') && (
+              <Tooltip title={t('applyAction')}>
+                <IconButton size="small" sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.12)', '&:hover': { bgcolor: 'rgba(99,102,241,0.2)' } }} onClick={() => {
+                  setActionDialog({ open: true, ncr: params.row });
+                  setActionText({ corrective: params.row.corrective_action || '', preventive: params.row.preventive_action || '' });
+                }}>
+                  <Flag fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {actions.includes('close') && (
+              <Tooltip title={t('close')}>
+                <IconButton size="small" sx={{ color: '#10b981', bgcolor: 'rgba(16,185,129,0.12)', '&:hover': { bgcolor: 'rgba(16,185,129,0.2)' } }} onClick={() => handleAction(params.row.id, 'close')}>
+                  <CheckCircle fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {actions.includes('reject') && (
+              <Tooltip title={t('reject')}>
+                <IconButton size="small" sx={{ color: '#ef4444', bgcolor: 'rgba(239,68,68,0.12)', '&:hover': { bgcolor: 'rgba(239,68,68,0.2)' } }} onClick={() => handleAction(params.row.id, 'reject')}>
+                  <Cancel fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {isAdmin && (
+              <IconButton size="small" color="error" onClick={() => setDeleteId(params.row.id)}>
                 <Cancel fontSize="small" />
               </IconButton>
-            </Tooltip>
-          )}
-          <Tooltip title={t('downloadPdf')}>
-            <IconButton size="small" onClick={() => downloadPdf(params.row.id)}>
-              <PictureAsPdf fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t('uploadFile')}>
-            <IconButton size="small" component="label">
-              <UploadFile fontSize="small" />
-              <input type="file" hidden onChange={(e) => { handleUpload(params.row.id, e.target.files[0]); e.target.value = ''; }} />
-            </IconButton>
-          </Tooltip>
-          {isAdmin && (
-            <IconButton size="small" color="error" onClick={() => setDeleteId(params.row.id)}>
-              <Cancel fontSize="small" />
-            </IconButton>
-          )}
-        </Stack>
-      ),
+            )}
+          </Stack>
+        );
+      },
     },
   ];
 
@@ -206,18 +211,30 @@ export default function NCR() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-        <Typography variant="h5" fontWeight={700}>{t('ncr')}</Typography>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <TextField select size="small" value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} sx={{ minWidth: 200 }}>
-            {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.code} — {p.name}</MenuItem>)}
-          </TextField>
-          <Button variant="contained" size="small" startIcon={<Add />} onClick={() => { setEditRow(null); setFormOpen(true); }}>
-            {t('createNcr')}
-          </Button>
-        </Stack>
+      <PageHeader
+        title={t('ncr')}
+        subtitle="Track and resolve non-conformance reports with corrective/preventive actions"
+        icon={<ReportProblem />}
+        action
+        actionLabel={t('createNcr')}
+        onAction={() => { setEditRow(null); setFormOpen(true); }}
+        stats={[
+          { label: 'Open', value: openCount },
+          { label: 'Critical', value: criticalCount },
+          { label: 'Total', value: rows.length },
+        ]}
+      />
+      <Stack direction="row" spacing={1.5} mb={2.5}>
+        <TextField select size="small" value={selectedProjectId} onChange={(e) => { setSelectedProjectId(e.target.value); const p = new URLSearchParams(searchParams); p.set('project_id', e.target.value); setSearchParams(p, { replace: true }); }} sx={{ minWidth: 240 }}>
+          {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.code || p.name} — {p.name}</MenuItem>)}
+        </TextField>
+        {openCount > 0 && (
+          <Chip label={`${openCount} open NCRs`} color="warning" size="small" variant="outlined" />
+        )}
+        {criticalCount > 0 && (
+          <Chip label={`${criticalCount} critical`} color="error" size="small" variant="outlined" />
+        )}
       </Stack>
-
       <Card>
         {loading ? <DataGridSkeleton /> : (
           <Box sx={{ height: 500 }}>
@@ -225,6 +242,7 @@ export default function NCR() {
               rows={rows} columns={columns} getRowId={(r) => r.id}
               pageSizeOptions={[10, 20, 50]} disableRowSelectionOnClick
               localeText={i18n.language === 'ar' ? arSD : enUS}
+              sx={{ '& .MuiDataGrid-cell:focus': { outline: 'none' } }}
             />
           </Box>
         )}

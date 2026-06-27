@@ -3,7 +3,7 @@ import { paymentCertificatesService } from '../../services/api';
 
 const columns = [
   { field: 'certificate_number', headerName: 'certificateNumber', width: 120 },
-  { field: 'project_id', headerName: 'project', type: 'number', width: 80 },
+  { field: 'project_id', headerName: 'project', type: 'number', width: 80, linkTo: (row) => `/engineering/projects/${row.project_id}` },
   { field: 'period_from', headerName: 'periodFrom', type: 'date', width: 100 },
   { field: 'period_to', headerName: 'periodTo', type: 'date', width: 100 },
   { field: 'current_works', headerName: 'currentWorks', type: 'number', width: 120 },

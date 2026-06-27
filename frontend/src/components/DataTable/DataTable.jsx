@@ -79,8 +79,9 @@ export default function DataTable({
           return <ModernChip value={params.value} />;
         }
         if (col.linkTo && params.value != null) {
+          const url = typeof col.linkTo === 'function' ? col.linkTo(params.row) : col.linkTo;
           return <Link component="button" variant="body2" underline="hover" fontWeight={500}
-            onClick={() => navigate(col.linkTo)}>{params.value}</Link>;
+            onClick={() => navigate(url)}>{params.value}</Link>;
         }
         return <Typography variant="body2">{params.value ?? '-'}</Typography>;
       }),

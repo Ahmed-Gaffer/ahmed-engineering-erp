@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import {
   Box, AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, ListItemIcon,
   Avatar, Stack, Divider, Chip, Breadcrumbs, Link, Tooltip, useMediaQuery, useTheme,
+  InputBase, Badge,
 } from '@mui/material';
 import {
   Menu as MenuIcon, Logout, Person, Settings, Engineering,
-  DarkMode, LightMode, ChevronLeft, ChevronRight,
+  DarkMode, LightMode, ChevronLeft, ChevronRight, Search as SearchIcon,
 } from '@mui/icons-material';
 import { Outlet, useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -131,6 +132,13 @@ export default function Layout() {
                 })}
               </Breadcrumbs>
             </Stack>
+            <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', bgcolor: 'action.hover', borderRadius: 2, px: 1.5, py: 0.3, minWidth: 200 }}>
+              <SearchIcon sx={{ color: 'text.secondary', fontSize: '1rem', mr: 0.5 }} />
+              <InputBase placeholder={t('search')} size="small"
+                sx={{ fontSize: '0.8125rem', '& input': { py: 0.3 } }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) navigate('/engineering/search?q=' + encodeURIComponent(e.target.value.trim())); }}
+              />
+            </Box>
             <NotificationBell />
             <Tooltip title={mode === 'dark' ? t('lightMode') : t('darkMode')}>
               <IconButton size="small" onClick={toggleMode}>

@@ -4,8 +4,9 @@ import { useParams } from 'react-router-dom';
 import { Box, Typography, Card, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Chip, Tooltip } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { arSD, enUS } from '@mui/x-data-grid/locales';
-import { Add, Edit, Delete, CheckCircle, PictureAsPdf } from '@mui/icons-material';
+import { Add, Edit, Delete, CheckCircle, PictureAsPdf, Groups } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { engineeringApi } from '../../services/api';
@@ -152,12 +153,18 @@ export default function MeetingMinutes() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-        <Typography variant="h5" fontWeight={700}>{t('meetingMinutes')}</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={() => { setEditItem(null); setFormOpen(true); }} size="small">
-          {t('createMeeting')}
-        </Button>
-      </Stack>
+      <PageHeader
+        title={t('meetingMinutes')}
+        subtitle={`Document meeting discussions, decisions, and action items for project #${projectId}`}
+        icon={<Groups />}
+        action
+        actionLabel={t('createMeeting')}
+        onAction={() => { setEditItem(null); setFormOpen(true); }}
+        stats={[
+          { label: 'Draft', value: data.filter(r => r.status === 'draft').length },
+          { label: 'Final', value: data.filter(r => r.status === 'final').length },
+        ]}
+      />
 
       <Card>
         {loading ? <DataGridSkeleton /> : (

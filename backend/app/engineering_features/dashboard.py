@@ -6,6 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.projects.models import Project
 from app.drawings.models import Drawing
+from app.workflow.models import WorkflowLog
+from app.notifications.models import Notification
+from app.activities.models import Activity
 
 from .models import (
     BOQItem, Contract, IPCHeader, DailyReport, Subcontractor, Schedule, EngDocument,
@@ -15,18 +18,17 @@ from .schemas import DashboardSummary
 
 
 async def get_dashboard_summary(db: AsyncSession) -> DashboardSummary:
-    projects_result = await db.execute(select(Project))
-    projects = projects_result.scalars().all()
-    total_projects = len(projects)
-
-    total_contract_value = sum((p.budget_estimated or 0) for p in projects)
+    projects_result = await db.execute(select(func.count()).select_from(Project))
+    total_projects = projects_result.scalar() or 0
 
     contracts_result = await db.execute(select(Contract))
     contracts = contracts_result.scalars().all()
+    total_contract_value = sum((c.value or 0) for c in contracts)
 
-    boq_result = await db.execute(select(BOQItem))
-    boq_items = boq_result.scalars().all()
-    total_boq_value = sum((i.total_price or 0) for i in boq_items)
+    boq_result = await db.execute(select(func.count()).select_from(BOQItem))
+    total_boq_items = boq_result.scalar() or 0
+    boq_value_result = await db.execute(select(func.coalesce(func.sum(BOQItem.total_price), 0)))
+    total_boq_value = boq_value_result.scalar() or 0
 
     ipc_result = await db.execute(select(IPCHeader))
     ipcs = ipc_result.scalars().all()
@@ -36,9 +38,9 @@ async def get_dashboard_summary(db: AsyncSession) -> DashboardSummary:
     total_ipc_approved = sum((i.net_amount or 0) for i in ipcs if i.status == "approved")
 
     status_counts = {}
-    for p in projects:
-        st = p.status or "unknown"
-        status_counts[st] = status_counts.get(st, 0) + 1
+    proj_result = await db.execute(select(Project.status, func.count()).group_by(Project.status))
+    for row in proj_result:
+        status_counts[row[0] or "unknown"] = row[1]
     projects_by_status = [{"status": k, "count": v} for k, v in status_counts.items()]
 
     ipc_status = {}
@@ -71,17 +73,20 @@ async def get_dashboard_summary(db: AsyncSession) -> DashboardSummary:
         for ipc in recent_ipcs_data
     ]
 
-    top_projects_data = sorted(projects, key=lambda p: p.budget_estimated or 0, reverse=True)[:5]
-    top_projects = [
-        {
-            "id": p.id,
-            "code": p.code,
-            "name": p.name,
-            "contract_value": str(p.budget_estimated or 0),
-            "status": p.status,
-        }
-        for p in top_projects_data
-    ]
+    top_projects_data = sorted(contracts, key=lambda c: c.value or 0, reverse=True)[:5]
+    proj_map_result = await db.execute(select(Project))
+    proj_map = {p.id: p for p in proj_map_result.scalars().all()}
+    top_projects = []
+    for c in top_projects_data:
+        p = proj_map.get(c.project_id)
+        if p:
+            top_projects.append({
+                "id": p.id,
+                "code": p.code,
+                "name": p.name,
+                "contract_value": str(c.value or 0),
+                "status": p.status,
+            })
 
     drawings_count = (await db.execute(select(func.count()).select_from(Drawing))).scalar() or 0
     daily_reports_count = (await db.execute(select(func.count()).select_from(DailyReport))).scalar() or 0
@@ -90,14 +95,36 @@ async def get_dashboard_summary(db: AsyncSession) -> DashboardSummary:
     documents_count = (await db.execute(select(func.count()).select_from(EngDocument))).scalar() or 0
     vos_count = (await db.execute(select(func.count()).select_from(VariationOrder))).scalar() or 0
     rfis_count = (await db.execute(select(func.count()).select_from(RFI))).scalar() or 0
-    vos_result = await db.execute(select(VariationOrder))
-    vos_list = vos_result.scalars().all()
-    total_vo_amount = sum((v.amount_change or 0) for v in vos_list)
+    vo_sum_result = await db.execute(select(func.coalesce(func.sum(VariationOrder.amount_change), 0)))
+    total_vo_amount = vo_sum_result.scalar() or 0
+
+    pending_approvals = (await db.execute(
+        select(func.count()).select_from(WorkflowLog).where(WorkflowLog.action == "submit")
+    )).scalar() or 0
+
+    unread_notifications_count = (await db.execute(
+        select(func.count()).select_from(Notification).where(Notification.is_read == False)
+    )).scalar() or 0
+
+    recent_activity_result = await db.execute(
+        select(Activity).order_by(Activity.created_at.desc()).limit(10)
+    )
+    recent_activity = [
+        {
+            "id": a.id,
+            "user_id": a.user_id,
+            "action": a.action,
+            "entity_type": a.entity_type,
+            "description": a.description,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+        }
+        for a in recent_activity_result.scalars().all()
+    ]
 
     return DashboardSummary(
         total_projects=total_projects,
         total_contract_value=total_contract_value_dec,
-        total_boq_items=len(boq_items),
+        total_boq_items=total_boq_items,
         total_boq_value=total_boq_value,
         total_ipc_count=total_ipc_count,
         total_ipc_amount=total_ipc_amount,
@@ -122,6 +149,9 @@ async def get_dashboard_summary(db: AsyncSession) -> DashboardSummary:
         projects_completed=status_counts.get("completed", 0),
         projects_planning=status_counts.get("planned", 0),
         top_projects=top_projects,
+        pending_approvals=pending_approvals,
+        unread_notifications=unread_notifications_count,
+        recent_activity=recent_activity,
     )
 
 

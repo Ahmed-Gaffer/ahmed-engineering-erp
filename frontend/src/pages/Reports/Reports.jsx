@@ -78,43 +78,21 @@ export default function Reports() {
     setLoading({ financial: true, progress: true, workOrders: true, schedules: true, daily: true });
     Promise.all([
       engineeringApi.dashboard.summary().catch(() => ({ data: {} })),
-      fetchReport('financial').then(setFinancial).catch(() => {}),
-      fetchReport('progress').then(setProgress).catch(() => {}),
-      fetchReport('work-orders').then(setWorkOrders).catch(() => {}),
-      fetchReport('schedules').then(setSchedules).catch(() => {}),
-      fetchReport('daily').then(setDaily).catch(() => {}),
+      engineeringApi.reports.financial().then(r => setFinancial(r.data)).catch(() => {}),
+      engineeringApi.reports.progress().then(r => setProgress(r.data)).catch(() => {}),
+      engineeringApi.reports.workOrders().then(r => setWorkOrders(r.data)).catch(() => {}),
+      engineeringApi.reports.schedules().then(r => setSchedules(r.data)).catch(() => {}),
+      engineeringApi.reports.daily().then(r => setDaily(r.data)).catch(() => {}),
     ])
       .then(() => setLoaded(true))
       .catch(() => setError(true))
       .finally(() => setLoading({}));
   }, []);
 
-  const fetchReport = async (type) => {
-    const token = localStorage.getItem('token');
-    const base = '/api/engineering/reports';
-    const res = await fetch(`${base}/${type}`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) throw new Error(`Report ${type} failed`);
-    return res.json();
-  };
-
-  const fetchReportWithFilters = async (type, filters = {}) => {
-    const token = localStorage.getItem('token');
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
-    const res = await fetch(`/api/engineering/reports/${type}?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error(`Report ${type} failed`);
-    return res.json();
-  };
-
   const exportReport = async (type) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/engineering/reports/${type}/export`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const blob = await res.blob();
+      const res = await engineeringApi.reports.dashboardExport();
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `${type}_report.xlsx`; a.click();
@@ -152,19 +130,19 @@ export default function Reports() {
     setTab(val);
     if (val === 2 && !workOrders) {
       setLoading(prev => ({ ...prev, workOrders: true }));
-      const data = await fetchReport('work-orders');
+      const { data } = await engineeringApi.reports.workOrders();
       setWorkOrders(data);
       setLoading(prev => ({ ...prev, workOrders: false }));
     }
     if (val === 3 && !schedules) {
       setLoading(prev => ({ ...prev, schedules: true }));
-      const data = await fetchReport('schedules');
+      const { data } = await engineeringApi.reports.schedules();
       setSchedules(data);
       setLoading(prev => ({ ...prev, schedules: false }));
     }
     if (val === 4 && !daily) {
       setLoading(prev => ({ ...prev, daily: true }));
-      const data = await fetchReport('daily');
+      const { data } = await engineeringApi.reports.daily();
       setDaily(data);
       setLoading(prev => ({ ...prev, daily: false }));
     }
@@ -180,7 +158,7 @@ export default function Reports() {
     const newFilter = { ...woFilter, [key]: value };
     setWoFilter(newFilter);
     setLoading(prev => ({ ...prev, workOrders: true }));
-    const data = await fetchReportWithFilters('work-orders', newFilter);
+    const { data } = await engineeringApi.reports.workOrders(newFilter);
     setWorkOrders(data);
     setLoading(prev => ({ ...prev, workOrders: false }));
   };
@@ -189,7 +167,7 @@ export default function Reports() {
     const newFilter = { ...schedFilter, [key]: value };
     setSchedFilter(newFilter);
     setLoading(prev => ({ ...prev, schedules: true }));
-    const data = await fetchReportWithFilters('schedules', newFilter);
+    const { data } = await engineeringApi.reports.schedules(newFilter);
     setSchedules(data);
     setLoading(prev => ({ ...prev, schedules: false }));
   };

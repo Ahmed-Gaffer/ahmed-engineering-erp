@@ -540,10 +540,6 @@ export default function IPC() {
               )}
             </TabPanel>
 
-            <TabPanel value={detailTab} index={3}>
-              <WorkflowTimeline entityType="ipc" entityId={detailItem?.id} refreshTrigger={wfRefresh} />
-            </TabPanel>
-
             <TabPanel value={detailTab} index={2}>
               {detailItem && (
                 <Grid container spacing={2}>
@@ -573,6 +569,10 @@ export default function IPC() {
                   </Grid>
                 </Grid>
               )}
+            </TabPanel>
+
+            <TabPanel value={detailTab} index={3}>
+              <WorkflowTimeline entityType="ipc" entityId={detailItem?.id} refreshTrigger={wfRefresh} />
             </TabPanel>
           </DialogContent>
           <Divider />

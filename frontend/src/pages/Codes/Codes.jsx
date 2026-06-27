@@ -4,7 +4,7 @@ import { codesService } from '../../services/api';
 const columns = [
   { field: 'code', headerName: 'code', width: 120 },
   { field: 'title', headerName: 'title', flex: 1.5 },
-  { field: 'project_id', headerName: 'project', type: 'number', width: 80 },
+  { field: 'project_id', headerName: 'project', type: 'number', width: 80, linkTo: (row) => `/engineering/projects/${row.project_id}` },
   { field: 'level', headerName: 'level', type: 'number', width: 70 },
   { field: 'type', headerName: 'type', width: 80 },
   { field: 'unit', headerName: 'unit', width: 80 },

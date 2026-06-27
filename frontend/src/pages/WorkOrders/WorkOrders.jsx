@@ -4,7 +4,7 @@ import { workOrdersService } from '../../services/api';
 const columns = [
   { field: 'wo_number', headerName: 'woNumber', width: 110, linkTo: '/engineering/work-orders' },
   { field: 'title', headerName: 'title', flex: 1.5 },
-  { field: 'project_id', headerName: 'project', type: 'number', width: 80, linkTo: '/engineering/projects' },
+  { field: 'project_id', headerName: 'project', type: 'number', width: 80, linkTo: (row) => `/engineering/projects/${row.project_id}` },
   { field: 'priority', headerName: 'priority', width: 90 },
   { field: 'status', headerName: 'status', width: 120 },
   { field: 'issue_date', headerName: 'issueDate', type: 'date', width: 110 },

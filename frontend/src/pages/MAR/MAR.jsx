@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { Box, Typography, Card, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Chip, Tooltip } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { arSD, enUS } from '@mui/x-data-grid/locales';
-import { Add, Edit, Delete, Send, CheckCircle, Cancel, UploadFile, PictureAsPdf } from '@mui/icons-material';
+import { Add, Edit, Delete, Send, CheckCircle, Cancel, UploadFile, PictureAsPdf, Engineering } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { engineeringApi, projectsService } from '../../services/api';
@@ -26,8 +28,9 @@ export default function MAR() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(searchParams.get('project_id') || '');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -41,8 +44,14 @@ export default function MAR() {
 
   useEffect(() => {
     projectsService.list({ limit: 100 }).then((r) => {
-      setProjects(r.data.items || []);
-      if (r.data.items?.length && !selectedProjectId) setSelectedProjectId(r.data.items[0].id);
+      const items = r.data.items || [];
+      setProjects(items);
+      const urlPid = searchParams.get('project_id');
+      if (urlPid && items.some((p) => p.id === Number(urlPid))) {
+        setSelectedProjectId(Number(urlPid));
+      } else if (items.length && !selectedProjectId) {
+        setSelectedProjectId(items[0].id);
+      }
     });
   }, []);
 
@@ -203,19 +212,29 @@ export default function MAR() {
 
   if (!selectedProjectId) return <DataGridSkeleton />;
 
+  const draftCount = data.filter(r => r.status === 'draft').length;
+  const submittedCount = data.filter(r => r.status === 'submitted').length;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-        <Typography variant="h5" fontWeight={700}>{t('mar')}</Typography>
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <TextField select size="small" value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)}
-            sx={{ minWidth: 200 }}>
-            {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.code} — {p.name}</MenuItem>)}
-          </TextField>
-          <Button variant="contained" startIcon={<Add />} onClick={() => { setEditItem(null); setFormOpen(true); }} size="small">
-            {t('create')}
-          </Button>
-        </Stack>
+      <PageHeader
+        title={t('mar')}
+        subtitle="Manage Material Approval Requests with submission, review, and approval workflow"
+        icon={<Engineering />}
+        action={!!selectedProjectId}
+        actionLabel={t('create')}
+        onAction={() => { setEditItem(null); setFormOpen(true); }}
+        stats={[
+          { label: 'Draft', value: draftCount },
+          { label: 'Submitted', value: submittedCount },
+          { label: 'Total', value: data.length },
+        ]}
+      />
+      <Stack direction="row" spacing={1.5} mb={2.5}>
+        <TextField select size="small" value={selectedProjectId} onChange={(e) => { setSelectedProjectId(e.target.value); const p = new URLSearchParams(searchParams); p.set('project_id', e.target.value); setSearchParams(p, { replace: true }); }}
+          sx={{ minWidth: 240 }}>
+          {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.code} — {p.name}</MenuItem>)}
+        </TextField>
       </Stack>
 
       <Card>

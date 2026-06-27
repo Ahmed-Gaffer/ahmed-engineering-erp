@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import {
   Box, Typography, TextField, Button, Stack, MenuItem, Chip, Card, Dialog, DialogTitle,
   DialogContent, DialogActions,
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, QuestionAnswer } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import { engineeringApi } from '../../services/api';
 import { formatDate } from '../../utils/helpers';
 import ConfirmDialog from '../../components/ConfirmDialog/ConfirmDialog';
@@ -28,8 +30,9 @@ const PRIORITY_CHIP = {
 export default function RFIs() {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [projects, setProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState(searchParams.get('project_id') || '');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -39,7 +42,14 @@ export default function RFIs() {
   const [deleteId, setDeleteId] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
 
-  useEffect(() => { engineeringApi.projects.list().then(r => setProjects(r.data || [])); }, []);
+  useEffect(() => {
+    engineeringApi.projects.list().then(r => {
+      const items = r.data || [];
+      setProjects(items);
+      const urlPid = searchParams.get('project_id');
+      if (urlPid && items.some((p) => p.id === Number(urlPid))) setSelectedProjectId(Number(urlPid));
+    });
+  }, []);
 
   const fetchData = async () => {
     if (!selectedProjectId) { setData([]); setLoading(false); return; }
@@ -96,11 +106,19 @@ export default function RFIs() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Box>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5" fontWeight={700}>RFIs</Typography>
-          {selectedProjectId && <Button variant="contained" startIcon={<Add />} onClick={openCreate}>{t('create')}</Button>}
-        </Stack>
-        <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ mb: 2, minWidth: 280 }}>
+        <PageHeader
+          title="RFIs"
+          subtitle="Submit and track Requests for Information across projects"
+          icon={<QuestionAnswer />}
+          action={!!selectedProjectId}
+          actionLabel={t('create')}
+          onAction={openCreate}
+          stats={[
+            { label: 'Open', value: data.filter(r => r.status === 'new').length },
+            { label: 'Total', value: data.length },
+          ]}
+        />
+        <TextField select value={selectedProjectId} onChange={(e) => { setSelectedProjectId(e.target.value); const p = new URLSearchParams(searchParams); p.set('project_id', e.target.value); setSearchParams(p, { replace: true }); }} label={t('selectProject')} sx={{ mb: 2, minWidth: 280 }}>
           <MenuItem value="">{t('all')}</MenuItem>
           {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
         </TextField>

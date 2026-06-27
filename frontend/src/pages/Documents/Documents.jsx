@@ -4,7 +4,7 @@ import { documentsService } from '../../services/api';
 const columns = [
   { field: 'doc_number', headerName: 'docNumber', width: 110 },
   { field: 'title', headerName: 'title', flex: 1.5 },
-  { field: 'project_id', headerName: 'project', type: 'number', width: 80 },
+  { field: 'project_id', headerName: 'project', type: 'number', width: 80, linkTo: (row) => `/engineering/projects/${row.project_id}` },
   { field: 'type', headerName: 'type', width: 110 },
   { field: 'direction', headerName: 'direction', width: 90 },
   { field: 'status', headerName: 'status', width: 90 },

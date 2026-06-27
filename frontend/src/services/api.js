@@ -66,7 +66,7 @@ export const activitiesApi = {
 };
 
 export const searchApi = {
-  search: (q) => api.get('/search/', { params: { q } }),
+  search: (q, signal) => api.get('/search/', { params: { q }, signal }),
 };
 
 export const exportApi = {

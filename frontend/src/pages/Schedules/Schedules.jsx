@@ -10,6 +10,7 @@ import {
   Add, Edit, Delete, ViewTimeline, TableChart, AccountTree, AutoAwesome,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import DataTable from '../../components/DataTable/DataTable';
 import GanttChart from '../../components/GanttChart/GanttChart';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
@@ -207,24 +208,36 @@ export default function Schedules() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Box>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5" fontWeight={700}>{t('schedulesPage')}</Typography>
-          {selectedProjectId && (
-            <Stack direction="row" spacing={1}>
-              <ToggleButtonGroup value={viewMode} exclusive onChange={(_, v) => v && setViewMode(v)} size="small">
-                <ToggleButton value="table"><TableChart fontSize="small" /></ToggleButton>
-                <ToggleButton value="gantt"><ViewTimeline fontSize="small" /></ToggleButton>
-              </ToggleButtonGroup>
-              <Button variant="outlined" size="small" startIcon={<AutoAwesome />} onClick={handleCalculateCriticalPath}>{t('criticalPath')}</Button>
-              <Button variant="contained" size="small" startIcon={<Add />} onClick={openCreate}>{t('create')}</Button>
-            </Stack>
-          )}
-        </Stack>
-
-        <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ mb: 2, minWidth: 280 }}>
-          <MenuItem value="">{t('all')}</MenuItem>
-          {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
-        </TextField>
+        <PageHeader
+          title={t('schedulesPage')}
+          subtitle="Manage project schedules with Gantt chart, progress tracking, and critical path analysis"
+          icon={<AccountTree />}
+          stats={[
+            { label: 'Tasks', value: data.length },
+            { label: 'Completed', value: data.filter(t => t.status === 'completed').length },
+            { label: 'Delayed', value: data.filter(t => t.status === 'delayed').length },
+          ]}
+        />
+        {selectedProjectId && (
+          <Stack direction="row" spacing={1} mb={2.5} alignItems="center">
+            <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ minWidth: 240 }}>
+              <MenuItem value="">{t('all')}</MenuItem>
+              {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+            </TextField>
+            <ToggleButtonGroup value={viewMode} exclusive onChange={(_, v) => v && setViewMode(v)} size="small">
+              <ToggleButton value="table"><TableChart fontSize="small" /></ToggleButton>
+              <ToggleButton value="gantt"><ViewTimeline fontSize="small" /></ToggleButton>
+            </ToggleButtonGroup>
+            <Button variant="outlined" size="small" startIcon={<AutoAwesome />} onClick={handleCalculateCriticalPath}>{t('criticalPath')}</Button>
+            <Button variant="contained" size="small" startIcon={<Add />} onClick={openCreate}>{t('create')}</Button>
+          </Stack>
+        )}
+        {!selectedProjectId && (
+          <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ mb: 2, minWidth: 280 }}>
+            <MenuItem value="">{t('all')}</MenuItem>
+            {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+          </TextField>
+        )}
 
         {!selectedProjectId ? (
           <EmptyState title={t('selectProject')} description={t('selectProjectDescription')} />

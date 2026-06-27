@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Typography, TextField, Button, Stack, MenuItem } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Add, EventNote } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import DataTable from '../../components/DataTable/DataTable';
 import FormDialog from '../../components/FormDialog/FormDialog';
 import DataGridSkeleton from '../../components/Skeleton/DataGridSkeleton';
@@ -95,10 +96,17 @@ export default function DailyReports() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Box>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5" fontWeight={700}>{t('dailyReportsPage')}</Typography>
-          {selectedProjectId && <Button variant="contained" startIcon={<Add />} onClick={openCreate}>{t('create')}</Button>}
-        </Stack>
+        <PageHeader
+          title={t('dailyReportsPage')}
+          subtitle="Record daily site activities, manpower, equipment, and site conditions"
+          icon={<EventNote />}
+          action={!!selectedProjectId}
+          actionLabel={t('create')}
+          onAction={openCreate}
+          stats={[
+            { label: 'Reports', value: data.length },
+          ]}
+        />
         <TextField select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} label={t('selectProject')} sx={{ mb: 2, minWidth: 280 }}>
           <MenuItem value="">{t('all')}</MenuItem>
           {projects.map((p) => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}

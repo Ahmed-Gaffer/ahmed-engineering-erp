@@ -83,6 +83,75 @@ async def get_project(project_id: int, db: AsyncSession = Depends(get_db)):
     return project
 
 
+@router.get("/projects/{project_id}/summary")
+async def project_summary(project_id: int, db: AsyncSession = Depends(get_db)):
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+
+    counts = {}
+
+    # Contract
+    r = await db.execute(select(func.count()).select_from(Contract).where(Contract.project_id == project_id))
+    counts["contracts"] = r.scalar()
+
+    # Drawings
+    from app.drawings.models import Drawing
+    r = await db.execute(select(func.count()).select_from(Drawing).where(Drawing.project_id == project_id))
+    counts["drawings"] = r.scalar()
+
+    # NCR
+    r = await db.execute(select(func.count()).select_from(NonConformanceReport).where(NonConformanceReport.project_id == project_id))
+    counts["ncrs"] = r.scalar()
+
+    # RFI
+    r = await db.execute(select(func.count()).select_from(RFI).where(RFI.project_id == project_id))
+    counts["rfis"] = r.scalar()
+
+    # MAR
+    r = await db.execute(select(func.count()).select_from(MaterialApprovalRequest).where(MaterialApprovalRequest.project_id == project_id))
+    counts["mar"] = r.scalar()
+
+    # Meeting Minutes
+    r = await db.execute(select(func.count()).select_from(MeetingMinute).where(MeetingMinute.project_id == project_id))
+    counts["meeting_minutes"] = r.scalar()
+
+    # Daily Reports
+    r = await db.execute(select(func.count()).select_from(DailyReport).where(DailyReport.project_id == project_id))
+    counts["daily_reports"] = r.scalar()
+
+    # Schedules
+    r = await db.execute(select(func.count()).select_from(Schedule).where(Schedule.project_id == project_id))
+    counts["schedules"] = r.scalar()
+
+    # BOQ Items
+    r = await db.execute(select(func.count()).select_from(BOQItem).where(BOQItem.project_id == project_id))
+    counts["boq_items"] = r.scalar()
+
+    # Variation Orders
+    r = await db.execute(select(func.count()).select_from(VariationOrder).where(VariationOrder.project_id == project_id))
+    counts["variation_orders"] = r.scalar()
+
+    # IPC
+    r = await db.execute(select(func.count()).select_from(IPCHeader).where(IPCHeader.project_id == project_id))
+    counts["ipcs"] = r.scalar()
+
+    # Recent NCRs
+    r = await db.execute(select(NonConformanceReport).where(NonConformanceReport.project_id == project_id).order_by(NonConformanceReport.created_at.desc()).limit(5))
+    recent_ncrs = [{"id": n.id, "ncr_number": n.ncr_number, "title": n.title, "status": n.status, "severity": n.severity} for n in r.scalars().all()]
+
+    # Recent RFIs
+    r = await db.execute(select(RFI).where(RFI.project_id == project_id).order_by(RFI.created_at.desc()).limit(5))
+    recent_rfis = [{"id": n.id, "rfi_number": n.rfi_number, "title": n.title, "status": n.status, "priority": n.priority} for n in r.scalars().all()]
+
+    return {
+        "project": {"id": project.id, "code": project.code, "name": project.name, "status": project.status, "project_type": project.project_type, "start_date": str(project.start_date) if project.start_date else None, "end_date_planned": str(project.end_date_planned) if project.end_date_planned else None, "location": project.location, "client_name": project.client_name, "consultant_name": project.consultant_name, "project_manager": project.project_manager, "budget_estimated": float(project.budget_estimated) if project.budget_estimated else 0},
+        "counts": counts,
+        "recent_ncrs": recent_ncrs,
+        "recent_rfis": recent_rfis,
+    }
+
+
 # ─── Contracts ───
 
 @router.post("/contracts", dependencies=[Depends(require_role("admin", "engineer"))])
@@ -872,25 +941,46 @@ async def calculate_critical_path(project_id: int, db: AsyncSession = Depends(ge
     for task in tasks:
         task.critical = False
 
-    for task in tasks:
+    topo_order = sorted(tasks, key=lambda t: (t.start_date or t.id, t.id))
+
+    est = {t.id: 0 for t in tasks}
+    eft = {t.id: 0 for t in tasks}
+    lst = {t.id: float('inf') for t in tasks}
+    lft = {t.id: float('inf') for t in tasks}
+    project_end = max((t.end_date or t.id for t in tasks), default=0)
+
+    for task in topo_order:
         deps = [int(d.strip()) for d in (task.dependencies or "").split(",") if d.strip().isdigit()]
         if not deps:
-            task.critical = True
+            est[task.id] = 0
+        else:
+            est[task.id] = max(eft.get(d, 0) for d in deps)
+        eft[task.id] = est[task.id] + (task.duration_days or 1)
+
+    project_completion = max(eft.values()) if eft else 0
+    for task in reversed(topo_order):
+        deps = [int(d.strip()) for d in (task.dependencies or "").split(",") if d.strip().isdigit()]
+        if not deps:
+            lft[task.id] = project_completion
+        else:
+            lft[task.id] = min(lst.get(d, project_completion) for d in deps)
+        lst[task.id] = lft[task.id] - (task.duration_days or 1)
 
     critical_ids = set()
     for task in tasks:
-        deps = [int(d.strip()) for d in (task.dependencies or "").split(",") if d.strip().isdigit()]
-        if not deps:
+        if est[task.id] == lst[task.id] and est[task.id] != float('inf'):
             critical_ids.add(task.id)
-        for dep_id in deps:
-            if dep_id in critical_ids:
-                critical_ids.add(task.id)
 
     for task in tasks:
         task.critical = task.id in critical_ids
 
     await db.commit()
-    return {"critical_count": len(critical_ids), "total": len(tasks)}
+    return {
+        "critical_count": len(critical_ids),
+        "total": len(tasks),
+        "critical_ids": list(critical_ids),
+        "project_completion_days": project_completion,
+    }
 
 
 @router.patch("/schedules/{schedule_id}/dependencies")
@@ -1341,7 +1431,7 @@ async def get_evm_report(project_id: int, db: AsyncSession = Depends(get_db)):
 
     planned_value = total_budget * (planned_progress / 100) if planned_progress else 0
     earned_value = total_billed
-    actual_cost = total_billed * 0.95
+    actual_cost = sum(i.net_amount for i in ipcs if i.status == "paid")
 
     sv = earned_value - planned_value
     cv = earned_value - actual_cost
@@ -1398,7 +1488,7 @@ async def report_project_financial(project_id: int, db: AsyncSession = Depends(g
     total_budget = contract_value
     planned_value = total_budget * (planned_progress / 100) if planned_progress else Decimal("0")
     earned_value = total_billed
-    actual_cost = earned_value * Decimal("0.95")
+    actual_cost = total_paid
     spi = (earned_value / planned_value) if planned_value else Decimal("0")
     cpi = (earned_value / actual_cost) if actual_cost else Decimal("0")
     remaining_budget = contract_value - total_paid

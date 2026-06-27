@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box, CircularProgress, Typography } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import getTheme from './theme';
@@ -38,6 +38,8 @@ import EVM from './pages/EVM/EVM';
 import CompanyProfile from './pages/CompanyProfile/CompanyProfile';
 import Notifications from './pages/Notifications/Notifications';
 import Admin from './pages/Admin/Admin';
+import SearchPage from './pages/Search/Search';
+import ProjectHub from './pages/ProjectHub/ProjectHub';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -53,12 +55,17 @@ const MotionOutlet = ({ children }) => (
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  const prev = useRef();
-  if (loading) return null;
-  if (!user) {
-    prev.current = null;
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Box textAlign="center">
+          <CircularProgress size={48} sx={{ color: '#6366f1' }} />
+          <Typography variant="body2" color="text.secondary" mt={2}>Loading...</Typography>
+        </Box>
+      </Box>
+    );
   }
+  if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -80,6 +87,7 @@ function AppContent() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<MotionOutlet><Dashboard /></MotionOutlet>} />
             <Route path="contractors" element={<MotionOutlet><Contractors /></MotionOutlet>} />
+            <Route path="projects/:projectId" element={<MotionOutlet><ProjectHub /></MotionOutlet>} />
             <Route path="projects" element={<MotionOutlet><Projects /></MotionOutlet>} />
             <Route path="phases" element={<MotionOutlet><Phases /></MotionOutlet>} />
             <Route path="codes" element={<MotionOutlet><Codes /></MotionOutlet>} />
@@ -106,6 +114,7 @@ function AppContent() {
             <Route path="company-profile" element={<MotionOutlet><CompanyProfile /></MotionOutlet>} />
             <Route path="notifications" element={<MotionOutlet><Notifications /></MotionOutlet>} />
             <Route path="admin" element={<MotionOutlet><Admin /></MotionOutlet>} />
+            <Route path="search" element={<MotionOutlet><SearchPage /></MotionOutlet>} />
           </Route>
           <Route path="*" element={<Navigate to="/engineering/dashboard" replace />} />
         </Routes>

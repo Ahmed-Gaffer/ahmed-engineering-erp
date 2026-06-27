@@ -23,7 +23,12 @@ async def _has_any_user(db: AsyncSession) -> bool:
 async def register(data: UserCreate, db: AsyncSession = Depends(get_db), user: Optional[User] = Depends(get_optional_current_user)):
     has_users = await _has_any_user(db)
     if has_users:
-        if data.role == "admin" and (not user or user.role != "admin"):
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Registration is disabled after initial setup. Please contact an admin."
+            )
+        if data.role == "admin" and user.role != "admin":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only admins can register new admin users"
