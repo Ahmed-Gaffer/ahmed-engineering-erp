@@ -143,6 +143,24 @@ const getTheme = (lang, mode = 'light') => {
               '&:hover': { boxShadow: `0 2px 8px ${isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)'}` },
               '&.Mui-focused': { boxShadow: '0 2px 12px rgba(99,102,241,0.12)' },
             },
+            '& .MuiInputBase-input': {
+              color: isDark ? '#f1f5f9' : undefined,
+              ...(isDark ? {
+                '&:-webkit-autofill': {
+                  WebkitTextFillColor: '#f1f5f9',
+                  WebkitBoxShadow: '0 0 0px 1000px #1e293b inset',
+                  transition: 'background-color 5000s ease-in-out 0s',
+                },
+                '&:-webkit-autofill:hover': {
+                  WebkitTextFillColor: '#f1f5f9',
+                  WebkitBoxShadow: '0 0 0px 1000px #1e293b inset',
+                },
+                '&:-webkit-autofill:focus': {
+                  WebkitTextFillColor: '#f1f5f9',
+                  WebkitBoxShadow: '0 0 0px 1000px #1e293b inset',
+                },
+              } : {}),
+            },
           },
         },
       },

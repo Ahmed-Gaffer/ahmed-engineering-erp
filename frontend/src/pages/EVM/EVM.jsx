@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Box, Typography, TextField, MenuItem, Grid, Card, CardContent, Stack, Chip,
   LinearProgress, Table, TableBody, TableCell, TableContainer, TableRow, Paper,
+  useTheme,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import PageHeader from '../../components/PageHeader/PageHeader';
@@ -38,6 +39,7 @@ function getEVMStatus(spi, cpi) {
 
 export default function EVM() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,18 +78,18 @@ export default function EVM() {
   const status = evm ? getEVMStatus(Number(evm.spi), Number(evm.cpi)) : 'good';
 
   const metrics = evm ? [
-    { label: t('plannedValue'), value: formatNumber(evm.planned_value), color: '#6366f1' },
-    { label: t('earnedValue'), value: formatNumber(evm.earned_value), color: '#10b981' },
-    { label: t('actualCost'), value: formatNumber(evm.actual_cost), color: '#f59e0b' },
-    { label: t('scheduleVariance'), value: formatNumber(evm.schedule_variance), color: Number(evm.schedule_variance) >= 0 ? '#10b981' : '#ef4444' },
-    { label: t('costVariance'), value: formatNumber(evm.cost_variance), color: Number(evm.cost_variance) >= 0 ? '#10b981' : '#ef4444' },
-    { label: 'SPI', value: formatPercent(evm.spi), color: Number(evm.spi) >= 1 ? '#10b981' : '#ef4444' },
-    { label: 'CPI', value: formatPercent(evm.cpi), color: Number(evm.cpi) >= 1 ? '#10b981' : '#ef4444' },
-    { label: t('estimateAtCompletion'), value: formatNumber(evm.estimate_at_completion), color: '#8b5cf6' },
+    { label: t('plannedValue'), value: formatNumber(evm.planned_value), color: 'primary.main' },
+    { label: t('earnedValue'), value: formatNumber(evm.earned_value), color: 'success.main' },
+    { label: t('actualCost'), value: formatNumber(evm.actual_cost), color: 'warning.main' },
+    { label: t('scheduleVariance'), value: formatNumber(evm.schedule_variance), color: Number(evm.schedule_variance) >= 0 ? 'success.main' : 'error.main' },
+    { label: t('costVariance'), value: formatNumber(evm.cost_variance), color: Number(evm.cost_variance) >= 0 ? 'success.main' : 'error.main' },
+    { label: 'SPI', value: formatPercent(evm.spi), color: Number(evm.spi) >= 1 ? 'success.main' : 'error.main' },
+    { label: 'CPI', value: formatPercent(evm.cpi), color: Number(evm.cpi) >= 1 ? 'success.main' : 'error.main' },
+    { label: t('estimateAtCompletion'), value: formatNumber(evm.estimate_at_completion), color: 'secondary.main' },
     { label: t('estimateToComplete'), value: formatNumber(evm.estimate_to_complete), color: '#ec4899' },
-    { label: t('varianceAtCompletion'), value: formatNumber(evm.variance_at_completion), color: Number(evm.variance_at_completion) >= 0 ? '#10b981' : '#ef4444' },
-    { label: t('totalBudget'), value: formatNumber(evm.total_budget), color: '#64748b' },
-    { label: t('totalBilled'), value: formatNumber(evm.total_billed), color: '#06b6d4' },
+    { label: t('varianceAtCompletion'), value: formatNumber(evm.variance_at_completion), color: Number(evm.variance_at_completion) >= 0 ? 'success.main' : 'error.main' },
+    { label: t('totalBudget'), value: formatNumber(evm.total_budget), color: 'text.secondary' },
+    { label: t('totalBilled'), value: formatNumber(evm.total_billed), color: 'info.main' },
   ] : [];
 
   return (
@@ -125,7 +127,7 @@ export default function EVM() {
                 <Grid container spacing={2}>
                   {metrics.map((m) => (
                     <Grid key={m.label} item xs={6} sm={4} md={3} lg={2}>
-                      <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
+                      <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
                         <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{m.label}</Typography>
                         <Typography variant="h6" fontWeight={700} sx={{ color: m.color }}>
                           {m.value}
@@ -144,14 +146,14 @@ export default function EVM() {
                     <Typography fontWeight={600} variant="body1" mb={2}>S-Curve</Typography>
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={sCurveData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                         <XAxis dataKey="name" fontSize={12} />
                         <YAxis fontSize={12} tickFormatter={(v) => formatNumber(v)} />
                         <RechartsTooltip formatter={(v) => formatNumber(v)} />
                         <Legend />
-                        <Line type="monotone" dataKey="planned" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} name="PV (Planned)" />
-                        <Line type="monotone" dataKey="earned" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} name="EV (Earned)" />
-                        <Line type="monotone" dataKey="actual" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} name="AC (Actual)" />
+                        <Line type="monotone" dataKey="planned" stroke={theme.palette.primary.main} strokeWidth={2} dot={{ r: 4 }} name="PV (Planned)" />
+                        <Line type="monotone" dataKey="earned" stroke={theme.palette.success.main} strokeWidth={2} dot={{ r: 4 }} name="EV (Earned)" />
+                        <Line type="monotone" dataKey="actual" stroke={theme.palette.warning.main} strokeWidth={2} dot={{ r: 4 }} name="AC (Actual)" />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Grid, Card, CardContent, Typography, Box, Stack, Chip, Button, Table,
   TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tabs, Tab,
-  FormControl, InputLabel, Select, MenuItem, TextField, Link,
+  FormControl, InputLabel, Select, MenuItem, TextField, Link, useTheme,
 } from '@mui/material';
 import {
   Assessment, Download, AccountBalance, Construction,
@@ -39,10 +39,6 @@ const itemVariants = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
 };
-const sectionSx = {
-  mb: 3, borderRadius: 2, border: '1px solid rgba(0,0,0,0.04)',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-};
 
 function TabPanel({ children, value, index }) {
   return value === index ? <motion.div variants={itemVariants} initial="hidden" animate="show">{children}</motion.div> : null;
@@ -51,6 +47,13 @@ function TabPanel({ children, value, index }) {
 export default function Reports() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'ar' ? arSD : enUS;
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const sectionSx = {
+    mb: 3, borderRadius: 2,
+    border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.04)',
+    boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.02)',
+  };
   const [tab, setTab] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState({});
@@ -439,7 +442,7 @@ function FinancialReportTab({ financial, exportReport, navigateTo }) {
             <Card sx={sectionSx}>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight={600} mb={2}>{t('projectBreakdown')}</Typography>
-                <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 2, maxHeight: 280 }}>
+                <TableContainer component={Paper} sx={{ boxShadow: 'none', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', borderRadius: 2, maxHeight: 280 }}>
                   <Table size="small" stickyHeader>
                     <TableHead>
                       <TableRow>
@@ -631,7 +634,7 @@ function SchedulesTab({ data, loading, schedFilter, onFilter, exportReport, navi
                     { field: 'progress_percent', headerName: t('progressPercentage'), width: 120,
                       renderCell: (p) => (
                         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ width: '100%', height: '100%' }}>
-                          <Box sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                          <Box sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
                             <Box sx={{ width: `${p.value || 0}%`, height: '100%', borderRadius: 3,
                               background: 'linear-gradient(90deg, #6366f1, #818cf8)', transition: 'width 0.6s ease' }} />
                           </Box>
@@ -862,7 +865,7 @@ function ProjectComparisonTab({ data, loading, exportReport }) {
                     </BarChart>
                   </ResponsiveContainer>
                 </Box>
-                <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 2 }}>
+                <TableContainer component={Paper} sx={{ boxShadow: 'none', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', borderRadius: 2 }}>
                   <Table size="small">
                     <TableHead>
                       <TableRow>

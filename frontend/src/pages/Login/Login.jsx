@@ -22,7 +22,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState(0);
   const isDark = mode === 'dark';
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -132,14 +131,12 @@ export default function Login() {
                   name="username" label={t('username')} fullWidth required
                   size="small" autoComplete="username" autoFocus
                   sx={{ mb: 2.5 }}
-                  InputLabelProps={{ sx: { color: isDark ? '#94a3b8' : undefined } }}
                 />
                 {tab === 1 && (
                   <TextField
                     name="email" label={t('email')} type="email" fullWidth required
                     size="small" autoComplete="email"
                     sx={{ mb: 2.5 }}
-                    InputLabelProps={{ sx: { color: isDark ? '#94a3b8' : undefined } }}
                   />
                 )}
                 <TextField
@@ -147,14 +144,12 @@ export default function Login() {
                   fullWidth required size="small"
                   autoComplete={tab === 1 ? 'new-password' : 'current-password'}
                   sx={{ mb: tab === 1 ? 2.5 : 3.5 }}
-                  InputLabelProps={{ sx: { color: isDark ? '#94a3b8' : undefined } }}
                 />
                 {tab === 1 && (
                   <TextField
                     name="confirmPassword" label={t('confirmPassword')} type="password"
                     fullWidth required size="small" autoComplete="new-password"
                     sx={{ mb: 3.5 }}
-                    InputLabelProps={{ sx: { color: isDark ? '#94a3b8' : undefined } }}
                   />
                 )}
                 <Button

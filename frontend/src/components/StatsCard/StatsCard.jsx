@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography, Stack, Box } from '@mui/material';
+import { Card, CardContent, Typography, Stack, Box, useTheme } from '@mui/material';
 
 const gradientMap = {
   primary: 'linear-gradient(135deg, #6366f1, #818cf8)',
@@ -19,13 +19,17 @@ const chipBgMap = {
 };
 
 export default function StatsCard({ title, value, icon, color = 'primary', trend }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   return (
     <Card sx={{
       minWidth: 200, position: 'relative', overflow: 'hidden',
       transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
       '&:hover': {
         transform: 'translateY(-4px)',
-        boxShadow: '0 20px 25px rgba(0,0,0,0.04), 0 10px 10px rgba(0,0,0,0.02)',
+        boxShadow: isDark
+          ? '0 20px 25px rgba(0,0,0,0.4), 0 10px 10px rgba(0,0,0,0.3)'
+          : '0 20px 25px rgba(0,0,0,0.04), 0 10px 10px rgba(0,0,0,0.02)',
       },
     }}>
       <Box sx={{

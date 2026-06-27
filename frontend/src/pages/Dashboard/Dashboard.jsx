@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Grid, Card, CardContent, Typography, Box, Stack, Chip, CircularProgress, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper, Button, IconButton, Menu, MenuItem,
-  ListItemIcon, ListItemText, Avatar, Drawer, Divider, Badge, Tooltip, Fade,
+  ListItemIcon, ListItemText, Avatar, Drawer, Divider, Badge, Tooltip, Fade, useTheme,
 } from '@mui/material';
 import {
   Folder, MonetizationOn, ListAlt, Receipt, TrendingUp, CheckCircle, ThumbUpAlt,
@@ -153,6 +153,7 @@ const NotificationPanel = ({ open, onClose, notifications, onMarkRead }) => {
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [data, setData] = useState(null);
@@ -584,7 +585,7 @@ export default function Dashboard() {
                         <TableRow key={ipc.id} hover sx={{ cursor: 'pointer' }} onClick={() => navigate('/engineering/ipc')}>
                           <TableCell sx={{ fontSize: '0.8rem', fontWeight: 600 }}>{ipc.ipc_number}</TableCell>
                           <TableCell align="right" sx={{ fontSize: '0.8rem' }}>{formatNumber(ipc.total_works)}</TableCell>
-                          <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#10b981' }}>{formatNumber(ipc.net_amount)}</TableCell>
+                          <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 600, color: 'success.main' }}>{formatNumber(ipc.net_amount)}</TableCell>
                           <TableCell>
                             <Chip label={ipc.status} size="small" color={statusColors[ipc.status] || 'default'} sx={{ fontWeight: 600, fontSize: '0.7rem' }} />
                           </TableCell>
@@ -628,7 +629,7 @@ export default function Dashboard() {
                   { label: 'VAC', value: evm.variance_at_completion, color: '#06b6d4' },
                 ].map((item) => (
                   <Grid key={item.label} item xs={6} sm={4} md={2}>
-                    <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.02)' }}>
+                    <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: 2, bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
                       <Typography variant="caption" color="text.secondary" fontSize="0.65rem">{item.label}</Typography>
                       <Typography variant="h6" fontWeight={700} sx={{ color: item.color, fontSize: '1rem' }}>
                         {formatNumber(item.value)}
@@ -659,7 +660,7 @@ export default function Dashboard() {
                       'Billed': Number(p.total_billed),
                       'Paid': Number(p.total_paid),
                     }))}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
                       <ReTooltip content={<CustomTooltip />} />
@@ -699,7 +700,7 @@ export default function Dashboard() {
                       'Net': Number(d.net_amount),
                       'Works': Number(d.total_works),
                     }))}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" />
+                      <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
                       <XAxis dataKey="period" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} />
                       <ReTooltip content={<CustomTooltip />} />
