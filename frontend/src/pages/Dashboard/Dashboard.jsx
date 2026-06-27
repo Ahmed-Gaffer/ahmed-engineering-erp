@@ -10,7 +10,7 @@ import {
   CompareArrows, QuestionAnswer, Download, Speed, Notifications, History, Build,
   Assignment, Warning, EventNote, Assessment, Dashboard as DashboardIcon,
   NotificationsActive, Schedule, AccountBalance, TrendingDown, Star, ArrowForward,
-  Refresh, Add, Visibility, Close,
+  Refresh, Add, Visibility, Close, Description,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
