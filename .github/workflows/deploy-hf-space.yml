@@ -57,5 +57,5 @@ jobs:
           git config user.name "GitHub Actions"
           git add -A
           git commit -m "Deploy ${{ github.sha }} [skip ci]"
-          git remote add hf "https://user:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_SPACE_REPO }}"
+          git remote add hf "https://token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_SPACE_REPO }}"
           git push --force hf HEAD:main
