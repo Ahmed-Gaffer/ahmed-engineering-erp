@@ -1,4 +1,6 @@
 from core.lego_v2.shared.base_module import BaseModule
+from core.lego_v2.event_bus.events import ENGINEERING_EVENTS
+from app.engineering_features.notification_adapter import handle_engineering_event
 from app.projects.api import router as projects_router
 from app.projects.models import Project
 from app.phases.api import router as phases_router
@@ -22,7 +24,10 @@ from app.engineering_features.api import router as eng_router
 from .reports_api import router as reports_router
 from app.engineering_features.models import (
     BOQItem, Contract, IPCHeader, IPCDetail,
-    DailyReport, Subcontractor, Schedule, EngDocument
+    DailyReport, Subcontractor, Schedule, EngDocument,
+    SubmittalRegister, InspectionRequest, PunchListItem, Transmittal,
+    CompanyBranch, ProjectCategory, ProjectCategoryLink, CostCode,
+    SafetyIncident, SafetyObservation,
 )
 
 
@@ -57,6 +62,36 @@ class EngineeringModule(BaseModule):
         self.add_model(Subcontractor)
         self.add_model(Schedule)
         self.add_model(EngDocument)
+        self.add_model(SubmittalRegister)
+        self.add_model(InspectionRequest)
+        self.add_model(PunchListItem)
+        self.add_model(Transmittal)
+        self.add_model(CompanyBranch)
+        self.add_model(ProjectCategory)
+        self.add_model(ProjectCategoryLink)
+        self.add_model(CostCode)
+        self.add_model(SafetyIncident)
+        self.add_model(SafetyObservation)
+
+        # Subscribe to all engineering events → notification adapter
+        for event_key in ENGINEERING_EVENTS:
+            self.add_event(ENGINEERING_EVENTS[event_key], handle_engineering_event)
+
+        # Expose notification service as a connector port
+        async def notify_port(entity_type: str, entity_id: int, action: str, **kwargs):
+            from app.engineering_features.notification_adapter import handle_engineering_event
+            await handle_engineering_event({
+                "name": f"engineering.{entity_type}.{action}",
+                "source": "engineering",
+                "payload": {
+                    "entity_type": entity_type,
+                    "entity_id": entity_id,
+                    "action": action,
+                    **kwargs,
+                },
+            })
+        self.add_port("notify", notify_port)
+
         self.register()
 
 

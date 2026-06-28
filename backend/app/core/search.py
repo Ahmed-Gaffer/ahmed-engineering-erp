@@ -7,7 +7,7 @@ from app.contractors.models import Contractor
 from app.projects.models import Project
 from app.employees.models import Employee
 from app.drawings.models import Drawing
-from app.engineering_features.models import RFI, MaterialApprovalRequest, NonConformanceReport, Contract, VariationOrder, DailyReport
+from app.engineering_features.models import RFI, MaterialApprovalRequest, NonConformanceReport, Contract, VariationOrder, DailyReport, SubmittalRegister, InspectionRequest, PunchListItem, Transmittal, CompanyBranch, ProjectCategory, CostCode, SafetyIncident, SafetyObservation
 
 SEARCHABLE_MODELS = {
     "contractors": (Contractor, ["code", "name"], "/engineering/contractors", False),
@@ -20,6 +20,15 @@ SEARCHABLE_MODELS = {
     "contracts": (Contract, ["contract_number", "party_a", "party_b"], "/engineering/contracts-list", False),
     "variation_orders": (VariationOrder, ["vo_number", "title"], "/engineering/variation-orders", False),
     "daily_reports": (DailyReport, ["work_description", "created_by"], "/engineering/daily-reports", False),
+    "submittals": (SubmittalRegister, ["submittal_number", "title"], "/engineering/submittals", False),
+    "inspections": (InspectionRequest, ["inspection_number", "title"], "/engineering/inspection-requests", False),
+    "punch_list": (PunchListItem, ["item_number", "title"], "/engineering/punch-list", False),
+    "transmittals": (Transmittal, ["transmittal_number", "title"], "/engineering/transmittals", False),
+    "branches": (CompanyBranch, ["name", "code"], "/engineering/branches", False),
+    "categories": (ProjectCategory, ["name"], "/engineering/categories", False),
+    "cost_codes": (CostCode, ["code", "name"], "/engineering/cost-codes", False),
+    "safety_incidents": (SafetyIncident, ["incident_number", "title"], "/engineering/safety-incidents", False),
+    "safety_observations": (SafetyObservation, ["observation_number", "title"], "/engineering/safety-observations", False),
 }
 
 router = APIRouter(prefix="/api/search", tags=["search"])
