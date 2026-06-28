@@ -34,30 +34,45 @@ jobs:
           docker push ${{ env.GHCR_IMAGE }}:latest
           docker push ${{ env.GHCR_IMAGE }}:${{ github.sha }}
 
-      - name: Push thin Dockerfile + README to HF Space (main branch = develop)
+      - name: Push thin Dockerfile + README to HF Space
+        shell: bash
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ secrets.HF_SPACE_REPO }}
         run: |
+          set -euo pipefail
+          echo "HF_TOKEN length: ${#HF_TOKEN}"
+          echo "HF_SPACE: $HF_SPACE"
+
           cd /tmp
           rm -rf space-clean && mkdir space-clean && cd space-clean
+
           cat > Dockerfile << 'ENDOFDOCKER'
           FROM ${{ env.GHCR_IMAGE }}:${{ github.sha }}
           ENDOFDOCKER
           cat > README.md << 'ENDOFREADME'
           ---
           title: Engineering ERP
-          emoji: 🚀
-          colorFrom: blue
-          colorTo: indigo
           sdk: docker
           app_port: 8000
-          pinned: false
           ---
           ENDOFREADME
+
           git init
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
           git add -A
           git commit -m "Deploy ${{ github.sha }} [skip ci]"
-          git remote add hf "https://huggingface.co/spaces/${{ secrets.HF_SPACE_REPO }}"
-          echo "https://token:${{ secrets.HF_TOKEN }}@huggingface.co" > ~/.git-credentials
-          git config credential.helper store
+
+          git remote add hf "https://huggingface.co/spaces/${HF_SPACE}"
+
+          # Store credential with git-credential-store via stdin
+          git credential-store --file ~/.git-credentials store <<EOF
+          protocol=https
+          host=huggingface.co
+          username=token
+          password=${HF_TOKEN}
+          EOF
+          git config credential.helper "store --file $HOME/.git-credentials"
+
           git push --force hf HEAD:main
