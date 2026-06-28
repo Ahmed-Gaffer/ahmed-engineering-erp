@@ -23,6 +23,15 @@ from .models import (
     NonConformanceReport,
     VOBOQItem, VOScheduleImpact,
     MeetingMinute,
+    SubmittalRegister,
+    InspectionRequest,
+    PunchListItem,
+    Transmittal,
+    CompanyBranch,
+    ProjectCategory, ProjectCategoryLink,
+    CostCode,
+    SafetyIncident,
+    SafetyObservation,
 )
 from app.notifications.models import Notification
 from .schemas import (
@@ -45,6 +54,16 @@ from .schemas import (
     VOScheduleImpactCreate, VOScheduleImpactResponse,
     VOImpactSummary,
     MeetingMinuteCreate, MeetingMinuteUpdate, MeetingMinuteResponse,
+    SubmittalCreate, SubmittalUpdate, SubmittalResponse,
+    InspectionCreate, InspectionUpdate, InspectionResponse,
+    PunchListCreate, PunchListUpdate, PunchListResponse,
+    TransmittalCreate, TransmittalUpdate, TransmittalResponse,
+    BranchCreate, BranchUpdate, BranchResponse,
+    CategoryCreate, CategoryUpdate, CategoryResponse,
+    CostCodeCreate, CostCodeUpdate, CostCodeResponse,
+    SafetyIncidentCreate, SafetyIncidentUpdate, SafetyIncidentResponse,
+    SafetyObservationCreate, SafetyObservationUpdate, SafetyObservationResponse,
+    HSEDashboardResponse,
 )
 from app.core.audit import AuditLog
 from app.auth.models import User
@@ -135,6 +154,38 @@ async def project_summary(project_id: int, db: AsyncSession = Depends(get_db)):
     # IPC
     r = await db.execute(select(func.count()).select_from(IPCHeader).where(IPCHeader.project_id == project_id))
     counts["ipcs"] = r.scalar()
+
+    # Submittals
+    r = await db.execute(select(func.count()).select_from(SubmittalRegister).where(SubmittalRegister.project_id == project_id))
+    counts["submittals"] = r.scalar()
+
+    # Inspection Requests
+    r = await db.execute(select(func.count()).select_from(InspectionRequest).where(InspectionRequest.project_id == project_id))
+    counts["inspections"] = r.scalar()
+
+    # Punch List
+    r = await db.execute(select(func.count()).select_from(PunchListItem).where(PunchListItem.project_id == project_id))
+    counts["punch_list"] = r.scalar()
+
+    # Transmittals
+    r = await db.execute(select(func.count()).select_from(Transmittal).where(Transmittal.project_id == project_id))
+    counts["transmittals"] = r.scalar()
+
+    # Project Categories (linked)
+    r = await db.execute(select(func.count()).select_from(ProjectCategoryLink).where(ProjectCategoryLink.project_id == project_id))
+    counts["categories"] = r.scalar()
+
+    # Cost Codes
+    r = await db.execute(select(func.count()).select_from(CostCode).where(CostCode.project_id == project_id))
+    counts["cost_codes"] = r.scalar()
+
+    # Safety Incidents
+    r = await db.execute(select(func.count()).select_from(SafetyIncident).where(SafetyIncident.project_id == project_id))
+    counts["safety_incidents"] = r.scalar()
+
+    # Safety Observations
+    r = await db.execute(select(func.count()).select_from(SafetyObservation).where(SafetyObservation.project_id == project_id))
+    counts["safety_observations"] = r.scalar()
 
     # Recent NCRs
     r = await db.execute(select(NonConformanceReport).where(NonConformanceReport.project_id == project_id).order_by(NonConformanceReport.created_at.desc()).limit(5))
@@ -1927,6 +1978,1040 @@ async def export_meeting_minute_pdf(mm_id: int, db: AsyncSession = Depends(get_d
     buf.seek(0)
     return StreamingResponse(buf, media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=meeting_minutes_{mm_id}.pdf"})
+
+
+# ─── Submittal Register ───
+
+@router.post("/submittals", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_submittal(data: SubmittalCreate, db: AsyncSession = Depends(get_db)):
+    sub = SubmittalRegister(**data.model_dump())
+    db.add(sub)
+    await db.commit()
+    await db.refresh(sub)
+    return sub
+
+
+@router.get("/projects/{project_id}/submittals")
+async def list_submittals(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(SubmittalRegister)
+        .where(SubmittalRegister.project_id == project_id)
+        .order_by(SubmittalRegister.id.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/submittals/{submittal_id}")
+async def get_submittal(submittal_id: int, db: AsyncSession = Depends(get_db)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    return sub
+
+
+@router.put("/submittals/{submittal_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_submittal(submittal_id: int, data: SubmittalUpdate, db: AsyncSession = Depends(get_db)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(sub, key, val)
+    await db.commit()
+    await db.refresh(sub)
+    return sub
+
+
+@router.delete("/submittals/{submittal_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_submittal(submittal_id: int, db: AsyncSession = Depends(get_db)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    await db.delete(sub)
+    await db.commit()
+    return {"detail": "Submittal deleted"}
+
+
+@router.post("/submittals/{submittal_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
+async def submit_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    if sub.status != "draft":
+        raise HTTPException(400, f"Cannot submit submittal in status '{sub.status}'")
+    old_status = sub.status
+    sub.status = "submitted"
+    await _create_notification(db, user.id, f"Submittal {sub.submittal_number} Submitted", f"Submittal {sub.submittal_number} has been submitted.", "info", "/engineering/submittals")
+    await db.commit()
+    await log_action(db, "submittal", submittal_id, "submit", old_status, "submitted", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(sub)
+    return sub
+
+
+@router.post("/submittals/{submittal_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
+async def approve_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    if sub.status not in ("submitted", "under_review", "resubmitted"):
+        raise HTTPException(400, f"Cannot approve submittal in status '{sub.status}'")
+    old_status = sub.status
+    sub.status = "approved"
+    await _create_notification(db, user.id, f"Submittal {sub.submittal_number} Approved", f"Submittal {sub.submittal_number} has been approved.", "success", "/engineering/submittals")
+    await db.commit()
+    await log_action(db, "submittal", submittal_id, "approve", old_status, "approved", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(sub)
+    return sub
+
+
+@router.post("/submittals/{submittal_id}/reject-with-comments", dependencies=[Depends(require_role("admin", "engineer"))])
+async def reject_submittal_with_comments(submittal_id: int, data: SubmittalUpdate, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    if sub.status not in ("submitted", "under_review", "resubmitted"):
+        raise HTTPException(400, f"Cannot reject submittal in status '{sub.status}'")
+    old_status = sub.status
+    sub.status = "rejected_with_comments"
+    if data.rejection_reason:
+        sub.rejection_reason = data.rejection_reason
+    if data.review_notes:
+        sub.review_notes = data.review_notes
+    if data.resubmission_deadline:
+        sub.resubmission_deadline = data.resubmission_deadline
+    await _create_notification(db, user.id, f"Submittal {sub.submittal_number} Rejected", f"Submittal {sub.submittal_number} has been rejected with comments.", "error", "/engineering/submittals")
+    await db.commit()
+    await log_action(db, "submittal", submittal_id, "reject_with_comments", old_status, "rejected_with_comments", user.id, getattr(user, 'name', None), None, data.rejection_reason)
+    await db.refresh(sub)
+    return sub
+
+
+@router.post("/submittals/{submittal_id}/resubmit", dependencies=[Depends(require_role("admin", "engineer"))])
+async def resubmit_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    if sub.status != "rejected_with_comments":
+        raise HTTPException(400, f"Cannot resubmit submittal in status '{sub.status}'")
+    old_status = sub.status
+    sub.status = "resubmitted"
+    await _create_notification(db, user.id, f"Submittal {sub.submittal_number} Resubmitted", f"Submittal {sub.submittal_number} has been resubmitted.", "info", "/engineering/submittals")
+    await db.commit()
+    await log_action(db, "submittal", submittal_id, "resubmit", old_status, "resubmitted", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(sub)
+    return sub
+
+
+@router.post("/submittals/{submittal_id}/close", dependencies=[Depends(require_role("admin", "engineer"))])
+async def close_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    sub = await db.get(SubmittalRegister, submittal_id)
+    if not sub:
+        raise HTTPException(404, "Submittal not found")
+    if sub.status not in ("approved", "rejected_with_comments"):
+        raise HTTPException(400, f"Cannot close submittal in status '{sub.status}'")
+    old_status = sub.status
+    sub.status = "closed"
+    await _create_notification(db, user.id, f"Submittal {sub.submittal_number} Closed", f"Submittal {sub.submittal_number} has been closed.", "info", "/engineering/submittals")
+    await db.commit()
+    await log_action(db, "submittal", submittal_id, "close", old_status, "closed", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(sub)
+    return sub
+
+
+# ─── Inspection Requests ───
+
+@router.post("/inspection-requests", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_inspection(data: InspectionCreate, db: AsyncSession = Depends(get_db)):
+    insp = InspectionRequest(**data.model_dump())
+    db.add(insp)
+    await db.commit()
+    await db.refresh(insp)
+    return insp
+
+
+@router.get("/projects/{project_id}/inspection-requests")
+async def list_inspections(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(InspectionRequest)
+        .where(InspectionRequest.project_id == project_id)
+        .order_by(InspectionRequest.id.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/inspection-requests/{inspection_id}")
+async def get_inspection(inspection_id: int, db: AsyncSession = Depends(get_db)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    return insp
+
+
+@router.put("/inspection-requests/{inspection_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_inspection(inspection_id: int, data: InspectionUpdate, db: AsyncSession = Depends(get_db)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(insp, key, val)
+    await db.commit()
+    await db.refresh(insp)
+    return insp
+
+
+@router.delete("/inspection-requests/{inspection_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_inspection(inspection_id: int, db: AsyncSession = Depends(get_db)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    await db.delete(insp)
+    await db.commit()
+    return {"detail": "Inspection request deleted"}
+
+
+@router.post("/inspection-requests/{inspection_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
+async def submit_inspection(inspection_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    if insp.status != "planned":
+        raise HTTPException(400, f"Cannot submit inspection in status '{insp.status}'")
+    old_status = insp.status
+    insp.status = "submitted"
+    await _create_notification(db, user.id, f"Inspection {insp.inspection_number} Submitted", f"Inspection {insp.inspection_number} has been submitted.", "info", "/engineering/inspection-requests")
+    await db.commit()
+    await log_action(db, "inspection", inspection_id, "submit", old_status, "submitted", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(insp)
+    return insp
+
+
+@router.post("/inspection-requests/{inspection_id}/inspect", dependencies=[Depends(require_role("admin", "engineer"))])
+async def perform_inspection(inspection_id: int, data: InspectionUpdate, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    if insp.status != "submitted":
+        raise HTTPException(400, f"Cannot inspect in status '{insp.status}'")
+    old_status = insp.status
+    insp.status = "inspected"
+    if data.findings:
+        insp.findings = data.findings
+    if data.result:
+        insp.result = data.result
+    insp.inspection_date = data.inspection_date or date.today()
+    await _create_notification(db, user.id, f"Inspection {insp.inspection_number} Completed", f"Inspection {insp.inspection_number} has been performed.", "info", "/engineering/inspection-requests")
+    await db.commit()
+    await log_action(db, "inspection", inspection_id, "inspect", old_status, "inspected", user.id, getattr(user, 'name', None), None, data.findings)
+    await db.refresh(insp)
+    return insp
+
+
+@router.post("/inspection-requests/{inspection_id}/pass", dependencies=[Depends(require_role("admin", "engineer"))])
+async def pass_inspection(inspection_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    if insp.status != "inspected":
+        raise HTTPException(400, f"Cannot pass inspection in status '{insp.status}'")
+    old_status = insp.status
+    insp.status = "passed"
+    insp.passed = True
+    await _create_notification(db, user.id, f"Inspection {insp.inspection_number} Passed", f"Inspection {insp.inspection_number} has passed.", "success", "/engineering/inspection-requests")
+    await db.commit()
+    await log_action(db, "inspection", inspection_id, "pass", old_status, "passed", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(insp)
+    return insp
+
+
+@router.post("/inspection-requests/{inspection_id}/fail", dependencies=[Depends(require_role("admin", "engineer"))])
+async def fail_inspection(inspection_id: int, data: InspectionUpdate, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    if insp.status != "inspected":
+        raise HTTPException(400, f"Cannot fail inspection in status '{insp.status}'")
+    old_status = insp.status
+    insp.status = "failed"
+    insp.passed = False
+    if data.corrective_action:
+        insp.corrective_action = data.corrective_action
+    await _create_notification(db, user.id, f"Inspection {insp.inspection_number} Failed", f"Inspection {insp.inspection_number} has failed.", "error", "/engineering/inspection-requests")
+    await db.commit()
+    await log_action(db, "inspection", inspection_id, "fail", old_status, "failed", user.id, getattr(user, 'name', None), None, data.corrective_action)
+    await db.refresh(insp)
+    return insp
+
+
+@router.post("/inspection-requests/{inspection_id}/schedule-reinspection", dependencies=[Depends(require_role("admin", "engineer"))])
+async def schedule_reinspection(inspection_id: int, scheduled_date: date, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    insp = await db.get(InspectionRequest, inspection_id)
+    if not insp:
+        raise HTTPException(404, "Inspection request not found")
+    if insp.status != "failed":
+        raise HTTPException(400, f"Cannot schedule re-inspection in status '{insp.status}'")
+    old_status = insp.status
+    insp.status = "re_inspection"
+    insp.scheduled_date = scheduled_date
+    await _create_notification(db, user.id, f"Inspection {insp.inspection_number} Re-inspection Scheduled", f"Re-inspection for {insp.inspection_number} scheduled.", "info", "/engineering/inspection-requests")
+    await db.commit()
+    await log_action(db, "inspection", inspection_id, "schedule_reinspection", old_status, "re_inspection", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(insp)
+    return insp
+
+
+# ─── Punch List Items ───
+
+@router.post("/punch-list-items", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_punch_list_item(data: PunchListCreate, db: AsyncSession = Depends(get_db)):
+    item = PunchListItem(**data.model_dump())
+    db.add(item)
+    await db.commit()
+    await db.refresh(item)
+    return item
+
+
+@router.get("/projects/{project_id}/punch-list-items")
+async def list_punch_list_items(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(PunchListItem)
+        .where(PunchListItem.project_id == project_id)
+        .order_by(PunchListItem.id.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/punch-list-items/{item_id}")
+async def get_punch_list_item(item_id: int, db: AsyncSession = Depends(get_db)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    return item
+
+
+@router.put("/punch-list-items/{item_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_punch_list_item(item_id: int, data: PunchListUpdate, db: AsyncSession = Depends(get_db)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(item, key, val)
+    await db.commit()
+    await db.refresh(item)
+    return item
+
+
+@router.delete("/punch-list-items/{item_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_punch_list_item(item_id: int, db: AsyncSession = Depends(get_db)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    await db.delete(item)
+    await db.commit()
+    return {"detail": "Punch list item deleted"}
+
+
+@router.post("/punch-list-items/{item_id}/start", dependencies=[Depends(require_role("admin", "engineer"))])
+async def start_punch_item(item_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    if item.status != "open":
+        raise HTTPException(400, f"Cannot start item in status '{item.status}'")
+    old_status = item.status
+    item.status = "in_progress"
+    await _create_notification(db, user.id, f"Punch Item {item.item_number} In Progress", f"Punch list item {item.item_number} is now in progress.", "info", "/engineering/punch-list-items")
+    await db.commit()
+    await log_action(db, "punch_list_item", item_id, "start", old_status, "in_progress", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(item)
+    return item
+
+
+@router.post("/punch-list-items/{item_id}/complete", dependencies=[Depends(require_role("admin", "engineer"))])
+async def complete_punch_item(item_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    if item.status != "in_progress":
+        raise HTTPException(400, f"Cannot complete item in status '{item.status}'")
+    old_status = item.status
+    item.status = "completed"
+    item.completed_date = date.today()
+    await _create_notification(db, user.id, f"Punch Item {item.item_number} Completed", f"Punch list item {item.item_number} has been completed.", "success", "/engineering/punch-list-items")
+    await db.commit()
+    await log_action(db, "punch_list_item", item_id, "complete", old_status, "completed", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(item)
+    return item
+
+
+@router.post("/punch-list-items/{item_id}/verify", dependencies=[Depends(require_role("admin", "engineer"))])
+async def verify_punch_item(item_id: int, verified_by: str = None, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    if item.status != "completed":
+        raise HTTPException(400, f"Cannot verify item in status '{item.status}'")
+    old_status = item.status
+    item.status = "verified"
+    item.verified_by = verified_by
+    item.verification_date = date.today()
+    await _create_notification(db, user.id, f"Punch Item {item.item_number} Verified", f"Punch list item {item.item_number} has been verified.", "success", "/engineering/punch-list-items")
+    await db.commit()
+    await log_action(db, "punch_list_item", item_id, "verify", old_status, "verified", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(item)
+    return item
+
+
+@router.post("/punch-list-items/{item_id}/accept", dependencies=[Depends(require_role("admin", "engineer"))])
+async def accept_punch_item(item_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    if item.status != "verified":
+        raise HTTPException(400, f"Cannot accept item in status '{item.status}'")
+    old_status = item.status
+    item.status = "accepted"
+    await _create_notification(db, user.id, f"Punch Item {item.item_number} Accepted", f"Punch list item {item.item_number} has been accepted.", "success", "/engineering/punch-list-items")
+    await db.commit()
+    await log_action(db, "punch_list_item", item_id, "accept", old_status, "accepted", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(item)
+    return item
+
+
+@router.post("/punch-list-items/{item_id}/reopen", dependencies=[Depends(require_role("admin", "engineer"))])
+async def reopen_punch_item(item_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    item = await db.get(PunchListItem, item_id)
+    if not item:
+        raise HTTPException(404, "Punch list item not found")
+    if item.status not in ("completed", "verified", "accepted"):
+        raise HTTPException(400, f"Cannot reopen item in status '{item.status}'")
+    old_status = item.status
+    item.status = "open"
+    item.completed_date = None
+    item.verified_by = None
+    item.verification_date = None
+    await _create_notification(db, user.id, f"Punch Item {item.item_number} Reopened", f"Punch list item {item.item_number} has been reopened.", "warning", "/engineering/punch-list-items")
+    await db.commit()
+    await log_action(db, "punch_list_item", item_id, "reopen", old_status, "open", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(item)
+    return item
+
+
+# ─── Transmittals ───
+
+@router.post("/transmittals", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_transmittal(data: TransmittalCreate, db: AsyncSession = Depends(get_db)):
+    trans = Transmittal(**data.model_dump())
+    db.add(trans)
+    await db.commit()
+    await db.refresh(trans)
+    return trans
+
+
+@router.get("/projects/{project_id}/transmittals")
+async def list_transmittals(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Transmittal)
+        .where(Transmittal.project_id == project_id)
+        .order_by(Transmittal.id.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/transmittals/{transmittal_id}")
+async def get_transmittal(transmittal_id: int, db: AsyncSession = Depends(get_db)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    return trans
+
+
+@router.put("/transmittals/{transmittal_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_transmittal(transmittal_id: int, data: TransmittalUpdate, db: AsyncSession = Depends(get_db)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(trans, key, val)
+    await db.commit()
+    await db.refresh(trans)
+    return trans
+
+
+@router.delete("/transmittals/{transmittal_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_transmittal(transmittal_id: int, db: AsyncSession = Depends(get_db)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    await db.delete(trans)
+    await db.commit()
+    return {"detail": "Transmittal deleted"}
+
+
+@router.post("/transmittals/{transmittal_id}/send", dependencies=[Depends(require_role("admin", "engineer"))])
+async def send_transmittal(transmittal_id: int, sent_date: date = None, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    if trans.status != "draft":
+        raise HTTPException(400, f"Cannot send transmittal in status '{trans.status}'")
+    old_status = trans.status
+    trans.status = "sent"
+    trans.sent_date = sent_date or date.today()
+    await _create_notification(db, user.id, f"Transmittal {trans.transmittal_number} Sent", f"Transmittal {trans.transmittal_number} has been sent.", "info", "/engineering/transmittals")
+    await db.commit()
+    await log_action(db, "transmittal", transmittal_id, "send", old_status, "sent", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(trans)
+    return trans
+
+
+@router.post("/transmittals/{transmittal_id}/mark-received", dependencies=[Depends(require_role("admin", "engineer"))])
+async def mark_transmittal_received(transmittal_id: int, received_date: date = None, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    if trans.status != "sent":
+        raise HTTPException(400, f"Cannot mark received in status '{trans.status}'")
+    old_status = trans.status
+    trans.status = "received"
+    trans.received_date = received_date or date.today()
+    await _create_notification(db, user.id, f"Transmittal {trans.transmittal_number} Received", f"Transmittal {trans.transmittal_number} has been marked as received.", "info", "/engineering/transmittals")
+    await db.commit()
+    await log_action(db, "transmittal", transmittal_id, "mark_received", old_status, "received", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(trans)
+    return trans
+
+
+@router.post("/transmittals/{transmittal_id}/acknowledge", dependencies=[Depends(require_role("admin", "engineer"))])
+async def acknowledge_transmittal(transmittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    if trans.status != "received":
+        raise HTTPException(400, f"Cannot acknowledge transmittal in status '{trans.status}'")
+    old_status = trans.status
+    trans.status = "acknowledged"
+    trans.acknowledged_date = date.today()
+    await _create_notification(db, user.id, f"Transmittal {trans.transmittal_number} Acknowledged", f"Transmittal {trans.transmittal_number} has been acknowledged.", "success", "/engineering/transmittals")
+    await db.commit()
+    await log_action(db, "transmittal", transmittal_id, "acknowledge", old_status, "acknowledged", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(trans)
+    return trans
+
+
+@router.post("/transmittals/{transmittal_id}/close", dependencies=[Depends(require_role("admin", "engineer"))])
+async def close_transmittal(transmittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    trans = await db.get(Transmittal, transmittal_id)
+    if not trans:
+        raise HTTPException(404, "Transmittal not found")
+    if trans.status not in ("acknowledged", "sent", "received"):
+        raise HTTPException(400, f"Cannot close transmittal in status '{trans.status}'")
+    old_status = trans.status
+    trans.status = "closed"
+    await _create_notification(db, user.id, f"Transmittal {trans.transmittal_number} Closed", f"Transmittal {trans.transmittal_number} has been closed.", "info", "/engineering/transmittals")
+    await db.commit()
+    await log_action(db, "transmittal", transmittal_id, "close", old_status, "closed", user.id, getattr(user, 'name', None), None, comment)
+    await db.refresh(trans)
+    return trans
+
+
+# ─── Phase 2: Company Branches ───
+
+
+@router.post("/branches", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_branch(data: BranchCreate, db: AsyncSession = Depends(get_db)):
+    branch = CompanyBranch(**data.model_dump())
+    db.add(branch)
+    await db.commit()
+    await db.refresh(branch)
+    return branch
+
+
+@router.get("/branches")
+async def list_branches(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CompanyBranch).order_by(CompanyBranch.name))
+    return result.scalars().all()
+
+
+@router.get("/branches/{branch_id}")
+async def get_branch(branch_id: int, db: AsyncSession = Depends(get_db)):
+    branch = await db.get(CompanyBranch, branch_id)
+    if not branch:
+        raise HTTPException(404, "Branch not found")
+    return branch
+
+
+@router.put("/branches/{branch_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_branch(branch_id: int, data: BranchUpdate, db: AsyncSession = Depends(get_db)):
+    branch = await db.get(CompanyBranch, branch_id)
+    if not branch:
+        raise HTTPException(404, "Branch not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(branch, key, val)
+    await db.commit()
+    await db.refresh(branch)
+    return branch
+
+
+@router.delete("/branches/{branch_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_branch(branch_id: int, db: AsyncSession = Depends(get_db)):
+    branch = await db.get(CompanyBranch, branch_id)
+    if not branch:
+        raise HTTPException(404, "Branch not found")
+    await db.delete(branch)
+    await db.commit()
+    return {"detail": "Branch deleted successfully"}
+
+
+# ─── Phase 2: Project Categories ───
+
+
+@router.post("/categories", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_category(data: CategoryCreate, db: AsyncSession = Depends(get_db)):
+    cat = ProjectCategory(**data.model_dump())
+    db.add(cat)
+    await db.commit()
+    await db.refresh(cat)
+    return cat
+
+
+@router.get("/categories")
+async def list_categories(type: str = Query(None), db: AsyncSession = Depends(get_db)):
+    stmt = select(ProjectCategory).order_by(ProjectCategory.name)
+    if type:
+        stmt = stmt.where(ProjectCategory.type == type)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.get("/categories/{category_id}")
+async def get_category(category_id: int, db: AsyncSession = Depends(get_db)):
+    cat = await db.get(ProjectCategory, category_id)
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    return cat
+
+
+@router.put("/categories/{category_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_category(category_id: int, data: CategoryUpdate, db: AsyncSession = Depends(get_db)):
+    cat = await db.get(ProjectCategory, category_id)
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(cat, key, val)
+    await db.commit()
+    await db.refresh(cat)
+    return cat
+
+
+@router.delete("/categories/{category_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_category(category_id: int, db: AsyncSession = Depends(get_db)):
+    cat = await db.get(ProjectCategory, category_id)
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    await db.delete(cat)
+    await db.commit()
+    return {"detail": "Category deleted successfully"}
+
+
+# ─── Phase 2: Project Category Links ───
+
+
+@router.post("/projects/{project_id}/categories", dependencies=[Depends(require_role("admin", "engineer"))])
+async def link_project_category(project_id: int, payload: dict, db: AsyncSession = Depends(get_db)):
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+    category_id = payload.get("category_id")
+    if not category_id:
+        raise HTTPException(400, "category_id is required")
+    cat = await db.get(ProjectCategory, category_id)
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    existing = await db.execute(
+        select(ProjectCategoryLink).where(
+            ProjectCategoryLink.project_id == project_id,
+            ProjectCategoryLink.category_id == category_id,
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(400, "Category already linked to project")
+    link = ProjectCategoryLink(project_id=project_id, category_id=category_id)
+    db.add(link)
+    await db.commit()
+    await db.refresh(link)
+    return link
+
+
+@router.get("/projects/{project_id}/categories")
+async def list_project_categories(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(ProjectCategoryLink).where(ProjectCategoryLink.project_id == project_id)
+    )
+    links = result.scalars().all()
+    enriched = []
+    for link in links:
+        cat = await db.get(ProjectCategory, link.category_id)
+        enriched.append({
+            "id": link.id,
+            "category_id": link.category_id,
+            "name": cat.name if cat else None,
+            "type": cat.type if cat else None,
+            "color": cat.color if cat else None,
+        })
+    return enriched
+
+
+@router.delete("/projects/{project_id}/categories/{link_id}", dependencies=[Depends(require_role("admin"))])
+async def unlink_project_category(project_id: int, link_id: int, db: AsyncSession = Depends(get_db)):
+    link = await db.get(ProjectCategoryLink, link_id)
+    if not link or link.project_id != project_id:
+        raise HTTPException(404, "Category link not found")
+    await db.delete(link)
+    await db.commit()
+    return {"detail": "Category unlinked successfully"}
+
+
+# ─── Phase 2: Cost Codes (WBS) ───
+
+
+@router.post("/cost-codes", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_cost_code(data: CostCodeCreate, db: AsyncSession = Depends(get_db)):
+    cc = CostCode(**data.model_dump())
+    db.add(cc)
+    await db.commit()
+    await db.refresh(cc)
+    return cc
+
+
+@router.get("/projects/{project_id}/cost-codes")
+async def list_cost_codes_tree(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(CostCode).where(CostCode.project_id == project_id).order_by(CostCode.code)
+    )
+    all_items = result.scalars().all()
+
+    def build_tree(parent_id=None):
+        tree = []
+        for item in all_items:
+            if item.parent_id == parent_id:
+                children = build_tree(item.id)
+                tree.append({
+                    "id": item.id,
+                    "project_id": item.project_id,
+                    "code": item.code,
+                    "name": item.name,
+                    "description": item.description,
+                    "parent_id": item.parent_id,
+                    "level": item.level,
+                    "budget_amount": item.budget_amount,
+                    "status": item.status,
+                    "children": children,
+                })
+        return tree
+
+    return build_tree(None)
+
+
+@router.get("/cost-codes/{cost_code_id}")
+async def get_cost_code(cost_code_id: int, db: AsyncSession = Depends(get_db)):
+    cc = await db.get(CostCode, cost_code_id)
+    if not cc:
+        raise HTTPException(404, "Cost code not found")
+    return cc
+
+
+@router.put("/cost-codes/{cost_code_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_cost_code(cost_code_id: int, data: CostCodeUpdate, db: AsyncSession = Depends(get_db)):
+    cc = await db.get(CostCode, cost_code_id)
+    if not cc:
+        raise HTTPException(404, "Cost code not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(cc, key, val)
+    await db.commit()
+    await db.refresh(cc)
+    return cc
+
+
+@router.delete("/cost-codes/{cost_code_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_cost_code(cost_code_id: int, db: AsyncSession = Depends(get_db)):
+    cc = await db.get(CostCode, cost_code_id)
+    if not cc:
+        raise HTTPException(404, "Cost code not found")
+    await db.delete(cc)
+    await db.commit()
+    return {"detail": "Cost code deleted successfully"}
+
+
+# ─── Phase 3: Safety Incidents ───
+
+
+@router.post("/safety-incidents", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_safety_incident(data: SafetyIncidentCreate, db: AsyncSession = Depends(get_db)):
+    incident = SafetyIncident(**data.model_dump())
+    db.add(incident)
+    await db.commit()
+    await db.refresh(incident)
+    return incident
+
+
+@router.get("/projects/{project_id}/safety-incidents")
+async def list_safety_incidents(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(SafetyIncident)
+        .where(SafetyIncident.project_id == project_id)
+        .order_by(SafetyIncident.incident_date.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/safety-incidents/{incident_id}")
+async def get_safety_incident(incident_id: int, db: AsyncSession = Depends(get_db)):
+    incident = await db.get(SafetyIncident, incident_id)
+    if not incident:
+        raise HTTPException(404, "Safety incident not found")
+    return incident
+
+
+@router.put("/safety-incidents/{incident_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_safety_incident(incident_id: int, data: SafetyIncidentUpdate, db: AsyncSession = Depends(get_db)):
+    incident = await db.get(SafetyIncident, incident_id)
+    if not incident:
+        raise HTTPException(404, "Safety incident not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(incident, key, val)
+    await db.commit()
+    await db.refresh(incident)
+    return incident
+
+
+@router.post("/safety-incidents/{incident_id}/investigate", dependencies=[Depends(require_role("admin", "engineer"))])
+async def investigate_safety_incident(incident_id: int, data: SafetyIncidentUpdate = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    incident = await db.get(SafetyIncident, incident_id)
+    if not incident:
+        raise HTTPException(404, "Safety incident not found")
+    if incident.status != "reported":
+        raise HTTPException(400, f"Cannot investigate incident in status '{incident.status}'")
+    old_status = incident.status
+    incident.status = "investigating"
+    if data:
+        if data.root_cause:
+            incident.root_cause = data.root_cause
+        if data.description:
+            incident.description = data.description
+    await _create_notification(db, user.id, f"Incident {incident.incident_number} Under Investigation", f"Safety incident {incident.incident_number} is now under investigation.", "info", "/engineering/safety-incidents")
+    await db.commit()
+    await log_action(db, "safety_incident", incident_id, "investigate", old_status, "investigating", user.id, getattr(user, 'name', None), None, getattr(data, 'root_cause', None))
+    await db.refresh(incident)
+    return incident
+
+
+@router.post("/safety-incidents/{incident_id}/take-action", dependencies=[Depends(require_role("admin", "engineer"))])
+async def take_action_safety_incident(incident_id: int, data: SafetyIncidentUpdate, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    incident = await db.get(SafetyIncident, incident_id)
+    if not incident:
+        raise HTTPException(404, "Safety incident not found")
+    if incident.status != "investigating":
+        raise HTTPException(400, f"Cannot take action on incident in status '{incident.status}'")
+    old_status = incident.status
+    incident.status = "action_taken"
+    if data.corrective_action:
+        incident.corrective_action = data.corrective_action
+    if data.preventive_action:
+        incident.preventive_action = data.preventive_action
+    await _create_notification(db, user.id, f"Incident {incident.incident_number} Action Taken", f"Corrective/preventive actions taken for incident {incident.incident_number}.", "info", "/engineering/safety-incidents")
+    await db.commit()
+    await log_action(db, "safety_incident", incident_id, "take_action", old_status, "action_taken", user.id, getattr(user, 'name', None), None, data.corrective_action)
+    await db.refresh(incident)
+    return incident
+
+
+@router.post("/safety-incidents/{incident_id}/close", dependencies=[Depends(require_role("admin", "engineer"))])
+async def close_safety_incident(incident_id: int, data: SafetyIncidentUpdate = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    incident = await db.get(SafetyIncident, incident_id)
+    if not incident:
+        raise HTTPException(404, "Safety incident not found")
+    if incident.status not in ("investigating", "action_taken"):
+        raise HTTPException(400, f"Cannot close incident in status '{incident.status}'")
+    old_status = incident.status
+    incident.status = "closed"
+    incident.closed_date = data.closed_date if data and data.closed_date else date.today()
+    await _create_notification(db, user.id, f"Incident {incident.incident_number} Closed", f"Safety incident {incident.incident_number} has been closed.", "success", "/engineering/safety-incidents")
+    await db.commit()
+    await log_action(db, "safety_incident", incident_id, "close", old_status, "closed", user.id, getattr(user, 'name', None), None, None)
+    await db.refresh(incident)
+    return incident
+
+
+@router.delete("/safety-incidents/{incident_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_safety_incident(incident_id: int, db: AsyncSession = Depends(get_db)):
+    incident = await db.get(SafetyIncident, incident_id)
+    if not incident:
+        raise HTTPException(404, "Safety incident not found")
+    await db.delete(incident)
+    await db.commit()
+    return {"detail": "Safety incident deleted"}
+
+
+# ─── Phase 3: Safety Observations ───
+
+
+@router.post("/safety-observations", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_safety_observation(data: SafetyObservationCreate, db: AsyncSession = Depends(get_db)):
+    obs = SafetyObservation(**data.model_dump())
+    db.add(obs)
+    await db.commit()
+    await db.refresh(obs)
+    return obs
+
+
+@router.get("/projects/{project_id}/safety-observations")
+async def list_safety_observations(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(SafetyObservation)
+        .where(SafetyObservation.project_id == project_id)
+        .order_by(SafetyObservation.observation_date.desc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/safety-observations/{observation_id}")
+async def get_safety_observation(observation_id: int, db: AsyncSession = Depends(get_db)):
+    obs = await db.get(SafetyObservation, observation_id)
+    if not obs:
+        raise HTTPException(404, "Safety observation not found")
+    return obs
+
+
+@router.put("/safety-observations/{observation_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_safety_observation(observation_id: int, data: SafetyObservationUpdate, db: AsyncSession = Depends(get_db)):
+    obs = await db.get(SafetyObservation, observation_id)
+    if not obs:
+        raise HTTPException(404, "Safety observation not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(obs, key, val)
+    await db.commit()
+    await db.refresh(obs)
+    return obs
+
+
+@router.post("/safety-observations/{observation_id}/acknowledge", dependencies=[Depends(require_role("admin", "engineer"))])
+async def acknowledge_safety_observation(observation_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    obs = await db.get(SafetyObservation, observation_id)
+    if not obs:
+        raise HTTPException(404, "Safety observation not found")
+    if obs.status != "open":
+        raise HTTPException(400, f"Cannot acknowledge observation in status '{obs.status}'")
+    old_status = obs.status
+    obs.status = "acknowledged"
+    await _create_notification(db, user.id, f"Observation {obs.observation_number} Acknowledged", f"Safety observation {obs.observation_number} has been acknowledged.", "info", "/engineering/safety-observations")
+    await db.commit()
+    await log_action(db, "safety_observation", observation_id, "acknowledge", old_status, "acknowledged", user.id, getattr(user, 'name', None), None, None)
+    await db.refresh(obs)
+    return obs
+
+
+@router.post("/safety-observations/{observation_id}/resolve", dependencies=[Depends(require_role("admin", "engineer"))])
+async def resolve_safety_observation(observation_id: int, data: SafetyObservationUpdate, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    obs = await db.get(SafetyObservation, observation_id)
+    if not obs:
+        raise HTTPException(404, "Safety observation not found")
+    if obs.status != "acknowledged":
+        raise HTTPException(400, f"Cannot resolve observation in status '{obs.status}'")
+    old_status = obs.status
+    obs.status = "resolved"
+    if data.corrective_action:
+        obs.corrective_action = data.corrective_action
+    if data.resolved_date:
+        obs.resolved_date = data.resolved_date
+    else:
+        obs.resolved_date = date.today()
+    await _create_notification(db, user.id, f"Observation {obs.observation_number} Resolved", f"Safety observation {obs.observation_number} has been resolved.", "success", "/engineering/safety-observations")
+    await db.commit()
+    await log_action(db, "safety_observation", observation_id, "resolve", old_status, "resolved", user.id, getattr(user, 'name', None), None, data.corrective_action)
+    await db.refresh(obs)
+    return obs
+
+
+@router.post("/safety-observations/{observation_id}/close", dependencies=[Depends(require_role("admin", "engineer"))])
+async def close_safety_observation(observation_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    obs = await db.get(SafetyObservation, observation_id)
+    if not obs:
+        raise HTTPException(404, "Safety observation not found")
+    if obs.status != "resolved":
+        raise HTTPException(400, f"Cannot close observation in status '{obs.status}'")
+    old_status = obs.status
+    obs.status = "closed"
+    await _create_notification(db, user.id, f"Observation {obs.observation_number} Closed", f"Safety observation {obs.observation_number} has been closed.", "info", "/engineering/safety-observations")
+    await db.commit()
+    await log_action(db, "safety_observation", observation_id, "close", old_status, "closed", user.id, getattr(user, 'name', None), None, None)
+    await db.refresh(obs)
+    return obs
+
+
+@router.delete("/safety-observations/{observation_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_safety_observation(observation_id: int, db: AsyncSession = Depends(get_db)):
+    obs = await db.get(SafetyObservation, observation_id)
+    if not obs:
+        raise HTTPException(404, "Safety observation not found")
+    await db.delete(obs)
+    await db.commit()
+    return {"detail": "Safety observation deleted"}
+
+
+# ─── Phase 3: HSE Dashboard ───
+
+
+@router.get("/hse/dashboard/{project_id}")
+async def hse_dashboard(project_id: int, db: AsyncSession = Depends(get_db)):
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(404, "Project not found")
+
+    # Incidents
+    inc_result = await db.execute(
+        select(SafetyIncident).where(SafetyIncident.project_id == project_id)
+    )
+    incidents = inc_result.scalars().all()
+    total_incidents = len(incidents)
+    incidents_by_status = {}
+    incidents_by_severity = {}
+    for inc in incidents:
+        st = inc.status or "unknown"
+        incidents_by_status[st] = incidents_by_status.get(st, 0) + 1
+        sev = inc.severity or "unknown"
+        incidents_by_severity[sev] = incidents_by_severity.get(sev, 0) + 1
+
+    recent_incidents = sorted(incidents, key=lambda x: x.incident_date or x.id, reverse=True)[:5]
+    recent_incidents_data = [
+        {"id": i.id, "incident_number": i.incident_number, "title": i.title, "status": i.status, "severity": i.severity, "incident_date": str(i.incident_date)}
+        for i in recent_incidents
+    ]
+
+    # Observations
+    obs_result = await db.execute(
+        select(SafetyObservation).where(SafetyObservation.project_id == project_id)
+    )
+    observations = obs_result.scalars().all()
+    total_observations = len(observations)
+    observations_by_status = {}
+    for obs in observations:
+        st = obs.status or "unknown"
+        observations_by_status[st] = observations_by_status.get(st, 0) + 1
+
+    recent_observations = sorted(observations, key=lambda x: x.observation_date or x.id, reverse=True)[:5]
+    recent_observations_data = [
+        {"id": o.id, "observation_number": o.observation_number, "title": o.title, "status": o.status, "observation_type": o.observation_type, "observation_date": str(o.observation_date)}
+        for o in recent_observations
+    ]
+
+    return HSEDashboardResponse(
+        total_incidents=total_incidents,
+        incidents_by_status=incidents_by_status,
+        incidents_by_severity=incidents_by_severity,
+        total_observations=total_observations,
+        observations_by_status=observations_by_status,
+        recent_incidents=recent_incidents_data,
+        recent_observations=recent_observations_data,
+    )
 
 
 # ─── Notification Helper ───

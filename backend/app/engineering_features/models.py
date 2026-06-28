@@ -277,6 +277,182 @@ class MeetingMinute(Base, TimestampMixin):
     created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 
+class SubmittalRegister(Base, TimestampMixin):
+    __tablename__ = "submittals"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    submittal_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    submittal_type: Mapped[str] = mapped_column(String(50))
+    specification_ref: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="draft")
+    priority: Mapped[str] = mapped_column(String(20), default="medium")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    submitted_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    required_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    reviewed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    review_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rejection_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resubmission_deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+
+class InspectionRequest(Base, TimestampMixin):
+    __tablename__ = "inspection_requests"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    inspection_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    inspection_type: Mapped[str] = mapped_column(String(50))
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="planned")
+    inspector_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    inspection_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    scheduled_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    findings: Mapped[str | None] = mapped_column(Text, nullable=True)
+    corrective_action: Mapped[str | None] = mapped_column(Text, nullable=True)
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)
+    passed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class PunchListItem(Base, TimestampMixin):
+    __tablename__ = "punch_list_items"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    item_number: Mapped[str] = mapped_column(String(100))
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    category: Mapped[str] = mapped_column(String(50), default="general")
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    severity: Mapped[str] = mapped_column(String(20), default="medium")
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    assigned_to: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    target_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    completed_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    verification_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+
+class Transmittal(Base, TimestampMixin):
+    __tablename__ = "transmittals"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    transmittal_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    transmittal_type: Mapped[str] = mapped_column(String(50))
+    direction: Mapped[str] = mapped_column(String(20))
+    sender: Mapped[str] = mapped_column(String(255))
+    recipient: Mapped[str] = mapped_column(String(255))
+    subject: Mapped[str] = mapped_column(String(255))
+    body: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="draft")
+    sent_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    received_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    acknowledged_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    attachments: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+
+# ─── Phase 2: Classification + Multi-Branch ───
+
+
+class CompanyBranch(Base, TimestampMixin):
+    __tablename__ = "company_branches"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    code: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    manager_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+
+
+class ProjectCategory(Base, TimestampMixin):
+    __tablename__ = "project_categories"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    type: Mapped[str] = mapped_column(String(50))
+    color: Mapped[str | None] = mapped_column(String(7), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class ProjectCategoryLink(Base):
+    __tablename__ = "project_category_links"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    category_id: Mapped[int] = mapped_column(ForeignKey("project_categories.id"), index=True)
+
+
+class CostCode(Base, TimestampMixin):
+    __tablename__ = "cost_codes"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    code: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("cost_codes.id"), nullable=True)
+    level: Mapped[int] = mapped_column(Integer, default=1)
+    budget_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), default=0)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+
+
+# ─── Phase 3: HSE Module ───
+
+
+class SafetyIncident(Base, TimestampMixin):
+    __tablename__ = "safety_incidents"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    incident_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    incident_type: Mapped[str] = mapped_column(String(50))
+    severity: Mapped[str] = mapped_column(String(20), default="minor")
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    incident_date: Mapped[date] = mapped_column(Date)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reported_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    affected_person: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    root_cause: Mapped[str | None] = mapped_column(Text, nullable=True)
+    corrective_action: Mapped[str | None] = mapped_column(Text, nullable=True)
+    preventive_action: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="reported")
+    closed_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class SafetyObservation(Base, TimestampMixin):
+    __tablename__ = "safety_observations"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    observation_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    observation_type: Mapped[str] = mapped_column(String(50))
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    observation_date: Mapped[date] = mapped_column(Date)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    observed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    category: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    corrective_action: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolved_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
 class SystemSetting(Base):
     __tablename__ = "system_settings"
 

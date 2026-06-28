@@ -9,6 +9,33 @@ export const formatDate = (d) => {
 };
 
 export const statusColors = {
+  // Submittal statuses
+  submittal_draft: 'default',
+  submittal_submitted: 'primary',
+  submittal_under_review: 'info',
+  submittal_approved: 'success',
+  submittal_rejected_with_comments: 'error',
+  submittal_resubmitted: 'warning',
+  submittal_closed: 'default',
+  // Inspection statuses
+  inspection_planned: 'info',
+  inspection_submitted: 'primary',
+  inspection_inspected: 'warning',
+  inspection_passed: 'success',
+  inspection_failed: 'error',
+  inspection_re_inspection: 'warning',
+  // Punch list statuses
+  punchlist_open: 'error',
+  punchlist_in_progress: 'info',
+  punchlist_completed: 'warning',
+  punchlist_verified: 'primary',
+  punchlist_accepted: 'success',
+  // Transmittal statuses
+  transmittal_draft: 'default',
+  transmittal_sent: 'primary',
+  transmittal_received: 'info',
+  transmittal_acknowledged: 'success',
+  transmittal_closed: 'default',
   active: 'success',
   planning: 'info',
   not_started: 'default',
@@ -45,4 +72,20 @@ export const statusColors = {
   urgent: 'error',
   partial: 'warning',
   done: 'success',
+  // Safety Incident statuses
+  incident_reported: 'error',
+  incident_investigating: 'warning',
+  incident_action_taken: 'info',
+  incident_closed: 'success',
+  // Safety Observation statuses
+  observation_open: 'error',
+  observation_acknowledged: 'warning',
+  observation_resolved: 'success',
+  observation_closed: 'default',
+  // Branch statuses
+  branch_active: 'success',
+  branch_inactive: 'default',
+  // Cost code statuses
+  costcode_active: 'success',
+  costcode_inactive: 'default',
 };

@@ -589,6 +589,169 @@ class MeetingMinuteResponse(MeetingMinuteCreate):
     model_config = {"from_attributes": True}
 
 
+class SubmittalCreate(BaseModel):
+    project_id: int
+    submittal_number: str
+    title: str
+    submittal_type: str = "technical_submittal"
+    specification_ref: str | None = None
+    priority: str = "medium"
+    description: str | None = None
+    submitted_date: date | None = None
+    required_date: date | None = None
+    reviewed_by: str | None = None
+    review_notes: str | None = None
+    created_by: str | None = None
+    file_path: str | None = None
+
+
+class SubmittalUpdate(BaseModel):
+    title: str | None = None
+    submittal_type: str | None = None
+    specification_ref: str | None = None
+    priority: str | None = None
+    description: str | None = None
+    submitted_date: date | None = None
+    required_date: date | None = None
+    reviewed_by: str | None = None
+    review_notes: str | None = None
+    rejection_reason: str | None = None
+    resubmission_deadline: date | None = None
+    file_path: str | None = None
+
+
+class SubmittalResponse(SubmittalCreate):
+    id: int
+    status: str
+    rejection_reason: str | None = None
+    resubmission_deadline: date | None = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class InspectionCreate(BaseModel):
+    project_id: int
+    inspection_number: str
+    title: str
+    inspection_type: str = "other"
+    location: str | None = None
+    inspector_name: str | None = None
+    inspection_date: date | None = None
+    scheduled_date: date | None = None
+    description: str | None = None
+    findings: str | None = None
+    corrective_action: str | None = None
+    result: str | None = None
+    passed: bool | None = None
+    file_path: str | None = None
+    created_by: str | None = None
+
+
+class InspectionUpdate(BaseModel):
+    title: str | None = None
+    inspection_type: str | None = None
+    location: str | None = None
+    inspector_name: str | None = None
+    inspection_date: date | None = None
+    scheduled_date: date | None = None
+    description: str | None = None
+    findings: str | None = None
+    corrective_action: str | None = None
+    result: str | None = None
+    passed: bool | None = None
+    file_path: str | None = None
+
+
+class InspectionResponse(InspectionCreate):
+    id: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class PunchListCreate(BaseModel):
+    project_id: int
+    item_number: str
+    title: str
+    description: str | None = None
+    category: str = "general"
+    location: str | None = None
+    severity: str = "medium"
+    assigned_to: str | None = None
+    target_date: date | None = None
+    notes: str | None = None
+    created_by: str | None = None
+    file_path: str | None = None
+
+
+class PunchListUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    category: str | None = None
+    location: str | None = None
+    severity: str | None = None
+    assigned_to: str | None = None
+    target_date: date | None = None
+    completed_date: date | None = None
+    verified_by: str | None = None
+    verification_date: date | None = None
+    notes: str | None = None
+    file_path: str | None = None
+
+
+class PunchListResponse(PunchListCreate):
+    id: int
+    status: str
+    completed_date: date | None = None
+    verified_by: str | None = None
+    verification_date: date | None = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class TransmittalCreate(BaseModel):
+    project_id: int
+    transmittal_number: str
+    title: str
+    transmittal_type: str = "document"
+    direction: str = "outgoing"
+    sender: str
+    recipient: str
+    subject: str
+    body: str | None = None
+    sent_date: date | None = None
+    received_date: date | None = None
+    attachments: str | None = None
+    created_by: str | None = None
+    file_path: str | None = None
+
+
+class TransmittalUpdate(BaseModel):
+    title: str | None = None
+    transmittal_type: str | None = None
+    direction: str | None = None
+    sender: str | None = None
+    recipient: str | None = None
+    subject: str | None = None
+    body: str | None = None
+    sent_date: date | None = None
+    received_date: date | None = None
+    attachments: str | None = None
+    file_path: str | None = None
+
+
+class TransmittalResponse(TransmittalCreate):
+    id: int
+    status: str
+    acknowledged_date: date | None = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
 class ActivityLogResponse(BaseModel):
     id: int
     user_id: int
@@ -600,3 +763,190 @@ class ActivityLogResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ─── Phase 2: Classification + Multi-Branch ───
+
+
+class BranchCreate(BaseModel):
+    name: str
+    code: str
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    manager_name: Optional[str] = None
+    status: str = "active"
+
+
+class BranchUpdate(BaseModel):
+    name: Optional[str] = None
+    code: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    manager_name: Optional[str] = None
+    status: Optional[str] = None
+
+
+class BranchResponse(BranchCreate):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class CategoryCreate(BaseModel):
+    name: str
+    type: str
+    color: Optional[str] = None
+    description: Optional[str] = None
+
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    color: Optional[str] = None
+    description: Optional[str] = None
+
+
+class CategoryResponse(CategoryCreate):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class CostCodeCreate(BaseModel):
+    project_id: int
+    code: str
+    name: str
+    description: Optional[str] = None
+    parent_id: Optional[int] = None
+    level: int = 1
+    budget_amount: Decimal = Decimal("0")
+    status: str = "active"
+
+
+class CostCodeUpdate(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    parent_id: Optional[int] = None
+    level: Optional[int] = None
+    budget_amount: Optional[Decimal] = None
+    status: Optional[str] = None
+
+
+class CostCodeResponse(BaseModel):
+    id: int
+    project_id: int
+    code: str
+    name: str
+    description: Optional[str] = None
+    parent_id: Optional[int] = None
+    level: int
+    budget_amount: Decimal
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    children: List["CostCodeResponse"] = []
+    model_config = {"from_attributes": True}
+
+
+# ─── Phase 3: HSE Module ───
+
+
+class SafetyIncidentCreate(BaseModel):
+    project_id: int
+    incident_number: str
+    title: str
+    incident_type: str = "other"
+    severity: str = "minor"
+    location: Optional[str] = None
+    incident_date: date
+    description: Optional[str] = None
+    reported_by: Optional[str] = None
+    affected_person: Optional[str] = None
+    root_cause: Optional[str] = None
+    corrective_action: Optional[str] = None
+    preventive_action: Optional[str] = None
+    created_by: Optional[str] = None
+
+
+class SafetyIncidentUpdate(BaseModel):
+    title: Optional[str] = None
+    incident_type: Optional[str] = None
+    severity: Optional[str] = None
+    location: Optional[str] = None
+    incident_date: Optional[date] = None
+    description: Optional[str] = None
+    reported_by: Optional[str] = None
+    affected_person: Optional[str] = None
+    root_cause: Optional[str] = None
+    corrective_action: Optional[str] = None
+    preventive_action: Optional[str] = None
+    status: Optional[str] = None
+    closed_date: Optional[date] = None
+
+
+class SafetyIncidentResponse(SafetyIncidentCreate):
+    id: int
+    status: str
+    closed_date: Optional[date] = None
+    file_path: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class SafetyObservationCreate(BaseModel):
+    project_id: int
+    observation_number: str
+    title: str
+    observation_type: str = "unsafe_act"
+    location: Optional[str] = None
+    observation_date: date
+    description: Optional[str] = None
+    observed_by: Optional[str] = None
+    category: Optional[str] = None
+    created_by: Optional[str] = None
+
+
+class SafetyObservationUpdate(BaseModel):
+    title: Optional[str] = None
+    observation_type: Optional[str] = None
+    location: Optional[str] = None
+    observation_date: Optional[date] = None
+    description: Optional[str] = None
+    observed_by: Optional[str] = None
+    category: Optional[str] = None
+    status: Optional[str] = None
+    corrective_action: Optional[str] = None
+    resolved_date: Optional[date] = None
+
+
+class SafetyObservationResponse(SafetyObservationCreate):
+    id: int
+    status: str
+    corrective_action: Optional[str] = None
+    resolved_date: Optional[date] = None
+    file_path: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class HSEPointData(BaseModel):
+    total: int = 0
+    statuses: dict = {}
+    severities: dict = {}
+
+
+class HSEDashboardResponse(BaseModel):
+    total_incidents: int = 0
+    incidents_by_status: dict = {}
+    incidents_by_severity: dict = {}
+    total_observations: int = 0
+    observations_by_status: dict = {}
+    recent_incidents: list = []
+    recent_observations: list = []

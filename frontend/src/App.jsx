@@ -33,6 +33,10 @@ import VariationOrders from './pages/VariationOrders/VariationOrders';
 import RFIs from './pages/RFIs/RFIs';
 import MAR from './pages/MAR/MAR';
 import NCR from './pages/NCR/NCR';
+import Submittals from './pages/Submittals/Submittals';
+import InspectionRequests from './pages/InspectionRequests/InspectionRequests';
+import PunchList from './pages/PunchList/PunchList';
+import Transmittals from './pages/Transmittals/Transmittals';
 import MeetingMinutes from './pages/MeetingMinutes/MeetingMinutes';
 import EVM from './pages/EVM/EVM';
 import CompanyProfile from './pages/CompanyProfile/CompanyProfile';
@@ -40,6 +44,12 @@ import Notifications from './pages/Notifications/Notifications';
 import Admin from './pages/Admin/Admin';
 import SearchPage from './pages/Search/Search';
 import ProjectHub from './pages/ProjectHub/ProjectHub';
+import Branches from './pages/Branches/Branches';
+import Categories from './pages/Categories/Categories';
+import CostCodes from './pages/CostCodes/CostCodes';
+import SafetyIncidents from './pages/SafetyIncidents/SafetyIncidents';
+import SafetyObservations from './pages/SafetyObservations/SafetyObservations';
+import HSEDashboard from './pages/HSEDashboard/HSEDashboard';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -108,12 +118,22 @@ function AppContent() {
             <Route path="rfis" element={<MotionOutlet><RFIs /></MotionOutlet>} />
             <Route path="mar" element={<MotionOutlet><MAR /></MotionOutlet>} />
             <Route path="ncr" element={<MotionOutlet><NCR /></MotionOutlet>} />
+            <Route path="submittals" element={<MotionOutlet><Submittals /></MotionOutlet>} />
+            <Route path="inspection-requests" element={<MotionOutlet><InspectionRequests /></MotionOutlet>} />
+            <Route path="punch-list" element={<MotionOutlet><PunchList /></MotionOutlet>} />
+            <Route path="transmittals" element={<MotionOutlet><Transmittals /></MotionOutlet>} />
             <Route path="projects/:projectId/meeting-minutes" element={<MotionOutlet><MeetingMinutes /></MotionOutlet>} />
             <Route path="evm" element={<MotionOutlet><EVM /></MotionOutlet>} />
             <Route path="employees" element={<MotionOutlet><Employees /></MotionOutlet>} />
             <Route path="company-profile" element={<MotionOutlet><CompanyProfile /></MotionOutlet>} />
             <Route path="notifications" element={<MotionOutlet><Notifications /></MotionOutlet>} />
             <Route path="admin" element={<MotionOutlet><Admin /></MotionOutlet>} />
+            <Route path="branches" element={<MotionOutlet><Branches /></MotionOutlet>} />
+            <Route path="categories" element={<MotionOutlet><Categories /></MotionOutlet>} />
+            <Route path="cost-codes" element={<MotionOutlet><CostCodes /></MotionOutlet>} />
+            <Route path="safety-incidents" element={<MotionOutlet><SafetyIncidents /></MotionOutlet>} />
+            <Route path="safety-observations" element={<MotionOutlet><SafetyObservations /></MotionOutlet>} />
+            <Route path="hse/dashboard" element={<MotionOutlet><HSEDashboard /></MotionOutlet>} />
             <Route path="search" element={<MotionOutlet><SearchPage /></MotionOutlet>} />
           </Route>
           <Route path="*" element={<Navigate to="/engineering/dashboard" replace />} />

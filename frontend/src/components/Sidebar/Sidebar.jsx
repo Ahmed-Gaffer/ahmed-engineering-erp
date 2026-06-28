@@ -9,7 +9,7 @@ import {
   Dashboard, People, Folder, AccountTree, Code, Assignment, ListAlt, Image,
   DocumentScanner, Receipt, Engineering, Construction, Badge, Search, Assessment,
   Description, EventNote, GroupWork, CalendarMonth, Business, Notifications as BellIcon,
-  AdminPanelSettings, ChevronLeft,
+  AdminPanelSettings, ChevronLeft, CheckCircle, Category, Warning, Visibility,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -56,6 +56,28 @@ const sections = [
       { label: 'mar', icon: <Description />, path: '/engineering/mar', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
       { label: 'ncr', icon: <Assignment />, path: '/engineering/ncr', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
       { label: 'evmPage', icon: <Assessment />, path: '/engineering/evm', bg: 'rgba(139,92,246,0.2)', color: '#c084fc' },
+    ],
+  },
+  {
+    title: 'engineering', items: [
+      { label: 'submittals', icon: <ListAlt />, path: '/engineering/submittals', bg: 'rgba(139,92,246,0.2)', color: '#8b5cf6' },
+      { label: 'inspectionRequests', icon: <CheckCircle />, path: '/engineering/inspection-requests', bg: 'rgba(6,182,212,0.2)', color: '#06b6d4' },
+      { label: 'punchList', icon: <ListAlt />, path: '/engineering/punch-list', bg: 'rgba(249,115,22,0.2)', color: '#f97316' },
+      { label: 'transmittals', icon: <Description />, path: '/engineering/transmittals', bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
+    ],
+  },
+  {
+    title: 'classification', items: [
+      { label: 'branches', icon: <Business />, path: '/engineering/branches', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'categories', icon: <Category />, path: '/engineering/categories', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
+      { label: 'costCodes', icon: <Code />, path: '/engineering/cost-codes', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
+    ],
+  },
+  {
+    title: 'hse', items: [
+      { label: 'hseDashboard', icon: <Assessment />, path: '/engineering/hse/dashboard', bg: 'rgba(6,182,212,0.2)', color: '#22d3ee' },
+      { label: 'safetyIncidents', icon: <Warning />, path: '/engineering/safety-incidents', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
+      { label: 'safetyObservations', icon: <Visibility />, path: '/engineering/safety-observations', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
     ],
   },
   {
