@@ -44,7 +44,7 @@ jobs:
           cat > README.md << 'ENDOFREADME'
           ---
           title: Engineering ERP
-          emojii: 🚀
+          emoji: 🚀
           colorFrom: blue
           colorTo: indigo
           sdk: docker
@@ -57,5 +57,7 @@ jobs:
           git config user.name "GitHub Actions"
           git add -A
           git commit -m "Deploy ${{ github.sha }} [skip ci]"
-          git remote add hf "https://token:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/${{ secrets.HF_SPACE_REPO }}"
+          git remote add hf "https://huggingface.co/spaces/${{ secrets.HF_SPACE_REPO }}"
+          echo "https://token:${{ secrets.HF_TOKEN }}@huggingface.co" > ~/.git-credentials
+          git config credential.helper store
           git push --force hf HEAD:main
