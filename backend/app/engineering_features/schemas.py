@@ -950,3 +950,414 @@ class HSEDashboardResponse(BaseModel):
     observations_by_status: dict = {}
     recent_incidents: list = []
     recent_observations: list = []
+
+
+class MaterialTestCreate(BaseModel):
+    project_id: int
+    test_number: str
+    test_type: str = "concrete_cube"
+    sample_description: Optional[str] = None
+    sample_location: Optional[str] = None
+    sample_date: Optional[date] = None
+    test_date: Optional[date] = None
+    tested_by: Optional[str] = None
+    lab_name: Optional[str] = None
+    certificate_number: Optional[str] = None
+    standard_ref: Optional[str] = None
+    result_value: Optional[Decimal] = None
+    unit: Optional[str] = None
+    acceptance_criteria: Optional[str] = None
+    passed: Optional[bool] = None
+    inspection_request_id: Optional[int] = None
+    ncr_id: Optional[int] = None
+    notes: Optional[str] = None
+    created_by: Optional[str] = None
+
+
+class MaterialTestUpdate(BaseModel):
+    test_type: Optional[str] = None
+    sample_description: Optional[str] = None
+    sample_location: Optional[str] = None
+    sample_date: Optional[date] = None
+    test_date: Optional[date] = None
+    tested_by: Optional[str] = None
+    lab_name: Optional[str] = None
+    certificate_number: Optional[str] = None
+    standard_ref: Optional[str] = None
+    result_value: Optional[Decimal] = None
+    unit: Optional[str] = None
+    acceptance_criteria: Optional[str] = None
+    passed: Optional[bool] = None
+    status: Optional[str] = None
+    inspection_request_id: Optional[int] = None
+    ncr_id: Optional[int] = None
+    notes: Optional[str] = None
+
+
+class MaterialTestResponse(MaterialTestCreate):
+    id: int
+    status: str
+    passed: Optional[bool] = None
+    file_path: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class MaterialTestStats(BaseModel):
+    total_tests: int = 0
+    passed_tests: int = 0
+    failed_tests: int = 0
+    pending_tests: int = 0
+    pass_rate: float = 0
+    by_type: dict = {}
+    recent_tests: list = []
+
+
+# ─── ITP ───
+
+class ITPVerificationCreate(BaseModel):
+    inspection_request_id: int | None = None
+    result: str = "n_a"
+    verified_by: str | None = None
+    verified_date: date | None = None
+    notes: str | None = None
+
+
+class ITPVerificationResponse(ITPVerificationCreate):
+    id: int
+    itp_item_id: int
+    created_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class ITPItemCreate(BaseModel):
+    section: str | None = None
+    activity_description: str | None = None
+    reference_standard: str | None = None
+    acceptance_criteria: str | None = None
+    hold_point: bool = False
+    witness_point: bool = False
+    inspection_frequency: str | None = None
+    responsible_party: str | None = None
+    status: str = "pending"
+    sort_order: int = 0
+
+
+class ITPItemUpdate(BaseModel):
+    section: str | None = None
+    activity_description: str | None = None
+    reference_standard: str | None = None
+    acceptance_criteria: str | None = None
+    hold_point: bool | None = None
+    witness_point: bool | None = None
+    inspection_frequency: str | None = None
+    responsible_party: str | None = None
+    status: str | None = None
+    sort_order: int | None = None
+
+
+class ITPItemResponse(ITPItemCreate):
+    id: int
+    itp_id: int
+    created_at: datetime
+    updated_at: datetime
+    verifications: list[ITPVerificationResponse] = []
+    model_config = {"from_attributes": True}
+
+
+class ITPCreate(BaseModel):
+    project_id: int
+    itp_number: str
+    title: str
+    description: str | None = None
+    location: str | None = None
+    prepared_by: str | None = None
+    created_by: str | None = None
+
+
+class ITPUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    location: str | None = None
+    status: str | None = None
+    version: int | None = None
+    prepared_by: str | None = None
+    reviewed_by: str | None = None
+    approved_by: str | None = None
+
+
+class ITPResponse(ITPCreate):
+    id: int
+    status: str
+    version: int
+    reviewed_by: str | None = None
+    approved_by: str | None = None
+    created_at: datetime
+    updated_at: datetime
+    items: list[ITPItemResponse] = []
+    model_config = {"from_attributes": True}
+
+
+class ITPStats(BaseModel):
+    total: int = 0
+    by_status: dict = {}
+
+
+class ITPReviewBody(BaseModel):
+    status: str
+    reviewer_notes: str | None = None
+    approved_items: list[int] = []
+    rejected_items: list[int] = []
+
+
+# ─── Method Statements ───
+
+class MethodStatementCreate(BaseModel):
+    project_id: int
+    ms_number: str
+    title: str
+    scope_of_work: str
+    methodology: str
+    resources_required: str | None = None
+    risks_identified: str | None = None
+    referenced_documents: str | None = None
+    attachments: str | None = None
+    prepared_by: str | None = None
+    notes: str | None = None
+    created_by: str | None = None
+
+
+class MethodStatementUpdate(BaseModel):
+    ms_number: str | None = None
+    title: str | None = None
+    scope_of_work: str | None = None
+    methodology: str | None = None
+    resources_required: str | None = None
+    risks_identified: str | None = None
+    referenced_documents: str | None = None
+    attachments: str | None = None
+    status: str | None = None
+    version: int | None = None
+    prepared_by: str | None = None
+    reviewed_by: str | None = None
+    approved_by: str | None = None
+    notes: str | None = None
+
+
+class MethodStatementResponse(MethodStatementCreate):
+    id: int
+    status: str
+    version: int
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class MethodStatementStats(BaseModel):
+    total: int = 0
+    by_status: dict = {}
+
+
+# ─── Specifications Library ───
+
+class SpecSectionCreate(BaseModel):
+    section_number: str
+    title: str
+    content: str
+    sort_order: int = 0
+
+
+class SpecSectionUpdate(BaseModel):
+    section_number: str | None = None
+    title: str | None = None
+    content: str | None = None
+    sort_order: int | None = None
+
+
+class SpecSectionResponse(SpecSectionCreate):
+    id: int
+    specification_id: int
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class SpecificationCreate(BaseModel):
+    project_id: int | None = None
+    spec_code: str
+    title: str
+    division: str
+    section: str | None = None
+    issuing_body: str
+    revision: str | None = None
+    effective_date: date | None = None
+    body: str
+    keywords: str | None = None
+    status: str = "active"
+    file_path: str | None = None
+    created_by: str | None = None
+
+
+class SpecificationUpdate(BaseModel):
+    spec_code: str | None = None
+    title: str | None = None
+    division: str | None = None
+    section: str | None = None
+    issuing_body: str | None = None
+    revision: str | None = None
+    effective_date: date | None = None
+    body: str | None = None
+    keywords: str | None = None
+    status: str | None = None
+    file_path: str | None = None
+
+
+class SpecificationResponse(SpecificationCreate):
+    id: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    sections: list[SpecSectionResponse] = []
+    model_config = {"from_attributes": True}
+
+
+class SpecificationStats(BaseModel):
+    total: int = 0
+    by_division: dict = {}
+    by_body: dict = {}
+
+
+# ─── Permits to Work ───
+
+class PermitToWorkCreate(BaseModel):
+    project_id: int
+    permit_number: str
+    permit_type: str = "hot_work"
+    title: str
+    description: str | None = None
+    location: str
+    requested_by: str
+    requested_date: date
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+    permit_issuer: str | None = None
+    permit_holder: str | None = None
+    gas_test_result: str | None = None
+    gas_test_time: datetime | None = None
+    permit_receiver: str | None = None
+    safety_measures: str | None = None
+    notes: str | None = None
+    created_by: str | None = None
+
+
+class PermitToWorkUpdate(BaseModel):
+    permit_number: str | None = None
+    permit_type: str | None = None
+    title: str | None = None
+    description: str | None = None
+    location: str | None = None
+    requested_by: str | None = None
+    requested_date: date | None = None
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+    permit_issuer: str | None = None
+    permit_holder: str | None = None
+    gas_test_result: str | None = None
+    gas_test_time: datetime | None = None
+    permit_receiver: str | None = None
+    safety_measures: str | None = None
+    status: str | None = None
+    notes: str | None = None
+
+
+class PermitToWorkResponse(PermitToWorkCreate):
+    id: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class PermitToWorkStats(BaseModel):
+    total: int = 0
+    by_type: dict = {}
+    by_status: dict = {}
+
+
+# ─── Survey ───
+
+class SurveyPointCreate(BaseModel):
+    project_id: int
+    point_number: str
+    description: str | None = None
+    point_type: str = "control"
+    northing: Decimal | None = None
+    easting: Decimal | None = None
+    elevation: Decimal | None = None
+    coordinate_system: str | None = None
+    benchmark_ref: str | None = None
+    date_established: date | None = None
+    established_by: str | None = None
+    location_description: str | None = None
+    notes: str | None = None
+    created_by: str | None = None
+
+
+class SurveyPointUpdate(BaseModel):
+    point_number: str | None = None
+    description: str | None = None
+    point_type: str | None = None
+    northing: Decimal | None = None
+    easting: Decimal | None = None
+    elevation: Decimal | None = None
+    coordinate_system: str | None = None
+    benchmark_ref: str | None = None
+    date_established: date | None = None
+    established_by: str | None = None
+    location_description: str | None = None
+    status: str | None = None
+    notes: str | None = None
+
+
+class SurveyPointResponse(SurveyPointCreate):
+    id: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class SurveyReadingCreate(BaseModel):
+    reading_date: date
+    northing_reading: Decimal | None = None
+    easting_reading: Decimal | None = None
+    elevation_reading: Decimal | None = None
+    equipment_used: str | None = None
+    operator: str | None = None
+    notes: str | None = None
+    created_by: str | None = None
+
+
+class SurveyReadingUpdate(BaseModel):
+    reading_date: date | None = None
+    northing_reading: Decimal | None = None
+    easting_reading: Decimal | None = None
+    elevation_reading: Decimal | None = None
+    equipment_used: str | None = None
+    operator: str | None = None
+    notes: str | None = None
+
+
+class SurveyReadingResponse(SurveyReadingCreate):
+    id: int
+    survey_point_id: int
+    created_at: datetime
+    updated_at: datetime
+    model_config = {"from_attributes": True}
+
+
+class SurveyStats(BaseModel):
+    total_points: int = 0
+    by_type: dict = {}
+    by_status: dict = {}

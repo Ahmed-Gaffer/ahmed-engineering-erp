@@ -45,6 +45,12 @@ const breadcrumbMap = {
   'company-profile': 'companyProfile',
   notifications: 'notifications',
   admin: 'adminPanel',
+  'material-tests': 'materialTests',
+  'itps': 'itp',
+  'method-statements': 'methodStatements',
+  'specifications': 'specifications',
+  'permits': 'permits',
+  'survey': 'survey',
 };
 
 export default function Layout() {

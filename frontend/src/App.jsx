@@ -50,6 +50,12 @@ import CostCodes from './pages/CostCodes/CostCodes';
 import SafetyIncidents from './pages/SafetyIncidents/SafetyIncidents';
 import SafetyObservations from './pages/SafetyObservations/SafetyObservations';
 import HSEDashboard from './pages/HSEDashboard/HSEDashboard';
+import MaterialTests from './pages/MaterialTests/MaterialTests';
+import ITP from './pages/ITP/ITP';
+import MethodStatements from './pages/MethodStatements/MethodStatements';
+import Specifications from './pages/Specifications/Specifications';
+import Permits from './pages/Permits/Permits';
+import Survey from './pages/Survey/Survey';
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -134,6 +140,12 @@ function AppContent() {
             <Route path="safety-incidents" element={<MotionOutlet><SafetyIncidents /></MotionOutlet>} />
             <Route path="safety-observations" element={<MotionOutlet><SafetyObservations /></MotionOutlet>} />
             <Route path="hse/dashboard" element={<MotionOutlet><HSEDashboard /></MotionOutlet>} />
+            <Route path="material-tests" element={<MotionOutlet><MaterialTests /></MotionOutlet>} />
+            <Route path="itps" element={<MotionOutlet><ITP /></MotionOutlet>} />
+            <Route path="method-statements" element={<MotionOutlet><MethodStatements /></MotionOutlet>} />
+            <Route path="specifications" element={<MotionOutlet><Specifications /></MotionOutlet>} />
+            <Route path="permits" element={<MotionOutlet><Permits /></MotionOutlet>} />
+            <Route path="survey" element={<MotionOutlet><Survey /></MotionOutlet>} />
             <Route path="search" element={<MotionOutlet><SearchPage /></MotionOutlet>} />
           </Route>
           <Route path="*" element={<Navigate to="/engineering/dashboard" replace />} />

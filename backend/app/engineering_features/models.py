@@ -2,7 +2,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import List
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, Text, Boolean
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, Text, Boolean, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base import Base, TimestampMixin
@@ -451,6 +451,192 @@ class SafetyObservation(Base, TimestampMixin):
     resolved_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class MaterialTest(Base, TimestampMixin):
+    __tablename__ = "material_tests"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    test_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    test_type: Mapped[str] = mapped_column(String(50))
+    sample_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sample_location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    sample_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    test_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    tested_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    lab_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    certificate_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    standard_ref: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    result_value: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    acceptance_criteria: Mapped[str | None] = mapped_column(Text, nullable=True)
+    passed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="requested")
+    inspection_request_id: Mapped[int | None] = mapped_column(ForeignKey("inspection_requests.id"), nullable=True)
+    ncr_id: Mapped[int | None] = mapped_column(ForeignKey("non_conformance_reports.id"), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class ITP(Base, TimestampMixin):
+    __tablename__ = "itps"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    itp_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="draft")
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    prepared_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reviewed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    approved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    itp_items: Mapped[List["ITPItem"]] = relationship("ITPItem", back_populates="itp", cascade="all, delete-orphan")
+
+
+class ITPItem(Base, TimestampMixin):
+    __tablename__ = "itp_items"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    itp_id: Mapped[int] = mapped_column(ForeignKey("itps.id"), index=True)
+    section: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    activity_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reference_standard: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    acceptance_criteria: Mapped[str | None] = mapped_column(Text, nullable=True)
+    hold_point: Mapped[bool] = mapped_column(Boolean, default=False)
+    witness_point: Mapped[bool] = mapped_column(Boolean, default=False)
+    inspection_frequency: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    responsible_party: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    itp: Mapped["ITP"] = relationship("ITP", back_populates="itp_items")
+    verifications: Mapped[List["ITPVerification"]] = relationship("ITPVerification", back_populates="itp_item", cascade="all, delete-orphan")
+
+
+class ITPVerification(Base):
+    __tablename__ = "itp_verifications"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    itp_item_id: Mapped[int] = mapped_column(ForeignKey("itp_items.id"), index=True)
+    inspection_request_id: Mapped[int | None] = mapped_column(ForeignKey("inspection_requests.id"), nullable=True)
+    result: Mapped[str] = mapped_column(String(20), default="n_a")
+    verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    verified_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    itp_item: Mapped["ITPItem"] = relationship("ITPItem", back_populates="verifications")
+
+
+class MethodStatement(Base, TimestampMixin):
+    __tablename__ = "method_statements"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    ms_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    scope_of_work: Mapped[str] = mapped_column(Text)
+    methodology: Mapped[str] = mapped_column(Text)
+    resources_required: Mapped[str | None] = mapped_column(Text, nullable=True)
+    risks_identified: Mapped[str | None] = mapped_column(Text, nullable=True)
+    referenced_documents: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attachments: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="draft")
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    prepared_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reviewed_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    approved_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class Specification(Base, TimestampMixin):
+    __tablename__ = "specifications"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True, index=True)
+    spec_code: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    division: Mapped[str] = mapped_column(String(50))
+    section: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    issuing_body: Mapped[str] = mapped_column(String(50))
+    revision: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    effective_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    body: Mapped[str] = mapped_column(Text)
+    keywords: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    sections: Mapped[List["SpecSection"]] = relationship(back_populates="specification", cascade="all, delete-orphan")
+
+
+class SpecSection(Base, TimestampMixin):
+    __tablename__ = "spec_sections"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    specification_id: Mapped[int] = mapped_column(ForeignKey("specifications.id", ondelete="CASCADE"), index=True)
+    section_number: Mapped[str] = mapped_column(String(20))
+    title: Mapped[str] = mapped_column(String(255))
+    content: Mapped[str] = mapped_column(Text)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    specification: Mapped["Specification"] = relationship(back_populates="sections")
+
+
+class PermitToWork(Base, TimestampMixin):
+    __tablename__ = "permits_to_work"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    permit_number: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    permit_type: Mapped[str] = mapped_column(String(50))
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    location: Mapped[str] = mapped_column(String(255))
+    requested_by: Mapped[str] = mapped_column(String(255))
+    requested_date: Mapped[date] = mapped_column(Date)
+    valid_from: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    valid_to: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    permit_issuer: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    permit_holder: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    gas_test_result: Mapped[str | None] = mapped_column(Text, nullable=True)
+    gas_test_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    permit_receiver: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    safety_measures: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="requested")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class SurveyPoint(Base, TimestampMixin):
+    __tablename__ = "survey_points"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+    point_number: Mapped[str] = mapped_column(String(50))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    point_type: Mapped[str] = mapped_column(String(20), default="control")
+    northing: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    easting: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    elevation: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    coordinate_system: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    benchmark_ref: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    date_established: Mapped[date | None] = mapped_column(Date, nullable=True)
+    established_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    location_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    readings: Mapped[List["SurveyReading"]] = relationship(back_populates="survey_point", cascade="all, delete-orphan")
+    __table_args__ = (UniqueConstraint("project_id", "point_number", name="uq_survey_point_project"),)
+
+
+class SurveyReading(Base, TimestampMixin):
+    __tablename__ = "survey_readings"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    survey_point_id: Mapped[int] = mapped_column(ForeignKey("survey_points.id"), index=True)
+    reading_date: Mapped[date] = mapped_column(Date)
+    northing_reading: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    easting_reading: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    elevation_reading: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    equipment_used: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    operator: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    survey_point: Mapped["SurveyPoint"] = relationship(back_populates="readings")
 
 
 class SystemSetting(Base):

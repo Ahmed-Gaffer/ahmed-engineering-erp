@@ -9,7 +9,7 @@ import {
   Dashboard, People, Folder, AccountTree, Code, Assignment, ListAlt, Image,
   DocumentScanner, Receipt, Engineering, Construction, Badge, Search, Assessment,
   Description, EventNote, GroupWork, CalendarMonth, Business, Notifications as BellIcon,
-  AdminPanelSettings, ChevronLeft, CheckCircle, Category, Warning, Visibility,
+  AdminPanelSettings, ChevronLeft, CheckCircle, Category, Warning, Visibility, Science,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -64,6 +64,12 @@ const sections = [
       { label: 'inspectionRequests', icon: <CheckCircle />, path: '/engineering/inspection-requests', bg: 'rgba(6,182,212,0.2)', color: '#06b6d4' },
       { label: 'punchList', icon: <ListAlt />, path: '/engineering/punch-list', bg: 'rgba(249,115,22,0.2)', color: '#f97316' },
       { label: 'transmittals', icon: <Description />, path: '/engineering/transmittals', bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
+      { label: 'materialTests', icon: <Science />, path: '/engineering/material-tests', bg: 'rgba(147,51,234,0.2)', color: '#a855f7' },
+      { label: 'itp', icon: <CheckCircle />, path: '/engineering/itps', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'methodStatements', icon: <EventNote />, path: '/engineering/method-statements', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
+      { label: 'specifications', icon: <Code />, path: '/engineering/specifications', bg: 'rgba(168,85,247,0.2)', color: '#c084fc' },
+      { label: 'permits', icon: <Receipt />, path: '/engineering/permits', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
+      { label: 'survey', icon: <Assessment />, path: '/engineering/survey', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
     ],
   },
   {

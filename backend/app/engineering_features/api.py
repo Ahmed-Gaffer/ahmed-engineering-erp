@@ -4,7 +4,7 @@ from decimal import Decimal
 from datetime import date, datetime, datetime
 from io import BytesIO, StringIO
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,6 +32,12 @@ from .models import (
     CostCode,
     SafetyIncident,
     SafetyObservation,
+    MaterialTest,
+    ITP, ITPItem, ITPVerification,
+    MethodStatement,
+    Specification, SpecSection,
+    PermitToWork,
+    SurveyPoint, SurveyReading,
 )
 from app.notifications.models import Notification
 from .schemas import (
@@ -64,6 +70,17 @@ from .schemas import (
     SafetyIncidentCreate, SafetyIncidentUpdate, SafetyIncidentResponse,
     SafetyObservationCreate, SafetyObservationUpdate, SafetyObservationResponse,
     HSEDashboardResponse,
+    MaterialTestCreate, MaterialTestUpdate, MaterialTestResponse, MaterialTestStats,
+    ITPCreate, ITPUpdate, ITPResponse, ITPStats, ITPReviewBody,
+    ITPItemCreate, ITPItemUpdate, ITPItemResponse,
+    ITPVerificationCreate, ITPVerificationResponse,
+    MethodStatementCreate, MethodStatementUpdate, MethodStatementResponse, MethodStatementStats,
+    SpecificationCreate, SpecificationUpdate, SpecificationResponse, SpecificationStats,
+    SpecSectionCreate, SpecSectionUpdate, SpecSectionResponse,
+    PermitToWorkCreate, PermitToWorkUpdate, PermitToWorkResponse, PermitToWorkStats,
+    SurveyPointCreate, SurveyPointUpdate, SurveyPointResponse,
+    SurveyReadingCreate, SurveyReadingUpdate, SurveyReadingResponse,
+    SurveyStats,
 )
 from app.core.audit import AuditLog
 from app.auth.models import User
@@ -3105,6 +3122,871 @@ async def get_system_logs(lines: int = Query(100, ge=1, le=1000)):
         all_lines = f.readlines()
     last_lines = all_lines[-lines:]
     return {"lines": [line.rstrip("\n\r") for line in last_lines]}
+
+
+# ─── Quality Control: Material Tests ───
+
+
+@router.get("/material-tests", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_material_tests(
+    project_id: int = Query(None),
+    test_type: str = Query(None),
+    status: str = Query(None),
+    passed: bool = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(MaterialTest).order_by(MaterialTest.created_at.desc())
+    if project_id:
+        stmt = stmt.where(MaterialTest.project_id == project_id)
+    if test_type:
+        stmt = stmt.where(MaterialTest.test_type == test_type)
+    if status:
+        stmt = stmt.where(MaterialTest.status == status)
+    if passed is not None:
+        stmt = stmt.where(MaterialTest.passed == passed)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.post("/material-tests", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_material_test(data: MaterialTestCreate, db: AsyncSession = Depends(get_db)):
+    test = MaterialTest(**data.model_dump())
+    db.add(test)
+    await db.commit()
+    await db.refresh(test)
+    return test
+
+
+@router.get("/material-tests/{test_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def get_material_test(test_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MaterialTest).where(MaterialTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(404, "Material test not found")
+    return test
+
+
+@router.put("/material-tests/{test_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_material_test(test_id: int, data: MaterialTestUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MaterialTest).where(MaterialTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(404, "Material test not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(test, key, val)
+    await db.commit()
+    await db.refresh(test)
+    return test
+
+
+@router.delete("/material-tests/{test_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_material_test(test_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MaterialTest).where(MaterialTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(404, "Material test not found")
+    await db.delete(test)
+    await db.commit()
+    return {"detail": "Material test deleted"}
+
+
+@router.put("/material-tests/{test_id}/record-result", dependencies=[Depends(require_role("admin", "engineer"))])
+async def record_test_result(test_id: int, data: MaterialTestUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MaterialTest).where(MaterialTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(404, "Material test not found")
+    test.test_date = data.test_date or test.test_date
+    test.tested_by = data.tested_by or test.tested_by
+    test.lab_name = data.lab_name or test.lab_name
+    test.certificate_number = data.certificate_number or test.certificate_number
+    test.result_value = data.result_value if data.result_value is not None else test.result_value
+    test.unit = data.unit or test.unit
+    test.acceptance_criteria = data.acceptance_criteria or test.acceptance_criteria
+    test.passed = data.passed if data.passed is not None else test.passed
+    test.status = "tested"
+    test.notes = data.notes or test.notes
+    await db.commit()
+    await db.refresh(test)
+    await log_action(db, "material_test", test.id, "result_recorded", None, "tested", None, data.tested_by, None, data.notes)
+    return test
+
+
+@router.put("/material-tests/{test_id}/verify", dependencies=[Depends(require_role("admin", "engineer"))])
+async def verify_material_test(test_id: int, data: MaterialTestUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MaterialTest).where(MaterialTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(404, "Material test not found")
+    old_status = test.status
+    test.status = "completed"
+    test.passed = data.passed if data.passed is not None else test.passed
+    test.notes = data.notes or test.notes
+    await db.commit()
+    await db.refresh(test)
+    await log_action(db, "material_test", test.id, "completed", old_status, "completed", None, None, None, data.notes)
+    # Auto-create NCR if test failed
+    if test.passed is False and not test.ncr_id:
+        ncr = NonConformanceReport(
+            project_id=test.project_id,
+            ncr_number=f"NCR-MT-{test.id}",
+            title=f"Material Test Failed: {test.test_number}",
+            description=f"Test {test.test_number} ({test.test_type}) failed. Value: {test.result_value} {test.unit}, Criteria: {test.acceptance_criteria}",
+            category="material",
+            severity="major",
+            source="testing",
+            status="open",
+            created_by=test.created_by,
+        )
+        db.add(ncr)
+        await db.flush()
+        test.ncr_id = ncr.id
+        await db.commit()
+    return test
+
+
+@router.get("/material-tests/stats/overview", dependencies=[Depends(require_role("admin", "engineer"))])
+async def material_test_stats(
+    project_id: int = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(MaterialTest)
+    if project_id:
+        stmt = stmt.where(MaterialTest.project_id == project_id)
+    result = await db.execute(stmt)
+    tests = result.scalars().all()
+    total = len(tests)
+    passed = sum(1 for t in tests if t.passed is True)
+    failed = sum(1 for t in tests if t.passed is False)
+    pending = sum(1 for t in tests if t.passed is None)
+    by_type = {}
+    for t in tests:
+        by_type[t.test_type] = by_type.get(t.test_type, 0) + 1
+    recent = sorted(tests, key=lambda x: x.created_at, reverse=True)[:10]
+    return MaterialTestStats(
+        total_tests=total,
+        passed_tests=passed,
+        failed_tests=failed,
+        pending_tests=pending,
+        pass_rate=(passed / total * 100) if total > 0 else 0,
+        by_type=by_type,
+        recent_tests=[MaterialTestResponse.model_validate(t) for t in recent],
+    )
+
+
+# ─── ITP (Inspection Test Plans) ───
+
+@router.get("/projects/{project_id}/itps", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_project_itps(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITP).where(ITP.project_id == project_id).order_by(ITP.id.desc()))
+    return result.scalars().all()
+
+
+@router.post("/itps", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_itp(data: ITPCreate, db: AsyncSession = Depends(get_db)):
+    itp = ITP(**data.model_dump())
+    db.add(itp)
+    await db.commit()
+    await db.refresh(itp)
+    await log_action(db, "itp", itp.id, "created", None, "draft", None, None, None, None)
+    return itp
+
+
+@router.get("/itps/{itp_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def get_itp(itp_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    items_result = await db.execute(select(ITPItem).where(ITPItem.itp_id == itp_id).order_by(ITPItem.sort_order))
+    items = items_result.scalars().all()
+    enriched_items = []
+    for item in items:
+        v_result = await db.execute(select(ITPVerification).where(ITPVerification.itp_item_id == item.id))
+        enriched_items.append(ITPItemResponse(
+            id=item.id, itp_id=item.itp_id, section=item.section,
+            activity_description=item.activity_description, reference_standard=item.reference_standard,
+            acceptance_criteria=item.acceptance_criteria, hold_point=item.hold_point,
+            witness_point=item.witness_point, inspection_frequency=item.inspection_frequency,
+            responsible_party=item.responsible_party, status=item.status, sort_order=item.sort_order,
+            created_at=item.created_at, updated_at=item.updated_at,
+            verifications=[ITPVerificationResponse.model_validate(v) for v in v_result.scalars().all()],
+        ))
+    return ITPResponse(
+        id=itp.id, project_id=itp.project_id, itp_number=itp.itp_number, title=itp.title,
+        description=itp.description, location=itp.location, status=itp.status, version=itp.version,
+        prepared_by=itp.prepared_by, reviewed_by=itp.reviewed_by, approved_by=itp.approved_by,
+        created_by=itp.created_by, created_at=itp.created_at, updated_at=itp.updated_at, items=enriched_items,
+    )
+
+
+@router.put("/itps/{itp_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_itp(itp_id: int, data: ITPUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(itp, key, val)
+    await db.commit()
+    await db.refresh(itp)
+    return itp
+
+
+@router.delete("/itps/{itp_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_itp(itp_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    await db.delete(itp)
+    await db.commit()
+    return {"detail": "ITP deleted"}
+
+
+@router.post("/itps/{itp_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
+async def submit_itp(itp_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    if itp.status != "draft":
+        raise HTTPException(400, f"Cannot submit ITP in status '{itp.status}'")
+    old = itp.status
+    itp.status = "submitted"
+    await db.commit()
+    await log_action(db, "itp", itp_id, "submit", old, "submitted")
+    await db.refresh(itp)
+    return itp
+
+
+@router.post("/itps/{itp_id}/review", dependencies=[Depends(require_role("admin", "engineer"))])
+async def review_itp(itp_id: int, data: ITPReviewBody, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    if itp.status != "submitted":
+        raise HTTPException(400, f"Cannot review ITP in status '{itp.status}'")
+    old = itp.status
+    itp.status = data.status
+    if data.reviewer_notes:
+        itp.reviewed_by = getattr(user, 'name', None)
+    if data.approved_items:
+        await db.execute(update(ITPItem).where(ITPItem.id.in_(data.approved_items), ITPItem.itp_id == itp_id).values(status="approved"))
+    if data.rejected_items:
+        await db.execute(update(ITPItem).where(ITPItem.id.in_(data.rejected_items), ITPItem.itp_id == itp_id).values(status="rejected"))
+    await db.commit()
+    await log_action(db, "itp", itp_id, "review", old, data.status)
+    await db.refresh(itp)
+    return itp
+
+
+@router.post("/itps/{itp_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
+async def approve_itp(itp_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    if itp.status not in ("submitted", "review"):
+        raise HTTPException(400, f"Cannot approve ITP in status '{itp.status}'")
+    old = itp.status
+    itp.status = "approved"
+    itp.approved_by = getattr(user, 'name', None)
+    await db.commit()
+    await log_action(db, "itp", itp_id, "approve", old, "approved")
+    await db.refresh(itp)
+    return itp
+
+
+@router.post("/itps/{itp_id}/reject", dependencies=[Depends(require_role("admin", "engineer"))])
+async def reject_itp(itp_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    itp = result.scalar_one_or_none()
+    if not itp:
+        raise HTTPException(404, "ITP not found")
+    if itp.status not in ("submitted", "review"):
+        raise HTTPException(400, f"Cannot reject ITP in status '{itp.status}'")
+    old = itp.status
+    itp.status = "rejected"
+    await db.commit()
+    await log_action(db, "itp", itp_id, "reject", old, "rejected")
+    await db.refresh(itp)
+    return itp
+
+
+@router.get("/projects/{project_id}/itps/stats", dependencies=[Depends(require_role("admin", "engineer"))])
+async def itp_stats(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITP).where(ITP.project_id == project_id))
+    itps = result.scalars().all()
+    by_status = {}
+    for itp in itps:
+        s = itp.status or "unknown"
+        by_status[s] = by_status.get(s, 0) + 1
+    return ITPStats(total=len(itps), by_status=by_status)
+
+
+@router.post("/itps/{itp_id}/items", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_itp_item(itp_id: int, data: ITPItemCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITP).where(ITP.id == itp_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(404, "ITP not found")
+    item = ITPItem(itp_id=itp_id, **data.model_dump())
+    db.add(item)
+    await db.commit()
+    await db.refresh(item)
+    return item
+
+
+@router.put("/itp-items/{item_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_itp_item(item_id: int, data: ITPItemUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITPItem).where(ITPItem.id == item_id))
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, "ITP item not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(item, key, val)
+    await db.commit()
+    await db.refresh(item)
+    return item
+
+
+@router.delete("/itp-items/{item_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_itp_item(item_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITPItem).where(ITPItem.id == item_id))
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, "ITP item not found")
+    await db.delete(item)
+    await db.commit()
+    return {"detail": "ITP item deleted"}
+
+
+@router.post("/itp-items/{item_id}/verify", dependencies=[Depends(require_role("admin", "engineer"))])
+async def verify_itp_item(item_id: int, data: ITPVerificationCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITPItem).where(ITPItem.id == item_id))
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(404, "ITP item not found")
+    ver = ITPVerification(itp_item_id=item_id, **data.model_dump())
+    item.status = "passed" if data.result == "pass" else "failed" if data.result == "fail" else item.status
+    db.add(ver)
+    await db.commit()
+    await db.refresh(ver)
+    return ver
+
+
+@router.get("/itp-items/{item_id}/verifications", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_itp_verifications(item_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ITPVerification).where(ITPVerification.itp_item_id == item_id).order_by(ITPVerification.created_at.desc()))
+    return result.scalars().all()
+
+
+# ─── Method Statements ───
+
+@router.get("/projects/{project_id}/method-statements", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_method_statements(project_id: int, status: str = Query(None), db: AsyncSession = Depends(get_db)):
+    stmt = select(MethodStatement).where(MethodStatement.project_id == project_id).order_by(MethodStatement.created_at.desc())
+    if status:
+        stmt = stmt.where(MethodStatement.status == status)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.post("/method-statements", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_method_statement(data: MethodStatementCreate, db: AsyncSession = Depends(get_db)):
+    ms = MethodStatement(**data.model_dump())
+    db.add(ms)
+    await db.commit()
+    await db.refresh(ms)
+    await log_action(db, "method_statement", ms.id, "created", None, "draft", None, None, None, None)
+    return ms
+
+
+@router.get("/method-statements/{ms_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def get_method_statement(ms_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    return ms
+
+
+@router.put("/method-statements/{ms_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_method_statement(ms_id: int, data: MethodStatementUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(ms, key, val)
+    await db.commit()
+    await db.refresh(ms)
+    return ms
+
+
+@router.delete("/method-statements/{ms_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_method_statement(ms_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    await db.delete(ms)
+    await db.commit()
+    return {"detail": "Method statement deleted"}
+
+
+@router.post("/method-statements/{ms_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
+async def submit_method_statement(ms_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    if ms.status != "draft":
+        raise HTTPException(400, f"Cannot submit in status '{ms.status}'")
+    old = ms.status
+    ms.status = "submitted"
+    await db.commit()
+    await log_action(db, "method_statement", ms_id, "submit", old, "submitted")
+    await db.refresh(ms)
+    return ms
+
+
+@router.post("/method-statements/{ms_id}/review", dependencies=[Depends(require_role("admin", "engineer"))])
+async def review_method_statement(ms_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    if ms.status != "submitted":
+        raise HTTPException(400, f"Cannot review in status '{ms.status}'")
+    old = ms.status
+    ms.status = "review"
+    ms.reviewed_by = getattr(user, 'name', None)
+    await db.commit()
+    await log_action(db, "method_statement", ms_id, "review", old, "review")
+    await db.refresh(ms)
+    return ms
+
+
+@router.post("/method-statements/{ms_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
+async def approve_method_statement(ms_id: int, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    if ms.status != "review":
+        raise HTTPException(400, f"Cannot approve in status '{ms.status}'")
+    old = ms.status
+    ms.status = "approved"
+    ms.approved_by = getattr(user, 'name', None)
+    await db.commit()
+    await log_action(db, "method_statement", ms_id, "approve", old, "approved")
+    await db.refresh(ms)
+    return ms
+
+
+@router.post("/method-statements/{ms_id}/reject", dependencies=[Depends(require_role("admin", "engineer"))])
+async def reject_method_statement(ms_id: int, rejection_reason: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.id == ms_id))
+    ms = result.scalar_one_or_none()
+    if not ms:
+        raise HTTPException(404, "Method statement not found")
+    if ms.status != "review":
+        raise HTTPException(400, f"Cannot reject in status '{ms.status}'")
+    old = ms.status
+    ms.status = "rejected"
+    ms.notes = rejection_reason
+    await db.commit()
+    await log_action(db, "method_statement", ms_id, "reject", old, "rejected")
+    await db.refresh(ms)
+    return ms
+
+
+@router.get("/projects/{project_id}/method-statements/stats", dependencies=[Depends(require_role("admin", "engineer"))])
+async def method_statement_stats(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(MethodStatement).where(MethodStatement.project_id == project_id))
+    mss = result.scalars().all()
+    by_status = {}
+    for ms in mss:
+        by_status[ms.status] = by_status.get(ms.status, 0) + 1
+    return MethodStatementStats(total=len(mss), by_status=by_status)
+
+
+# ─── Specifications Library ───
+
+@router.get("/specifications", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_specifications(
+    project_id: int | None = Query(None), status: str | None = Query(None),
+    issuing_body: str | None = Query(None), division: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Specification).order_by(Specification.spec_code)
+    if project_id is not None:
+        stmt = stmt.where(Specification.project_id == project_id)
+    if status: stmt = stmt.where(Specification.status == status)
+    if issuing_body: stmt = stmt.where(Specification.issuing_body == issuing_body)
+    if division: stmt = stmt.where(Specification.division == division)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.post("/specifications", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_specification(data: SpecificationCreate, db: AsyncSession = Depends(get_db)):
+    spec = Specification(**data.model_dump())
+    db.add(spec)
+    await db.commit()
+    await db.refresh(spec)
+    await log_action(db, "specification", spec.id, "created", None, "active", None, None, None, None)
+    return spec
+
+
+@router.get("/specifications/search", dependencies=[Depends(require_role("admin", "engineer"))])
+async def search_specifications(
+    q: str | None = Query(None), division: str | None = Query(None),
+    issuing_body: str | None = Query(None), db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Specification)
+    if q:
+        like = f"%{q}%"
+        stmt = stmt.where(Specification.title.ilike(like) | Specification.spec_code.ilike(like) | Specification.keywords.ilike(like) | Specification.division.ilike(like) | Specification.body.ilike(like))
+    if division: stmt = stmt.where(Specification.division == division)
+    if issuing_body: stmt = stmt.where(Specification.issuing_body == issuing_body)
+    stmt = stmt.order_by(Specification.spec_code)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.get("/specifications/stats", dependencies=[Depends(require_role("admin", "engineer"))])
+async def specification_stats(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Specification))
+    specs = result.scalars().all()
+    by_division, by_body = {}, {}
+    for s in specs:
+        by_division[s.division] = by_division.get(s.division, 0) + 1
+        by_body[s.issuing_body] = by_body.get(s.issuing_body, 0) + 1
+    return SpecificationStats(total=len(specs), by_division=by_division, by_body=by_body)
+
+
+@router.get("/specifications/{spec_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def get_specification(spec_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Specification).where(Specification.id == spec_id))
+    spec = result.scalar_one_or_none()
+    if not spec: raise HTTPException(404, "Specification not found")
+    return spec
+
+
+@router.put("/specifications/{spec_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_specification(spec_id: int, data: SpecificationUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Specification).where(Specification.id == spec_id))
+    spec = result.scalar_one_or_none()
+    if not spec: raise HTTPException(404, "Specification not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(spec, key, val)
+    await db.commit()
+    await db.refresh(spec)
+    return spec
+
+
+@router.delete("/specifications/{spec_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_specification(spec_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Specification).where(Specification.id == spec_id))
+    spec = result.scalar_one_or_none()
+    if not spec: raise HTTPException(404, "Specification not found")
+    await db.delete(spec)
+    await db.commit()
+    return {"detail": "Specification deleted"}
+
+
+@router.post("/specifications/{spec_id}/sections", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_spec_section(spec_id: int, data: SpecSectionCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Specification).where(Specification.id == spec_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(404, "Specification not found")
+    section = SpecSection(specification_id=spec_id, **data.model_dump())
+    db.add(section)
+    await db.commit()
+    await db.refresh(section)
+    return section
+
+
+@router.put("/spec-sections/{section_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_spec_section(section_id: int, data: SpecSectionUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SpecSection).where(SpecSection.id == section_id))
+    section = result.scalar_one_or_none()
+    if not section: raise HTTPException(404, "Spec section not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(section, key, val)
+    await db.commit()
+    await db.refresh(section)
+    return section
+
+
+@router.delete("/spec-sections/{section_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_spec_section(section_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SpecSection).where(SpecSection.id == section_id))
+    section = result.scalar_one_or_none()
+    if not section: raise HTTPException(404, "Spec section not found")
+    await db.delete(section)
+    await db.commit()
+    return {"detail": "Spec section deleted"}
+
+
+# ─── Permits to Work ───
+
+@router.get("/projects/{project_id}/permits", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_permits(project_id: int, permit_type: str = Query(None), status: str = Query(None), db: AsyncSession = Depends(get_db)):
+    stmt = select(PermitToWork).where(PermitToWork.project_id == project_id).order_by(PermitToWork.created_at.desc())
+    if permit_type: stmt = stmt.where(PermitToWork.permit_type == permit_type)
+    if status: stmt = stmt.where(PermitToWork.status == status)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.post("/permits", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_permit(data: PermitToWorkCreate, db: AsyncSession = Depends(get_db)):
+    permit = PermitToWork(**data.model_dump())
+    db.add(permit)
+    await db.commit()
+    await db.refresh(permit)
+    await log_action(db, "permit_to_work", permit.id, "created", None, "requested", None, None, None, None)
+    return permit
+
+
+@router.get("/permits/{permit_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def get_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    return permit
+
+
+@router.put("/permits/{permit_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_permit(permit_id: int, data: PermitToWorkUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(permit, key, val)
+    await db.commit()
+    await db.refresh(permit)
+    return permit
+
+
+@router.delete("/permits/{permit_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    await db.delete(permit)
+    await db.commit()
+    return {"detail": "Permit deleted"}
+
+
+@router.post("/permits/{permit_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
+async def submit_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status != "requested": raise HTTPException(400, f"Cannot submit in status '{permit.status}'")
+    old = permit.status; permit.status = "requested"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "submit", old, "requested")
+    await db.refresh(permit)
+    return permit
+
+
+@router.post("/permits/{permit_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
+async def approve_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status != "requested": raise HTTPException(400, f"Cannot approve in status '{permit.status}'")
+    old = permit.status; permit.status = "approved"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "approved", old, "approved")
+    await db.refresh(permit)
+    return permit
+
+
+@router.post("/permits/{permit_id}/issue", dependencies=[Depends(require_role("admin", "engineer"))])
+async def issue_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status != "approved": raise HTTPException(400, f"Cannot issue in status '{permit.status}'")
+    old = permit.status; permit.status = "issued"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "issued", old, "issued")
+    await db.refresh(permit)
+    return permit
+
+
+@router.post("/permits/{permit_id}/activate", dependencies=[Depends(require_role("admin", "engineer"))])
+async def activate_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status != "issued": raise HTTPException(400, f"Cannot activate in status '{permit.status}'")
+    old = permit.status; permit.status = "active"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "activated", old, "active")
+    await db.refresh(permit)
+    return permit
+
+
+@router.post("/permits/{permit_id}/complete", dependencies=[Depends(require_role("admin", "engineer"))])
+async def complete_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status != "active": raise HTTPException(400, f"Cannot complete in status '{permit.status}'")
+    old = permit.status; permit.status = "completed"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "completed", old, "completed")
+    await db.refresh(permit)
+    return permit
+
+
+@router.post("/permits/{permit_id}/cancel", dependencies=[Depends(require_role("admin", "engineer"))])
+async def cancel_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status in ("completed", "cancelled"): raise HTTPException(400, f"Cannot cancel in status '{permit.status}'")
+    old = permit.status; permit.status = "cancelled"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "cancelled", old, "cancelled")
+    await db.refresh(permit)
+    return permit
+
+
+@router.post("/permits/{permit_id}/reject", dependencies=[Depends(require_role("admin", "engineer"))])
+async def reject_permit(permit_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.id == permit_id))
+    permit = result.scalar_one_or_none()
+    if not permit: raise HTTPException(404, "Permit not found")
+    if permit.status != "requested": raise HTTPException(400, f"Cannot reject in status '{permit.status}'")
+    old = permit.status; permit.status = "rejected"
+    await db.commit()
+    await log_action(db, "permit_to_work", permit_id, "rejected", old, "rejected")
+    await db.refresh(permit)
+    return permit
+
+
+@router.get("/projects/{project_id}/permits/stats", dependencies=[Depends(require_role("admin", "engineer"))])
+async def permit_stats(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(PermitToWork).where(PermitToWork.project_id == project_id))
+    permits = result.scalars().all()
+    by_type, by_status = {}, {}
+    for p in permits:
+        by_type[p.permit_type] = by_type.get(p.permit_type, 0) + 1
+        by_status[p.status] = by_status.get(p.status, 0) + 1
+    return PermitToWorkStats(total=len(permits), by_type=by_type, by_status=by_status)
+
+
+# ─── Survey ───
+
+@router.get("/projects/{project_id}/survey-points", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_survey_points(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyPoint).where(SurveyPoint.project_id == project_id).order_by(SurveyPoint.point_number))
+    return result.scalars().all()
+
+
+@router.post("/survey-points", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_survey_point(data: SurveyPointCreate, db: AsyncSession = Depends(get_db)):
+    existing = await db.execute(select(SurveyPoint).where(SurveyPoint.project_id == data.project_id, SurveyPoint.point_number == data.point_number))
+    if existing.scalar_one_or_none():
+        raise HTTPException(409, "Survey point number already exists in this project")
+    point = SurveyPoint(**data.model_dump())
+    db.add(point)
+    await db.commit()
+    await db.refresh(point)
+    await log_action(db, "survey_point", point.id, "created", None, "active", None, None, None, None)
+    return point
+
+
+@router.get("/survey-points/{point_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def get_survey_point(point_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyPoint).where(SurveyPoint.id == point_id))
+    point = result.scalar_one_or_none()
+    if not point: raise HTTPException(404, "Survey point not found")
+    readings_result = await db.execute(select(SurveyReading).where(SurveyReading.survey_point_id == point_id).order_by(SurveyReading.reading_date.desc()))
+    return {**SurveyPointResponse.model_validate(point).model_dump(), "readings": [SurveyReadingResponse.model_validate(r).model_dump() for r in readings_result.scalars().all()]}
+
+
+@router.put("/survey-points/{point_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_survey_point(point_id: int, data: SurveyPointUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyPoint).where(SurveyPoint.id == point_id))
+    point = result.scalar_one_or_none()
+    if not point: raise HTTPException(404, "Survey point not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(point, key, val)
+    await db.commit()
+    await db.refresh(point)
+    return point
+
+
+@router.delete("/survey-points/{point_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_survey_point(point_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyPoint).where(SurveyPoint.id == point_id))
+    point = result.scalar_one_or_none()
+    if not point: raise HTTPException(404, "Survey point not found")
+    await db.delete(point)
+    await db.commit()
+    return {"detail": "Survey point deleted"}
+
+
+@router.get("/projects/{project_id}/survey-points/stats", dependencies=[Depends(require_role("admin", "engineer"))])
+async def survey_point_stats(project_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyPoint).where(SurveyPoint.project_id == project_id))
+    points = result.scalars().all()
+    by_type, by_status = {}, {}
+    for p in points:
+        by_type[p.point_type] = by_type.get(p.point_type, 0) + 1
+        by_status[p.status] = by_status.get(p.status, 0) + 1
+    return SurveyStats(total_points=len(points), by_type=by_type, by_status=by_status)
+
+
+@router.get("/projects/{project_id}/survey-readings", dependencies=[Depends(require_role("admin", "engineer"))])
+async def list_survey_readings(project_id: int, point_id: int = Query(None), db: AsyncSession = Depends(get_db)):
+    stmt = select(SurveyReading).join(SurveyPoint).where(SurveyPoint.project_id == project_id).order_by(SurveyReading.reading_date.desc())
+    if point_id: stmt = stmt.where(SurveyReading.survey_point_id == point_id)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.post("/survey-points/{point_id}/readings", dependencies=[Depends(require_role("admin", "engineer"))])
+async def create_survey_reading(point_id: int, data: SurveyReadingCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyPoint).where(SurveyPoint.id == point_id))
+    if not result.scalar_one_or_none(): raise HTTPException(404, "Survey point not found")
+    reading = SurveyReading(survey_point_id=point_id, **data.model_dump())
+    db.add(reading)
+    await db.commit()
+    await db.refresh(reading)
+    return reading
+
+
+@router.put("/survey-readings/{reading_id}", dependencies=[Depends(require_role("admin", "engineer"))])
+async def update_survey_reading(reading_id: int, data: SurveyReadingUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyReading).where(SurveyReading.id == reading_id))
+    reading = result.scalar_one_or_none()
+    if not reading: raise HTTPException(404, "Survey reading not found")
+    for key, val in data.model_dump(exclude_unset=True).items():
+        setattr(reading, key, val)
+    await db.commit()
+    await db.refresh(reading)
+    return reading
+
+
+@router.delete("/survey-readings/{reading_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_survey_reading(reading_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SurveyReading).where(SurveyReading.id == reading_id))
+    reading = result.scalar_one_or_none()
+    if not reading: raise HTTPException(404, "Survey reading not found")
+    await db.delete(reading)
+    await db.commit()
+    return {"detail": "Survey reading deleted"}
 
 
 # ─── Admin: System Settings ───
