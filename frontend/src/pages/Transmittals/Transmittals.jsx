@@ -15,7 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const statusColors = {
   draft: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
-  sent: { bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+  sent: { bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
   received: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
   acknowledged: { bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
   closed: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
@@ -128,8 +128,8 @@ export default function Transmittals() {
       renderCell: (params) => {
         const isOutgoing = params.value === 'outgoing';
         return <Chip label={t(`direction_${params.value}`, params.value)} size="small"
-          sx={{ backgroundColor: isOutgoing ? 'rgba(99,102,241,0.15)' : 'rgba(245,158,11,0.15)',
-                 color: isOutgoing ? '#818cf8' : '#f59e0b', fontWeight: 500 }} />;
+          sx={{ backgroundColor: isOutgoing ? 'rgba(217,119,6,0.15)' : 'rgba(245,158,11,0.15)',
+                 color: isOutgoing ? '#D97706' : '#f59e0b', fontWeight: 500 }} />;
       },
     },
     { field: 'sender', headerName: t('sender'), width: 130 },
@@ -148,11 +148,11 @@ export default function Transmittals() {
           {params.row.status === 'draft' && (
             <>
               <Tooltip title={t('send')}>
-                <IconButton size="small" onClick={() => setSendDialog({ open: true, id: params.row.id })} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+                <IconButton size="small" onClick={() => setSendDialog({ open: true, id: params.row.id })} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                   <ForwardToInbox fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+              <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                 <Edit fontSize="small" />
               </IconButton>
             </>

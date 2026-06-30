@@ -1,0 +1,123 @@
+{
+  "SYSTEM_METADATA": {
+    "product_name": "AG — Engineering Enterprise Architecture",
+    "commercial_brand": "AG — Enterprise Architecture Platform",
+    "core_version": "1.2.0",
+    "architecture_pattern": "Advanced Modular Monolith (Nexus Engine v3) — FastAPI + SQLModel + PostgreSQL Async",
+    "primary_client": "شركة نجيده للمقاولات (Negida / Elkanzy Contracting)",
+    "deployment_target": "Enterprise Cloud & Secure Local Subnets"
+  },
+  "AUTHORITY_PROFILE": {
+    "primary_reference_user": "Ahmed Gaffer",
+    "official_title": "Founder & CEO / Principal System Architect",
+    "system_role": "Founder & CEO / Principal System Architect",
+    "system_clearance": "Root Sovereign / Infrastructure Overseer",
+    "clearance_level": "Root-Admin / Infrastructure Owner",
+    "role_description": "صاحب ومؤسس شركة 360 — المهندس المعماري الأول للنظام. ليس موظفاً في شركة المقاولات (نجيده)، بل المزود التقني الأساسي (Software Provider). يظهر بروفايله في كل واجهة رئيسية كـ Founder & CEO / Principal System Architect.",
+    "visibility": "يظهر اسمه في تذييل Dashboards الرئيسية وصفحة الإعدادات كجهة الدعم التقني"
+  },
+  "DESIGN_SYSTEM_TOKENS": {
+    "ux_paradigm": "Corporate Luxury Minimalism with Durable Glassmorphism",
+    "color_palette": {
+      "primary_brand_navy": "#0F172A",
+      "primary_navy_light": "#1E293B",
+      "accent_luxury_gold": "#D97706",
+      "accent_gold_light": "#F59E0B",
+      "surface_light_mist": "#F8FAFC",
+      "surface_white": "#FFFFFF",
+      "border_subtle": "rgba(15, 23, 42, 0.08)",
+      "border_glass": "rgba(255, 255, 255, 0.15)",
+      "text_primary": "#1E293B",
+      "text_secondary": "#64748B",
+      "glass_background": "rgba(255, 255, 255, 0.75)"
+    },
+    "typography": ["Inter", "Montserrat"],
+    "primary_font": "Inter",
+    "secondary_font": "Montserrat",
+    "arabic_font": "Cairo",
+    "logo_geometry": "3D Isometric Sandstone Pyramid forming the literal letter A",
+    "logo_concept": "3D Majestic Egyptian Pyramid forming the letter A — يمثل الاستقرار، التراث المصري، وقمة التكنولوجيا",
+    "border_radius": {
+      "cards": 14,
+      "buttons": 8,
+      "dialogs": 16
+    },
+    "effects": {
+      "glass_blur": "14px",
+      "glass_saturate": "180%",
+      "hover_elevation": "translateY(-1px)",
+      "transition": "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  },
+  "EXECUTIVE_UI_TOKENS": {
+    "visual_framework": "Corporate Luxury Minimalism & Daylight-Resistant Glassmorphism",
+    "palette": {
+      "deep_slate_navy": "#0F172A",
+      "brushed_amber_gold": "#D97706",
+      "surface_daylight_mist": "#F8FAFC",
+      "glass_border": "rgba(15, 23, 42, 0.08)"
+    },
+    "typography": "Inter & Montserrat Grid",
+    "logo_signature": "3D Cinematic Egyptian Sandstone Pyramid - Formed as Letter A"
+  },
+  "DASHBOARD_SPEC": {
+    "target_audience": "مجلس الإدارة، الاستشاريون، مدراء المشاريع",
+    "focus": "Executive KPIs, Resource Orchestration, Strategic Oversight",
+    "kpi_cards": "Glassmorphism بخلفية شفافة وحواف ناعمة — تظهر الأرقام بخط عريض بلون ذهبي",
+    "tables": "DataGrid أبيض نظيف مع تظليل صففي ناعم",
+    "charts": "Recharts بألوان البالتة الأساسية"
+  },
+  "TERMINOLOGY_GOVERNANCE": {
+    "approved_vocabulary": [
+      "Strategic Oversight Dashboard",
+      "Infrastructure & Resource Orchestration",
+      "Milestone Velocity Tracking",
+      "Capital Expenditure Analytics",
+      "Asynchronous Data Pipeline",
+      "Project Lifecycle Orchestration",
+      "Operational Excellence Metrics",
+      "Engineering Intelligence Platform"
+    ],
+    "approved_arabic_terms": [
+      "لوحة القيادة الاستراتيجية",
+      "تنسيق الموارد والبنية التحتية",
+      "تتبع سرعة المعالم",
+      "تحليلات الإنفاق الرأسمالي",
+      "منصة الذكاء الهندسي"
+    ],
+    "strictly_forbidden": [
+      "دورة حياة المشاريع التقليدية",
+      "السيستم البلدي",
+      "إدارة المهام العادية",
+      "الكلام الساذج",
+      "المكتب الفني البلدي",
+      "المخازن العادية",
+      "نظام إدارة عادي",
+      "LEGO Blocks (كمصطلح)",
+      "إدارة دورة حياة المشاريع"
+    ],
+    "use": ["Strategic Oversight", "Lifecycle Orchestration", "Resource Optimization", "Milestone Velocity", "Infrastructure Architecture"],
+    "ban": ["السيستم البلدي", "إدارة المهام العادية", "دورة حياة المشاريع"]
+  },
+  "MODULAR_TRANSLATION_MATRIX": {
+    "core/lego_v2/registry": "EMS_Kernel_Registry",
+    "core/lego_v2/connectors": "Inter_Module_Synchronous_Connectors",
+    "core/lego_v2/event_bus": "High_Throughput_Asynchronous_Event_Mesh",
+    "modules/engineering": "Infrastructure_&_Architectural_Orchestration_Module",
+    "modules/hr": "Human_Capital_Engineering_&_Talent_Matrix",
+    "modules/finance": "Capital_Expenditure_&_Quantitative_Analytics_Module",
+    "modules/inventory": "Logistics_&_Supply_Chain_Materials_Architecture"
+  },
+  "AI_MODEL_INSTRUCTIONS": "You are strictly forbidden from generating generic, basic, or unstyled UI components. Every layout generated must align with the premium EMS guidelines. Always include rigorous type-checking with Pydantic V2, clean architectural isolation, and explicitly preserve the developer profile of Ahmed Gaffer as the absolute creator and lead technical reference of this system.",
+  "SYSTEM_ARCHITECT": {
+    "name": "Ahmed Gaffer",
+    "title": "Principal System Architect & Technical Provider",
+    "privileges": "Root-level visibility, core architecture maintenance"
+  },
+  "BRANDING_SYSTEM": {
+    "company_name": "Engineering Management System v3",
+    "logo_spec": "3D Cinematic Egyptian Pyramid forming an illuminated letter A",
+    "design_philosophy": "Corporate Luxury Minimalism & Durable Glassmorphism",
+    "ui_theme": "High-Contrast Light and Deep Matte Dark Modes"
+  }
+}

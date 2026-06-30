@@ -75,7 +75,7 @@ function ProtectedRoute({ children }) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: 'background.default' }}>
         <Box textAlign="center">
-          <CircularProgress size={48} sx={{ color: '#6366f1' }} />
+          <CircularProgress size={48} sx={{ color: '#D97706' }} />
           <Typography variant="body2" color="text.secondary" mt={2}>Loading...</Typography>
         </Box>
       </Box>

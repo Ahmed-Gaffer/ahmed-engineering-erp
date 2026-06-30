@@ -1,5 +1,5 @@
 # ROADMAP — Engineering Management System
-## خطة التطوير الهندسية الشاملة · آخر تحديث: 2026-06-28
+## خطة التطوير الهندسية الشاملة · آخر تحديث: 2026-06-29
 
 ---
 
@@ -34,6 +34,17 @@
 | Search Expansion | 19 entity types (10 new + 9 existing) |
 | Tests | 7 integration tests (EventBus, ConnectorRegistry, events) |
 
+## ✅ Phase 4.5 — Identity & Architecture Foundation (هذه الجلسة)
+| المكون | الوصف |
+|--------|-------|
+| brand_identity.json | الهوية البصرية واللفظية المركزية |
+| architecture_blueprint.md | المرجع المعماري الكامل |
+| PROMPT_AGENT_H.md | بروتوكول وكيل HR (كان مفقوداً) |
+| SYSTEM_DNA.md | تنظيف من APEX + توحيد التسمية |
+| AGENT_0_MAESTRO.md | تنظيف + إضافة brand_identity.json |
+| .cursorrules | تنظيف + تحديث الهوية |
+| theme.js | تحديث الألوان لمطابقة Corporate Luxury |
+
 ---
 
 ## ⬜ Phase 5 — Deployment & Infrastructure (HIGH)
@@ -49,11 +60,12 @@
 - [ ] Dashboard events: تحديث real-time عند entity status change
 
 ## ⬜ Phase 7 — Missing Engineering Features (MEDIUM)
-- [ ] Material / Equipment Tracking
+- [ ] Material / Equipment Tracking (اختبارات الخرسانة، التربة، الحديد)
+- [ ] ITPs — Inspection Test Plans (خطط التفتيش)
+- [ ] Method Statements (المواصفات الفنية للتنفيذ)
 - [ ] Budget vs Actual dashboard
 - [ ] Project Closeout workflow
 - [ ] Resource Planning / Leveling
-- [ ] Geo-location for projects (maps integration)
 
 ## ⬜ Phase 8 — Quality & Testing (LOW)
 - [ ] رفع test coverage > 60%
@@ -66,10 +78,13 @@
 ## ملفات النظام الهامة
 | الملف | الغرض |
 |-------|-------|
+| `brand_identity.json` | **جديد** الهوية البصرية واللفظية المركزية |
+| `architecture_blueprint.md` | **جديد** المرجع المعماري الكامل |
 | `.ai/AGENT_0_MAESTRO.md` | المايسترو — المرجع النهائي للوكلاء |
 | `.ai/AGENT_ACTIVE_STATE.md` | الحالة الحية للجلسة الحالية |
 | `.ai/AGENT_VACCINE.md` | بروتوكول استعادة الوعي |
 | `.ai/SYSTEM_DNA.md` | الحمض النووي للنظام |
+| `.ai/protocols/PROMPT_AGENT_H.md` | **جديد** بروتوكول وكيل HR |
 | `.ai/ROADMAP.md` | **هذا الملف — خطة التطوير الشاملة (مرجع دائم)** |
 | `.ai/HANDOFF.md` | تسليم الجلسة الأخيرة (متغير) |
 | `.ai/EXECUTABLE_DNA_SPEC.md` | آخر مخطط تنفيذي دقيق (متغير) |

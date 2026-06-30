@@ -113,7 +113,7 @@ export default function MeetingMinutes() {
           {params.row.status === 'draft' && (
             <>
               <Tooltip title={t('edit')}>
-                <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+                <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                   <Edit fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -128,7 +128,7 @@ export default function MeetingMinutes() {
             <Delete fontSize="small" />
           </IconButton>
           <Tooltip title={t('downloadPdf')}>
-            <IconButton size="small" onClick={() => downloadPdf(params.row.id)} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => downloadPdf(params.row.id)} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <PictureAsPdf fontSize="small" />
             </IconButton>
           </Tooltip>

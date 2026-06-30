@@ -22,7 +22,7 @@ import PageHeader from '../../components/PageHeader/PageHeader';
 const typeOptions = ['sector', 'region', 'division'];
 
 const typeColors = {
-  sector: { bg: 'rgba(99,102,241,0.15)', color: '#6366f1' },
+  sector: { bg: 'rgba(217,119,6,0.15)', color: '#D97706' },
   region: { bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
   division: { bg: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
 };
@@ -88,7 +88,7 @@ export default function Categories() {
     { field: 'actions', headerName: t('actions'), width: 100, sortable: false,
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
-          <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+          <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
             <Edit fontSize="small" />
           </IconButton>
           <IconButton size="small" onClick={() => setDeleteId(params.row.id)} sx={{ color: '#ef4444', bgcolor: 'rgba(239,68,68,0.08)' }}>
@@ -152,7 +152,7 @@ export default function Categories() {
                   </TextField>
                 ) : f.type === 'color' ? (
                   <TextField key={f.name} name={f.name} label={f.label} type="color"
-                    defaultValue={editItem?.[f.name] || '#6366f1'} size="small" fullWidth
+                    defaultValue={editItem?.[f.name] || '#D97706'} size="small" fullWidth
                     slotProps={{ inputLabel: { shrink: true } }}
                   />
                 ) : (

@@ -12,11 +12,11 @@ import { motion } from 'framer-motion';
 import { searchApi } from '../../services/api';
 
 const entityMeta = {
-  contractors: { icon: <Business />, color: '#6366f1', labelKey: 'contractors' },
+  contractors: { icon: <Business />, color: '#D97706', labelKey: 'contractors' },
   projects: { icon: <Folder />, color: '#10b981', labelKey: 'projects' },
   employees: { icon: <Person />, color: '#f59e0b', labelKey: 'employees' },
-  drawings: { icon: <Engineering />, color: '#06b6d4', labelKey: 'drawings' },
-  rfis: { icon: <Engineering />, color: '#8b5cf6', labelKey: 'rfis' },
+  drawings: { icon: <Engineering />, color: '#D97706', labelKey: 'drawings' },
+  rfis: { icon: <Engineering />, color: '#D97706', labelKey: 'rfis' },
   mar: { icon: <Engineering />, color: '#f97316', labelKey: 'mar' },
   ncr: { icon: <Engineering />, color: '#ef4444', labelKey: 'ncr' },
   contracts: { icon: <Engineering />, color: '#84cc16', labelKey: 'contractsPage' },
@@ -77,7 +77,7 @@ export default function SearchPage() {
 
         {loading && (
           <Box textAlign="center" py={8}>
-            <CircularProgress size={40} sx={{ color: '#6366f1' }} />
+            <CircularProgress size={40} sx={{ color: '#D97706' }} />
             <Typography variant="body2" color="text.secondary" mt={2}>{t('searching')}</Typography>
           </Box>
         )}

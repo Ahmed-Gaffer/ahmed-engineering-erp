@@ -9,7 +9,7 @@ import { useSnackbar } from 'notistack';
 import { notificationsApi } from '../../services/api';
 
 const typeColors = {
-  info: { bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+  info: { bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
   warning: { bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
   success: { bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
   error: { bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
@@ -67,7 +67,7 @@ export default function Notifications() {
     {
       field: 'is_read', headerName: '', width: 50,
       renderCell: (p) => (
-        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: p.value ? 'transparent' : '#6366f1' }} />
+        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: p.value ? 'transparent' : '#D97706' }} />
       ),
     },
     { field: 'title', headerName: t('title'), width: 250 },
@@ -89,7 +89,7 @@ export default function Notifications() {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <BellIcon sx={{ color: '#6366f1' }} />
+          <BellIcon sx={{ color: '#D97706' }} />
           <Typography variant="h6" fontWeight={700}>{t('notifications')}</Typography>
           {unreadCount > 0 && (
             <Chip label={`${unreadCount} ${t('unread')}`} size="small" color="error" />

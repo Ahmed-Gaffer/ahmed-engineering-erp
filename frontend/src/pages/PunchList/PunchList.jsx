@@ -16,7 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const statusColors = {
   open: { bg: 'rgba(239,68,68,0.15)', color: '#ef4444' },
   in_progress: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
-  completed: { bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+  completed: { bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
   verified: { bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
   accepted: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
 };
@@ -146,14 +146,14 @@ export default function PunchList() {
                   <PlayArrow fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+              <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                 <Edit fontSize="small" />
               </IconButton>
             </>
           )}
           {params.row.status === 'in_progress' && (
             <Tooltip title={t('complete')}>
-              <IconButton size="small" onClick={() => setCompleteDialog({ open: true, id: params.row.id })} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+              <IconButton size="small" onClick={() => setCompleteDialog({ open: true, id: params.row.id })} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                 <Done fontSize="small" />
               </IconButton>
             </Tooltip>

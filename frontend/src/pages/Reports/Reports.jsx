@@ -21,12 +21,12 @@ import StatsCardSkeleton from '../../components/Skeleton/StatsCardSkeleton';
 import { engineeringApi } from '../../services/api';
 import { formatNumber, formatDate, statusColors } from '../../utils/helpers';
 
-const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
+const CHART_COLORS = ['#D97706', '#10b981', '#f59e0b', '#ef4444', '#D97706', '#D97706', '#f97316', '#84cc16'];
 const STATUS_COLORS = {
-  planned: '#6366f1', in_progress: '#10b981', completed: '#06b6d4', delayed: '#ef4444',
-  on_hold: '#f59e0b', cancelled: '#6b7280', issued: '#6366f1', under_execution: '#10b981',
+  planned: '#D97706', in_progress: '#10b981', completed: '#D97706', delayed: '#ef4444',
+  on_hold: '#f59e0b', cancelled: '#6b7280', issued: '#D97706', under_execution: '#10b981',
   closed: '#6b7280', active: '#10b981', not_started: '#6b7280', draft: '#f59e0b',
-  submitted: '#6366f1', approved: '#10b981', rejected: '#ef4444', paid: '#06b6d4',
+  submitted: '#D97706', approved: '#10b981', rejected: '#ef4444', paid: '#D97706',
   low: '#10b981', medium: '#f59e0b', high: '#ef4444', urgent: '#dc2626',
   overdue: '#ef4444',
 };
@@ -342,7 +342,7 @@ export default function Reports() {
                         <XAxis dataKey="status" tickFormatter={(v) => t(v)} />
                         <YAxis />
                         <Tooltip labelFormatter={(v) => t(v)} />
-                        <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="count" fill="#D97706" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -365,7 +365,7 @@ export default function Reports() {
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="schedule_progress" name={t('progressPercentage')} fill="#6366f1" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="schedule_progress" name={t('progressPercentage')} fill="#D97706" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="ipc_paid" name={t('totalIpcPaid')} fill="#10b981" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -583,7 +583,7 @@ function WorkOrdersTab({ data, loading, woFilter, onFilter, exportReport, naviga
                       <XAxis dataKey="status" tickFormatter={(v) => t(v)} />
                       <YAxis />
                       <Tooltip labelFormatter={(v) => t(v)} />
-                      <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" fill="#D97706" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -636,7 +636,7 @@ function SchedulesTab({ data, loading, schedFilter, onFilter, exportReport, navi
                         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ width: '100%', height: '100%' }}>
                           <Box sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
                             <Box sx={{ width: `${p.value || 0}%`, height: '100%', borderRadius: 3,
-                              background: 'linear-gradient(90deg, #6366f1, #818cf8)', transition: 'width 0.6s ease' }} />
+                              background: 'linear-gradient(90deg, #D97706, #D97706)', transition: 'width 0.6s ease' }} />
                           </Box>
                           <Typography variant="caption" fontWeight={600} sx={{ minWidth: 36, textAlign: 'right' }}>
                             {p.value || 0}%
@@ -814,7 +814,7 @@ function FinancialDetailTab({ financialDetail, loading, projectsList, selectedPr
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip formatter={(v) => formatNumber(v)} />
-                  <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="value" fill="#D97706" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -859,7 +859,7 @@ function ProjectComparisonTab({ data, loading, exportReport }) {
                       <YAxis />
                       <Tooltip formatter={(v) => formatNumber(v)} />
                       <Legend />
-                      <Bar dataKey="contract" name={t('contractValue')} fill="#6366f1" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="contract" name={t('contractValue')} fill="#D97706" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="billed" name={t('totalBilled')} fill="#10b981" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="paid" name={t('totalIpcPaid')} fill="#f59e0b" radius={[4, 4, 0, 0]} />
                     </BarChart>

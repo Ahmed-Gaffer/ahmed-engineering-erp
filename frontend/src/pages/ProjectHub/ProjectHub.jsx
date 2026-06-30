@@ -19,10 +19,10 @@ const ncrStatusColor = { open: 'error', in_progress: 'warning', closed: 'success
 const rfiStatusColor = { open: 'warning', answered: 'success', closed: 'default' };
 
 const entityCards = [
-  { key: 'contracts', icon: <Business />, color: '#6366f1', labelKey: 'contractsPage', link: (pid) => `/engineering/contracts-list?project_id=${pid}` },
-  { key: 'drawings', icon: <Image />, color: '#06b6d4', labelKey: 'drawings', link: (pid) => `/engineering/drawings?project_id=${pid}` },
+  { key: 'contracts', icon: <Business />, color: '#D97706', labelKey: 'contractsPage', link: (pid) => `/engineering/contracts-list?project_id=${pid}` },
+  { key: 'drawings', icon: <Image />, color: '#D97706', labelKey: 'drawings', link: (pid) => `/engineering/drawings?project_id=${pid}` },
   { key: 'ncrs', icon: <WarningAmber />, color: '#ef4444', labelKey: 'ncr', link: (pid) => `/engineering/ncr?project_id=${pid}` },
-  { key: 'rfis', icon: <QuestionAnswer />, color: '#8b5cf6', labelKey: 'rfis', link: (pid) => `/engineering/rfis?project_id=${pid}` },
+  { key: 'rfis', icon: <QuestionAnswer />, color: '#D97706', labelKey: 'rfis', link: (pid) => `/engineering/rfis?project_id=${pid}` },
   { key: 'mar', icon: <CheckCircle />, color: '#f97316', labelKey: 'mar', link: (pid) => `/engineering/mar?project_id=${pid}` },
   { key: 'meeting_minutes', icon: <Description />, color: '#10b981', labelKey: 'meetingMinutes', link: (pid) => `/engineering/projects/${pid}/meeting-minutes` },
   { key: 'daily_reports', icon: <CalendarMonth />, color: '#f59e0b', labelKey: 'dailyReportsPage', link: (pid) => `/engineering/daily-reports?project_id=${pid}` },
@@ -34,9 +34,9 @@ const entityCards = [
 
 const quickActions = [
   { labelKey: 'addNcr', icon: <WarningAmber />, color: '#ef4444', link: (pid) => `/engineering/ncr?project_id=${pid}` },
-  { labelKey: 'addRfi', icon: <QuestionAnswer />, color: '#8b5cf6', link: (pid) => `/engineering/rfis?project_id=${pid}` },
+  { labelKey: 'addRfi', icon: <QuestionAnswer />, color: '#D97706', link: (pid) => `/engineering/rfis?project_id=${pid}` },
   { labelKey: 'addMar', icon: <CheckCircle />, color: '#f97316', link: (pid) => `/engineering/mar?project_id=${pid}` },
-  { labelKey: 'addDrawing', icon: <Image />, color: '#06b6d4', link: (pid) => `/engineering/drawings?project_id=${pid}` },
+  { labelKey: 'addDrawing', icon: <Image />, color: '#D97706', link: (pid) => `/engineering/drawings?project_id=${pid}` },
 ];
 
 const containerVariants = {
@@ -82,7 +82,7 @@ export default function ProjectHub() {
   if (loading) {
     return (
       <Box textAlign="center" py={10}>
-        <CircularProgress size={44} sx={{ color: '#6366f1' }} />
+        <CircularProgress size={44} sx={{ color: '#D97706' }} />
         <Typography variant="body2" color="text.secondary" mt={2}>{t('loading')}</Typography>
       </Box>
     );
@@ -97,7 +97,7 @@ export default function ProjectHub() {
   }
 
   const { project, counts, recent_ncrs, recent_rfis } = data;
-  const projectStatusBg = { planned: '#06b6d4', in_progress: '#6366f1', completed: '#10b981', on_hold: '#f59e0b', cancelled: '#ef4444' }[project.status] || '#6b7280';
+  const projectStatusBg = { planned: '#D97706', in_progress: '#D97706', completed: '#10b981', on_hold: '#f59e0b', cancelled: '#ef4444' }[project.status] || '#6b7280';
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show">
@@ -105,10 +105,10 @@ export default function ProjectHub() {
         {/* Project Info Header */}
         <motion.div variants={itemVariants}>
           <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'visible', position: 'relative' }}>
-            <Box sx={{ height: 4, background: 'linear-gradient(90deg, #6366f1, #818cf8, #a5b4fc)', borderRadius: '12px 12px 0 0' }} />
+            <Box sx={{ height: 4, background: 'linear-gradient(90deg, #D97706, #D97706, #F59E0B)', borderRadius: '12px 12px 0 0' }} />
             <Box sx={{ p: { xs: 2.5, md: 3 } }}>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2.5} alignItems={{ md: 'center' }}>
-                <Box sx={{ p: '2px', borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #818cf8, #c7d2fe)', flexShrink: 0 }}>
+                <Box sx={{ p: '2px', borderRadius: '50%', background: 'linear-gradient(135deg, #D97706, #D97706, #FDE68A)', flexShrink: 0 }}>
                   <Avatar sx={{ width: 56, height: 56, bgcolor: 'primary.main', fontSize: '1.3rem', fontWeight: 700 }}>
                     {project.code?.charAt(0) || 'P'}
                   </Avatar>
@@ -148,7 +148,7 @@ export default function ProjectHub() {
                   </Stack>
                 </Box>
                 <Button variant="contained" startIcon={<Add />} size="small"
-                  sx={{ bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' }, whiteSpace: 'nowrap', borderRadius: 2, boxShadow: '0 4px 14px rgba(99,102,241,0.25)' }}
+                  sx={{ bgcolor: '#D97706', '&:hover': { bgcolor: '#92400E' }, whiteSpace: 'nowrap', borderRadius: 2, boxShadow: '0 4px 14px rgba(217,119,6,0.25)' }}
                   onClick={() => navigate(`/engineering/projects`)}
                 >
                   {t('edit')}
@@ -170,7 +170,7 @@ export default function ProjectHub() {
         <motion.div variants={itemVariants}>
           <Stack spacing={1}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Bolt sx={{ color: '#6366f1', fontSize: '1rem' }} />
+              <Bolt sx={{ color: '#D97706', fontSize: '1rem' }} />
               <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing="0.06em">
                 Quick Actions
               </Typography>
@@ -210,9 +210,9 @@ export default function ProjectHub() {
         {evm && (
           <motion.div variants={itemVariants}>
             <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', position: 'relative' }}>
-              <Box sx={{ height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8)', borderRadius: '12px 12px 0 0' }} />
+              <Box sx={{ height: 3, background: 'linear-gradient(90deg, #D97706, #D97706)', borderRadius: '12px 12px 0 0' }} />
               <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-                <TrendingUp sx={{ color: '#6366f1', fontSize: '1.1rem' }} />
+                <TrendingUp sx={{ color: '#D97706', fontSize: '1.1rem' }} />
                 <Typography variant="subtitle2" fontWeight={600} flex={1}>{t('evmTitle')}</Typography>
                 <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/engineering/evm')} sx={{ fontSize: '0.75rem' }}>
                   {t('viewAll')}
@@ -222,10 +222,10 @@ export default function ProjectHub() {
                 <Grid container spacing={2}>
                   <EVMStat label="SPI" value={Number(evm.spi).toFixed(2)} color={evm.spi >= 1 ? '#10b981' : '#ef4444'} />
                   <EVMStat label="CPI" value={Number(evm.cpi).toFixed(2)} color={evm.cpi >= 1 ? '#10b981' : '#ef4444'} />
-                  <EVMStat label={t('plannedValue')} value={formatNumber(evm.planned_value)} color="#6366f1" />
+                  <EVMStat label={t('plannedValue')} value={formatNumber(evm.planned_value)} color="#D97706" />
                   <EVMStat label={t('earnedValue')} value={formatNumber(evm.earned_value)} color="#10b981" />
                   <EVMStat label={t('actualCost')} value={formatNumber(evm.actual_cost)} color="#f59e0b" />
-                  <EVMStat label={t('totalBudget')} value={formatNumber(evm.total_budget)} color="#06b6d4" />
+                  <EVMStat label={t('totalBudget')} value={formatNumber(evm.total_budget)} color="#D97706" />
                 </Grid>
               </Box>
             </Card>
@@ -276,10 +276,10 @@ export default function ProjectHub() {
             <Grid item xs={12} md={6}>
               <motion.div variants={itemVariants}>
                 <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', position: 'relative' }}>
-                  <Box sx={{ height: 3, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)', borderRadius: '12px 12px 0 0' }} />
+                  <Box sx={{ height: 3, background: 'linear-gradient(90deg, #D97706, #a78bfa)', borderRadius: '12px 12px 0 0' }} />
                   <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <QuestionAnswer sx={{ color: '#8b5cf6', fontSize: '1.1rem' }} />
+                      <QuestionAnswer sx={{ color: '#D97706', fontSize: '1.1rem' }} />
                       <Typography variant="subtitle2" fontWeight={600}>{t('recentRfis')}</Typography>
                     </Stack>
                     <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate(`/engineering/rfis?project_id=${projectId}`)} sx={{ fontSize: '0.75rem' }}>
@@ -289,9 +289,9 @@ export default function ProjectHub() {
                   {recent_rfis.map((r, i) => (
                     <Box key={r.id}>
                       {i > 0 && <Divider sx={{ mx: 2 }} />}
-                      <Box sx={{ px: 2.5, py: 1.25, cursor: 'pointer', '&:hover': { bgcolor: alpha('#8b5cf6', 0.04) } }} onClick={() => navigate(`/engineering/rfis?project_id=${projectId}`)}>
+                      <Box sx={{ px: 2.5, py: 1.25, cursor: 'pointer', '&:hover': { bgcolor: alpha('#D97706', 0.04) } }} onClick={() => navigate(`/engineering/rfis?project_id=${projectId}`)}>
                         <Stack direction="row" alignItems="center" spacing={1.5}>
-                          <Avatar sx={{ width: 28, height: 28, bgcolor: alpha('#8b5cf6', 0.15), color: '#8b5cf6', fontSize: '0.65rem', fontWeight: 700 }}>
+                          <Avatar sx={{ width: 28, height: 28, bgcolor: alpha('#D97706', 0.15), color: '#D97706', fontSize: '0.65rem', fontWeight: 700 }}>
                             {r.rfi_number?.slice(-2) || 'R'}
                           </Avatar>
                           <Box flex={1} minWidth={0}>

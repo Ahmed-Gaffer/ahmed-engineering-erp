@@ -276,7 +276,7 @@ export default function IPC() {
       field: 'actions', headerName: t('actions'), width: 360, sortable: false,
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
-          <IconButton size="small" onClick={() => handleViewDetail(params.row)} sx={{ color: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)', '&:hover': { backgroundColor: 'rgba(6,182,212,0.16)' } }}>
+          <IconButton size="small" onClick={() => handleViewDetail(params.row)} sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}>
             <Visibility fontSize="small" />
           </IconButton>
           {params.row.status === 'draft' && (
@@ -300,17 +300,17 @@ export default function IPC() {
             </>
           )}
           {params.row.status === 'approved' && (
-            <IconButton size="small" onClick={() => handlePay(params.row.id)} sx={{ color: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', '&:hover': { backgroundColor: 'rgba(99,102,241,0.16)' } }}>
+            <IconButton size="small" onClick={() => handlePay(params.row.id)} sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}>
               <AttachMoney fontSize="small" />
             </IconButton>
           )}
-          <IconButton size="small" onClick={() => handlePrint(params.row.id)} sx={{ color: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.08)', '&:hover': { backgroundColor: 'rgba(139,92,246,0.16)' } }}>
+          <IconButton size="small" onClick={() => handlePrint(params.row.id)} sx={{ color: '#D97706', backgroundColor: 'rgba(139,92,246,0.08)', '&:hover': { backgroundColor: 'rgba(139,92,246,0.16)' } }}>
             <Print fontSize="small" />
           </IconButton>
           <IconButton size="small" onClick={() => handleExportPdf(params.row.id)} sx={{ color: '#dc2626', backgroundColor: 'rgba(220,38,38,0.08)', '&:hover': { backgroundColor: 'rgba(220,38,38,0.16)' } }}>
             <PictureAsPdf fontSize="small" />
           </IconButton>
-          <IconButton size="small" onClick={() => handleExportExcel(params.row.id)} sx={{ color: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', '&:hover': { backgroundColor: 'rgba(99,102,241,0.16)' } }}>
+          <IconButton size="small" onClick={() => handleExportExcel(params.row.id)} sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}>
             <Download fontSize="small" />
           </IconButton>
           {params.row.status === 'draft' && (

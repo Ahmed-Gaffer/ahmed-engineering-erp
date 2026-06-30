@@ -10,6 +10,9 @@ from app.auth.api import router as auth_router
 from app.upload import router as upload_router
 from app.core.logging import logger
 from app.company_profile.models import CompanyProfile
+from core.lego_v2.event_bus.event_bus import event_bus
+from core.lego_v2.event_bus.events import ENGINEERING_EVENTS
+from app.engineering_features.notification_adapter import handle_engineering_event
 import os
 import importlib
 from pathlib import Path
@@ -52,11 +55,14 @@ async def lifespan(app: FastAPI):
             ))
             await session.commit()
             logger.info("Default company profile seeded: Negida Contracting Co.")
+    for event_key, event_name in ENGINEERING_EVENTS.items():
+        event_bus.subscribe(event_name, handle_engineering_event)
+    logger.info("EventBus subscribers registered for %d engineering events", len(ENGINEERING_EVENTS))
     logger.info("DB tables created, upload dir ready")
     yield
 
 
-app = FastAPI(title="Elkanzy - Engineering Management System", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="360 - Engineering Management System", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

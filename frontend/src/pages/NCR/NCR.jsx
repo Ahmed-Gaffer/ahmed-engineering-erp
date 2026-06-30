@@ -16,7 +16,7 @@ const severityColors = { minor: 'info', major: 'warning', critical: 'error' };
 const statusColors = {
   open: { bg: 'rgba(239,68,68,0.2)', color: '#ef4444' },
   investigation: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
-  corrective_action: { bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+  corrective_action: { bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
   closed: { bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
   rejected: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
 };
@@ -162,7 +162,7 @@ export default function NCR() {
             )}
             {actions.includes('apply_action') && (
               <Tooltip title={t('applyAction')}>
-                <IconButton size="small" sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.12)', '&:hover': { bgcolor: 'rgba(99,102,241,0.2)' } }} onClick={() => {
+                <IconButton size="small" sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.12)', '&:hover': { bgcolor: 'rgba(15,23,42,0.2)' } }} onClick={() => {
                   setActionDialog({ open: true, ncr: params.row });
                   setActionText({ corrective: params.row.corrective_action || '', preventive: params.row.preventive_action || '' });
                 }}>

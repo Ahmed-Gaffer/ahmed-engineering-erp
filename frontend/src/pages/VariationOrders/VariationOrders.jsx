@@ -207,10 +207,10 @@ export default function VariationOrders() {
       field: 'actions', headerName: t('actions'), width: 200, sortable: false,
       renderCell: (p) => (
         <Stack direction="row" spacing={0.5}>
-          <IconButton size="small" onClick={() => openImpact(p.row)} sx={{ color: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.08)', '&:hover': { backgroundColor: 'rgba(139,92,246,0.16)' } }}>
+          <IconButton size="small" onClick={() => openImpact(p.row)} sx={{ color: '#D97706', backgroundColor: 'rgba(139,92,246,0.08)', '&:hover': { backgroundColor: 'rgba(139,92,246,0.16)' } }}>
             <Analytics fontSize="small" />
           </IconButton>
-          <IconButton size="small" onClick={() => openEdit(p.row)} sx={{ color: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.08)', '&:hover': { backgroundColor: 'rgba(6,182,212,0.16)' } }}>
+          <IconButton size="small" onClick={() => openEdit(p.row)} sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}>
             <Edit fontSize="small" />
           </IconButton>
           <IconButton size="small" onClick={() => { setDeleteId(p.row.id); setDeleteOpen(true); }} sx={{ color: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', '&:hover': { backgroundColor: 'rgba(239,68,68,0.16)' } }}>

@@ -6,10 +6,11 @@ Run from backend/ directory: python seed_demo.py
 import asyncio, sys
 from datetime import date, timedelta
 from decimal import Decimal
-from app.database import async_session
+from app.database import async_session, engine
+from app.core.base import Base
 from app.auth.utils import hash_password
-from app.company_profile.models import CompanyProfile
 from app.auth.models import User
+from app.company_profile.models import CompanyProfile
 from app.employees.models import Employee
 from app.contractors.models import Contractor
 from app.projects.models import Project
@@ -25,6 +26,8 @@ from app.engineering_features.models import Contract, BOQItem, IPCHeader, IPCDet
 from app.notifications.models import Notification
 
 async def seed():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     async with async_session() as db:
         # ── Clear all data (reverse FK order) ──
         tables = [
@@ -324,10 +327,10 @@ async def seed():
 
         # ── 16. IPC Headers ──
         ipcs = [
-            IPCHeader(project_id=p["PRJ001"].id, contract_id=ctr[0].id, ipc_number="IPC-GAL-001", ipc_period=1, start_date=date(2020,1,1), end_date=date(2020,3,31), status="paid", total_amount=Decimal("12000000"), retention_amount=Decimal("600000"), advance_recovery=Decimal("0"), net_amount=Decimal("11400000")),
-            IPCHeader(project_id=p["PRJ001"].id, contract_id=ctr[0].id, ipc_number="IPC-GAL-002", ipc_period=2, start_date=date(2020,4,1), end_date=date(2020,6,30), status="paid", total_amount=Decimal("15000000"), retention_amount=Decimal("750000"), advance_recovery=Decimal("0"), net_amount=Decimal("14250000")),
-            IPCHeader(project_id=p["PRJ001"].id, contract_id=ctr[0].id, ipc_number="IPC-GAL-003", ipc_period=3, start_date=date(2020,7,1), end_date=date(2020,10,31), status="approved", total_amount=Decimal("18000000"), retention_amount=Decimal("900000"), advance_recovery=Decimal("0"), net_amount=Decimal("17100000")),
-            IPCHeader(project_id=p["PRJ009"].id, contract_id=ctr[1].id, ipc_number="IPC-SP-001", ipc_period=1, start_date=date(2023,1,1), end_date=date(2023,6,30), status="under_review", total_amount=Decimal("15000000"), retention_amount=Decimal("750000"), advance_recovery=Decimal("5000000"), net_amount=Decimal("9250000")),
+            IPCHeader(project_id=p["PRJ001"].id, contract_id=ctr[0].id, ipc_number="IPC-GAL-001", ipc_period=1, start_date=date(2020,1,1), end_date=date(2020,3,31), status="paid", total_works=Decimal("12000000"), retention_amount=Decimal("600000"), advance_recovery=Decimal("0"), net_amount=Decimal("11400000")),
+            IPCHeader(project_id=p["PRJ001"].id, contract_id=ctr[0].id, ipc_number="IPC-GAL-002", ipc_period=2, start_date=date(2020,4,1), end_date=date(2020,6,30), status="paid", total_works=Decimal("15000000"), retention_amount=Decimal("750000"), advance_recovery=Decimal("0"), net_amount=Decimal("14250000")),
+            IPCHeader(project_id=p["PRJ001"].id, contract_id=ctr[0].id, ipc_number="IPC-GAL-003", ipc_period=3, start_date=date(2020,7,1), end_date=date(2020,10,31), status="approved", total_works=Decimal("18000000"), retention_amount=Decimal("900000"), advance_recovery=Decimal("0"), net_amount=Decimal("17100000")),
+            IPCHeader(project_id=p["PRJ009"].id, contract_id=ctr[1].id, ipc_number="IPC-SP-001", ipc_period=1, start_date=date(2023,1,1), end_date=date(2023,6,30), status="under_review", total_works=Decimal("15000000"), retention_amount=Decimal("750000"), advance_recovery=Decimal("5000000"), net_amount=Decimal("9250000")),
         ]
         db.add_all(ipcs)
         await db.commit()

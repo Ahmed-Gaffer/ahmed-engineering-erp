@@ -22,7 +22,7 @@ import PageHeader from '../../components/PageHeader/PageHeader';
 const incidentStatusColors = {
   reported: { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
   investigating: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
-  action_taken: { bg: 'rgba(139,92,246,0.15)', color: '#8b5cf6' },
+  action_taken: { bg: 'rgba(139,92,246,0.15)', color: '#D97706' },
   closed: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
 };
 
@@ -147,7 +147,7 @@ export default function SafetyIncidents() {
           )}
           {params.row.status === 'investigating' && (
             <Tooltip title={t('takeAction')}>
-              <IconButton size="small" onClick={() => { setActionDialog({ open: true, id: params.row.id, action: 'take_action' }); setActionData({ description: '', action_taken: '', findings: '', corrective_actions: '' }); }} sx={{ color: '#8b5cf6', bgcolor: 'rgba(139,92,246,0.08)' }}>
+              <IconButton size="small" onClick={() => { setActionDialog({ open: true, id: params.row.id, action: 'take_action' }); setActionData({ description: '', action_taken: '', findings: '', corrective_actions: '' }); }} sx={{ color: '#D97706', bgcolor: 'rgba(139,92,246,0.08)' }}>
                 <CheckCircle fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -160,7 +160,7 @@ export default function SafetyIncidents() {
             </Tooltip>
           )}
           {params.row.status === 'reported' && (
-            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <Edit fontSize="small" />
             </IconButton>
           )}

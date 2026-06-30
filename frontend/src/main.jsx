@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import App from './App';
 import './i18n';
+import './styles/ems-global.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -250,7 +250,7 @@ export default function BOQ() {
           <IconButton
             size="small"
             onClick={() => handleEdit(params.row)}
-            sx={{ color: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', '&:hover': { backgroundColor: 'rgba(99,102,241,0.16)' } }}
+            sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}
           >
             <Edit fontSize="small" />
           </IconButton>

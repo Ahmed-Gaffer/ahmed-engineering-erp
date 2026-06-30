@@ -13,6 +13,7 @@ import { Outlet, useLocation, useNavigate, Link as RouterLink } from 'react-rout
 import { motion } from 'framer-motion';
 import Sidebar from '../Sidebar/Sidebar';
 import MobileBottomNav from '../MobileBottomNav/MobileBottomNav';
+import Footer from '../Footer/Footer';
 import NavigationProgress from '../NavigationProgress/NavigationProgress';
 import NotificationBell from '../NotificationBell/NotificationBell';
 import { useAuth } from '../../contexts/AuthContext';
@@ -166,7 +167,7 @@ export default function Layout() {
               sx={{
                 width: { xs: 30, sm: 32 }, height: { xs: 30, sm: 32 }, cursor: 'pointer',
                 fontSize: '0.85rem', fontWeight: 700,
-                background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
+                background: 'linear-gradient(135deg, #0F172A, #D97706)',
               }}
             >
               {userInitial}
@@ -181,6 +182,13 @@ export default function Layout() {
               <Box sx={{ px: 2, py: 1.5 }}>
                 <Typography variant="body2" fontWeight={600}>{user?.username}</Typography>
                 <Typography variant="caption" color="text.secondary">{user?.role || 'user'}</Typography>
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', opacity: 0.7 }}>
+                  Engineering Management System v3
+                </Typography>
+                <Typography variant="caption" color="primary" sx={{ fontSize: '0.6rem', display: 'block' }}>
+                  Ahmed Gaffer — Principal System Architect
+                </Typography>
               </Box>
               <Divider />
               <MenuItem onClick={() => { setProfileAnchor(null); navigate('/engineering/dashboard'); }} dense>
@@ -199,8 +207,9 @@ export default function Layout() {
             </Menu>
           </Toolbar>
         </AppBar>
-        <Box sx={{ flex: 1, p: { xs: 2, md: 3 }, pb: { xs: 8, md: 3 }, overflow: 'auto' }}>
+        <Box sx={{ flex: 1, p: { xs: 2, md: 3 }, pb: { xs: 8, md: 3 }, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
           <Outlet />
+          <Footer />
         </Box>
       </Box>
       {isMobile && <MobileBottomNav onMore={() => setMobileOpen(true)} />}

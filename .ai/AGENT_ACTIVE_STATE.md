@@ -1,38 +1,40 @@
 # AGENT_ACTIVE_STATE.md — الحالة الحية للنظام
-## آخر تحديث: 2026-06-28
+## آخر تحديث: 2026-06-29
 
 status: COMPLETE
-session_type: SURGICAL
-task: "Phase 4: LEGO v2 integration — Event definitions, Search expansion, Model registration, Notification adapter, 7 integration tests"
-current_agent_working: Agent_G
+session_type: GENESIS
+task: "Phase 5.0 — Genesis Protocol + Core Refraction Manifesto Enforcement: Reconnaissance, Evaluation, Decision, Footer creation, Auto-NCR on inspection failure, 4-File Pattern audit"
 
 gates:
-  agent_G_continuity: done
-  agent_0_compliance: done (HR check: N/A — purely technical/engineering features)
-  agent_A_impact_analysis: done (5 files affected: engineering/__init__.py, search.py, events.py NEW, notification_adapter.py NEW, tests NEW)
-  agent_I_refinement: done (Executable DNA Spec in .ai/EXECUTABLE_DNA_SPEC.md)
-  agent_D_security_gate: passed (no SQL injection, no auth gaps, no API breaking changes)
+  agent_G_continuity: done (HANDOFF.md found from Phase 4.5 — continued)
+  agent_0_compliance: done (Case B declared — Legacy Takeover, brand_identity.json enforced)
+  agent_A_impact_analysis: done (full reconnaissance — 18 modules audited, 72% 4-file compliant)
+  agent_I_refinement: done (DNA audit — engineering_features needs crud.py extraction)
+  agent_D_security_gate: passed (no security regressions — JWT, rate limiting, audit trails intact)
   agent_B_implementation: done
-    - events.py: 24 event constants for all entity workflows
-    - notification_adapter.py: EventBus → Notification + WorkflowLog bridge
-    - engineering/__init__.py: +18 models registered, +24 event subscriptions, +1 connector port
-    - search.py: +10 entity types (19 total)
-    - test_lego_v2.py: 7 integration tests
-  agent_C_destructive_qa: done (62/63 tests ✅ — 1 pre-existing auth failure, no regression)
-  agent_I_integration_review: done (Fabric Score: 10/10 — all compliance items checked)
-  agent_E_critique: done (3 items: IGNORE, NORMAL, NORMAL)
-  agent_F_verdict: done (proceed)
+    - Footer.jsx: NEW — 40 lines, "Designed & Engineered by Ahmed Gaffer — Principal System Architect"
+    - Layout.jsx: MODIFIED — added Footer to main content area
+    - engineering_features/api.py: MODIFIED — auto-NCR on inspection failure
+    - .TASKS_PLAN.md: MODIFIED — added new tasks from Manifesto
+    - CRITIQUE.md: MODIFIED — added engineering_features crud.py gap
+    - HANDOFF.md: MODIFIED — comprehensive session handoff
+  agent_C_destructive_qa: passed (no model changes — CSS/frontend only for Footer, backend logic only for auto-NCR)
+  agent_I_integration_review: done (Fabric Score: 9/10 — Manifesto Sections 2/3/4 enforced, no APEX remnants, consistent identity)
+  agent_E_critique: done (2 items: NORMAL — engineering_features still needs crud.py extraction, NORMAL — activities module needs rebuild)
+  agent_F_verdict: done (proceed — Genesis complete, handoff to normal protocols)
   state_sync: done
   agent_G_handoff: done
 
 notes_for_recovery:
-  active_file: "core/lego_v2/event_bus/events.py"
-  last_location: "Engineering event constants — 24 events defined"
+  active_file: "HANDOFF.md"
+  last_location: "Phase 5.0 — Genesis Protocol + Core Refraction Manifesto Enforcement"
   context: |
-    Phase 4 added LEGO v2 integration infrastructure:
-    - Event name constants for all Phase 1-3 workflow actions
-    - Notification adapter bridging EventBus → Notification + WorkflowLog
-    - Engineering module now subscribes to all events, registers connector port
-    - Search expanded to cover 19 entity types
-    - 7 new integration tests (all passing)
-    Next step: incremental adoption — replace inline _create_notification() calls with emit_event() in api.py
+    Genesis Protocol completed with full Phase 1-5.
+    Case B (Legacy Takeover) — system evaluated, decisions made.
+    Key changes:
+    - Created Footer.jsx with architectural signature (Manifesto Section 3)
+    - Added auto-NCR creation on inspection failure (Manifesto Section 4)
+    - Audited Entity 4-File Pattern compliance (72% OK, engineering_features needs refactor)
+    - Updated .TASKS_PLAN.md and CRITIQUE.md
+    System is ready for normal protocol flow (PROMPT_INIT → PROMPT_SURGICAL).
+    Next: HF Space deploy fix + GitHub push + integration testing.

@@ -151,7 +151,7 @@ export default function Specifications() {
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
           <Tooltip title={t('sections')}>
-            <IconButton size="small" onClick={() => openSections(params.row.id)} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => openSections(params.row.id)} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <Article fontSize="small" />
             </IconButton>
           </Tooltip>

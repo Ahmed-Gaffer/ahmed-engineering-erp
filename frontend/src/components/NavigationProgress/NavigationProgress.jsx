@@ -30,7 +30,7 @@ export default function NavigationProgress() {
                 height: 3,
                 backgroundColor: 'transparent',
                 '& .MuiLinearProgress-bar': {
-                  background: 'linear-gradient(90deg, #6366f1, #06b6d4, #10b981)',
+                  background: 'linear-gradient(90deg, #D97706, #D97706, #10b981)',
                 },
               }}
             />

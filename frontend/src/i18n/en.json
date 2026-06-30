@@ -1,5 +1,5 @@
 {
-  "app": "Elkanzy - Engineering Management System",
+  "app": "360 - Engineering Management System",
   "dashboard": "Dashboard",
   "contractors": "Contractors",
   "projects": "Projects",
@@ -169,7 +169,7 @@
   "dataManagement": "Data Management",
   "operations": "Operations",
   "documents": "Documents",
-  "appSubtitle": "Project Lifecycle Management",
+  "appSubtitle": "360° Engineering Project Lifecycle",
   "register": "Register",
   "createAccount": "Create Account",
   "haveAccount": "Already have an account?",

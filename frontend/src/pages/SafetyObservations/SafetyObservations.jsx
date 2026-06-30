@@ -173,7 +173,7 @@ export default function SafetyObservations() {
             </Tooltip>
           )}
           {(params.row.status === 'open' || params.row.status === 'acknowledged') && (
-            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <Edit fontSize="small" />
             </IconButton>
           )}

@@ -17,7 +17,7 @@ const ModernChip = ({ value }) => {
   const color = statusColors[value] || 'default';
   const chipColors = {
     success: { bg: isDark ? 'rgba(16,185,129,0.25)' : 'rgba(16,185,129,0.12)', text: isDark ? '#6ee7b7' : '#059669', border: isDark ? 'rgba(16,185,129,0.35)' : 'rgba(16,185,129,0.25)', shadow: '0 1px 3px rgba(16,185,129,0.15)' },
-    primary: { bg: isDark ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', text: isDark ? '#a5b4fc' : '#4f46e5', border: isDark ? 'rgba(99,102,241,0.35)' : 'rgba(99,102,241,0.25)', shadow: '0 1px 3px rgba(99,102,241,0.15)' },
+    primary: { bg: isDark ? 'rgba(217,119,6,0.25)' : 'rgba(217,119,6,0.12)', text: isDark ? '#F59E0B' : '#92400E', border: isDark ? 'rgba(217,119,6,0.35)' : 'rgba(217,119,6,0.25)', shadow: '0 1px 3px rgba(217,119,6,0.15)' },
     warning: { bg: isDark ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.12)', text: isDark ? '#fcd34d' : '#b45309', border: isDark ? 'rgba(245,158,11,0.35)' : 'rgba(245,158,11,0.25)', shadow: '0 1px 3px rgba(245,158,11,0.15)' },
     error: { bg: isDark ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.12)', text: isDark ? '#fca5a5' : '#dc2626', border: isDark ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.25)', shadow: '0 1px 3px rgba(239,68,68,0.15)' },
     info: { bg: isDark ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', text: isDark ? '#93c5fd' : '#2563eb', border: isDark ? 'rgba(59,130,246,0.35)' : 'rgba(59,130,246,0.25)', shadow: '0 1px 3px rgba(59,130,246,0.15)' },
@@ -94,7 +94,7 @@ export default function DataTable({
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
           <Tooltip title={t('edit')}>
-            <IconButton size="medium" onClick={() => onEdit?.(params.row)} sx={{ color: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', '&:hover': { backgroundColor: 'rgba(99,102,241,0.16)' } }}>
+            <IconButton size="medium" onClick={() => onEdit?.(params.row)} sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}>
               <Edit fontSize="medium" />
             </IconButton>
           </Tooltip>
@@ -162,7 +162,7 @@ export default function DataTable({
 
   return (
     <Card sx={{ overflow: 'visible' }}>
-      <Box sx={{ height: 3, background: 'linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa)', borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
+      <Box sx={{ height: 3, background: 'linear-gradient(90deg, #D97706, #D97706, #a78bfa)', borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
       <Box sx={{ px: { xs: 1.5, sm: 2.5 }, pt: { xs: 1.5, sm: 2 }, pb: 1.5 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} gap={1.5}>
           <Stack direction="row" alignItems="center" spacing={1.5} flex={1}>
@@ -176,7 +176,7 @@ export default function DataTable({
                   startAdornment: <SearchOutlined fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
                 },
               }}
-              sx={{ minWidth: { xs: '100%', sm: 280 }, maxWidth: { xs: '100%', sm: 400 }, '& .MuiOutlinedInput-root': { '&.Mui-focused': { boxShadow: '0 2px 8px rgba(99,102,241,0.15)', backgroundColor: (theme) => theme.palette.action.hover } } }}
+              sx={{ minWidth: { xs: '100%', sm: 280 }, maxWidth: { xs: '100%', sm: 400 }, '& .MuiOutlinedInput-root': { '&.Mui-focused': { boxShadow: '0 2px 8px rgba(217,119,6,0.15)', backgroundColor: (theme) => theme.palette.action.hover } } }}
             />
             <Button size="small" variant="text" color="inherit" startIcon={<FilterList fontSize="small" />} sx={{ display: { xs: 'none', sm: 'flex' } }}>
               {t('filter')}
@@ -212,11 +212,12 @@ export default function DataTable({
           rows={data}
           columns={columns}
           loading={loading}
+          density="compact"
           rowCount={paginationMode === 'server' ? total : undefined}
           getRowId={(r) => r.id}
           pageSizeOptions={[10, 20, 50, 100]}
           sx={{
-            '& .MuiDataGrid-row.Mui-selected': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.18)' } },
+            '& .MuiDataGrid-row.Mui-selected': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(217,119,6,0.25)' : 'rgba(217,119,6,0.12)', '&:hover': { backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(217,119,6,0.3)' : 'rgba(15,23,42,0.18)' } },
             '& .MuiDataGrid-cell:focus': { outline: 'none' },
           }}
           paginationModel={paginationMode === 'server' ? { page: page - 1, pageSize } : { page: clientPage, pageSize: clientPageSize }}

@@ -26,7 +26,7 @@ const iconBg = (color, mini) => ({
 const sections = [
   {
     title: 'overview', items: [
-      { label: 'dashboard', icon: <Dashboard />, path: '/engineering/dashboard', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'dashboard', icon: <Dashboard />, path: '/engineering/dashboard', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'notifications', icon: <BellIcon />, path: '/engineering/notifications', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
       { label: 'companyProfile', icon: <Business />, path: '/engineering/company-profile', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
       { label: 'reports', icon: <Assessment />, path: '/engineering/reports', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
@@ -42,17 +42,17 @@ const sections = [
   },
   {
     title: 'operations', items: [
-      { label: 'workOrders', icon: <Assignment />, path: '/engineering/work-orders', bg: 'rgba(6,182,212,0.2)', color: '#22d3ee' },
-      { label: 'workOrderItems', icon: <ListAlt />, path: '/engineering/work-order-items', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'workOrders', icon: <Assignment />, path: '/engineering/work-orders', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
+      { label: 'workOrderItems', icon: <ListAlt />, path: '/engineering/work-order-items', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'drawings', icon: <Image />, path: '/engineering/drawings', bg: 'rgba(251,146,60,0.2)', color: '#fb923c' },
       { label: 'drawingRevisions', icon: <DocumentScanner />, path: '/engineering/drawing-revisions', bg: 'rgba(236,72,153,0.2)', color: '#f472b6' },
       { label: 'boq', icon: <Construction />, path: '/engineering/boq', bg: 'rgba(168,85,247,0.2)', color: '#c084fc' },
-      { label: 'contractsPage', icon: <Description />, path: '/engineering/contracts-list', bg: 'rgba(6,182,212,0.2)', color: '#22d3ee' },
+      { label: 'contractsPage', icon: <Description />, path: '/engineering/contracts-list', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'schedulesPage', icon: <CalendarMonth />, path: '/engineering/schedules', bg: 'rgba(251,146,60,0.2)', color: '#fb923c' },
       { label: 'dailyReportsPage', icon: <EventNote />, path: '/engineering/daily-reports', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
       { label: 'subcontractorsPage', icon: <GroupWork />, path: '/engineering/subcontractors', bg: 'rgba(236,72,153,0.2)', color: '#f472b6' },
       { label: 'variationOrders', icon: <Receipt />, path: '/engineering/variation-orders', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
-      { label: 'rfis', icon: <Search />, path: '/engineering/rfis', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'rfis', icon: <Search />, path: '/engineering/rfis', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'mar', icon: <Description />, path: '/engineering/mar', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
       { label: 'ncr', icon: <Assignment />, path: '/engineering/ncr', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
       { label: 'evmPage', icon: <Assessment />, path: '/engineering/evm', bg: 'rgba(139,92,246,0.2)', color: '#c084fc' },
@@ -60,12 +60,12 @@ const sections = [
   },
   {
     title: 'engineering', items: [
-      { label: 'submittals', icon: <ListAlt />, path: '/engineering/submittals', bg: 'rgba(139,92,246,0.2)', color: '#8b5cf6' },
-      { label: 'inspectionRequests', icon: <CheckCircle />, path: '/engineering/inspection-requests', bg: 'rgba(6,182,212,0.2)', color: '#06b6d4' },
+      { label: 'submittals', icon: <ListAlt />, path: '/engineering/submittals', bg: 'rgba(139,92,246,0.2)', color: '#D97706' },
+      { label: 'inspectionRequests', icon: <CheckCircle />, path: '/engineering/inspection-requests', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'punchList', icon: <ListAlt />, path: '/engineering/punch-list', bg: 'rgba(249,115,22,0.2)', color: '#f97316' },
       { label: 'transmittals', icon: <Description />, path: '/engineering/transmittals', bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
       { label: 'materialTests', icon: <Science />, path: '/engineering/material-tests', bg: 'rgba(147,51,234,0.2)', color: '#a855f7' },
-      { label: 'itp', icon: <CheckCircle />, path: '/engineering/itps', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'itp', icon: <CheckCircle />, path: '/engineering/itps', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'methodStatements', icon: <EventNote />, path: '/engineering/method-statements', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
       { label: 'specifications', icon: <Code />, path: '/engineering/specifications', bg: 'rgba(168,85,247,0.2)', color: '#c084fc' },
       { label: 'permits', icon: <Receipt />, path: '/engineering/permits', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
@@ -74,14 +74,14 @@ const sections = [
   },
   {
     title: 'classification', items: [
-      { label: 'branches', icon: <Business />, path: '/engineering/branches', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'branches', icon: <Business />, path: '/engineering/branches', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'categories', icon: <Category />, path: '/engineering/categories', bg: 'rgba(245,158,11,0.2)', color: '#fbbf24' },
       { label: 'costCodes', icon: <Code />, path: '/engineering/cost-codes', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
     ],
   },
   {
     title: 'hse', items: [
-      { label: 'hseDashboard', icon: <Assessment />, path: '/engineering/hse/dashboard', bg: 'rgba(6,182,212,0.2)', color: '#22d3ee' },
+      { label: 'hseDashboard', icon: <Assessment />, path: '/engineering/hse/dashboard', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
       { label: 'safetyIncidents', icon: <Warning />, path: '/engineering/safety-incidents', bg: 'rgba(239,68,68,0.2)', color: '#fca5a5' },
       { label: 'safetyObservations', icon: <Visibility />, path: '/engineering/safety-observations', bg: 'rgba(16,185,129,0.2)', color: '#34d399' },
     ],
@@ -99,7 +99,7 @@ const sections = [
   },
   {
     title: 'system', items: [
-      { label: 'adminPanel', icon: <AdminPanelSettings />, path: '/engineering/admin', bg: 'rgba(99,102,241,0.2)', color: '#818cf8' },
+      { label: 'adminPanel', icon: <AdminPanelSettings />, path: '/engineering/admin', bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
     ],
   },
 ];
@@ -122,7 +122,7 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
         {mini ? (
           <Box sx={{
             width: 38, height: 38, borderRadius: 2, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', background: 'linear-gradient(135deg, #6366f1, #06b6d4)', flexShrink: 0,
+            justifyContent: 'center', background: 'linear-gradient(135deg, #0F172A, #D97706)', flexShrink: 0,
           }}>
             <Engineering sx={{ fontSize: 22, color: 'white' }} />
           </Box>
@@ -130,7 +130,7 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
           <Stack direction="row" alignItems="center" spacing={1.5} width={1}>
             <Box sx={{
               width: 38, height: 38, borderRadius: 2, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', background: 'linear-gradient(135deg, #6366f1, #06b6d4)', flexShrink: 0,
+              justifyContent: 'center', background: 'linear-gradient(135deg, #0F172A, #D97706)', flexShrink: 0,
             }}>
               <Engineering sx={{ fontSize: 22, color: 'white' }} />
             </Box>
@@ -139,7 +139,7 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
                 {t('app')}
               </Typography>
               <Typography variant="caption" color="rgba(255,255,255,0.4)" noWrap fontSize="0.65rem">
-                ERP System
+                Engineering Intelligence Platform
               </Typography>
             </Box>
             {isMobile && (
@@ -185,13 +185,13 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
                       ...(active ? { boxShadow: `0 0 12px ${item.color}26` } : {}),
                       '&::before': active ? {
                         content: '""', position: 'absolute', insetInline: 0, top: 0, bottom: 0,
-                        background: 'linear-gradient(90deg, rgba(99,102,241,0.15) 0%, transparent 100%)',
+                        background: 'linear-gradient(90deg, rgba(217,119,6,0.15) 0%, transparent 100%)',
                         borderRadius: 1.5,
                       } : {},
                       '&::after': active ? {
                         content: '""', position: 'absolute', insetInlineStart: 0, top: '20%', bottom: '20%', width: 4,
-                        background: 'linear-gradient(180deg, #6366f1, #818cf8)', borderRadius: '0 4px 4px 0',
-                        boxShadow: '0 0 6px rgba(99,102,241,0.3)',
+                        background: 'linear-gradient(180deg, #0F172A, #D97706)', borderRadius: '0 4px 4px 0',
+                        boxShadow: '0 0 6px rgba(217,119,6,0.3)',
                         ...(i18n.language === 'ar' ? { right: 0, left: 'auto', borderRadius: '4px 0 0 4px' } : {}),
                       } : {},
                       '&.Mui-selected': { backgroundColor: 'transparent' },
@@ -239,7 +239,7 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <Box sx={{
               width: 32, height: 32, borderRadius: 1.5, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
+              justifyContent: 'center', background: 'linear-gradient(135deg, #0F172A, #D97706)',
               fontSize: '0.75rem', fontWeight: 700, color: 'white',
             }}>
               <Construction sx={{ fontSize: 18 }} />
@@ -264,7 +264,8 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
         sx={{
           '& .MuiDrawer-paper': {
             width: DRAWER_WIDTH,
-            bgcolor: '#0f172a',
+            bgcolor: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(12px)',
             color: '#e2e8f0',
           },
         }}
@@ -284,7 +285,8 @@ export default function Sidebar({ open, mini, onToggle, mobileOpen, onMobileTogg
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: open ? (mini ? DRAWER_MINI : DRAWER_WIDTH) : DRAWER_MINI,
-          bgcolor: '#0f172a',
+          bgcolor: 'rgba(15, 23, 42, 0.85)',
+          backdropFilter: 'blur(12px)',
           color: '#e2e8f0',
           borderRight: i18n.language === 'ar' ? 'none' : '1px solid rgba(255,255,255,0.06)',
           borderLeft: i18n.language === 'ar' ? '1px solid rgba(255,255,255,0.06)' : 'none',

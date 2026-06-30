@@ -9,7 +9,7 @@ import { Notifications as BellIcon, Circle, DoneAll } from '@mui/icons-material'
 import { useSnackbar } from 'notistack';
 import { notificationsApi } from '../../services/api';
 
-const typeColors = { info: '#6366f1', warning: '#f59e0b', success: '#10b981', error: '#ef4444' };
+const typeColors = { info: '#D97706', warning: '#f59e0b', success: '#10b981', error: '#ef4444' };
 
 export default function NotificationBell() {
   const { t } = useTranslation();
@@ -103,7 +103,7 @@ export default function NotificationBell() {
             {notifs.map((n) => (
               <ListItemButton key={n.id} onClick={() => handleClick(n)} sx={{ px: 2, py: 1.25, opacity: n.is_read ? 0.6 : 1 }}>
                 <ListItemIcon sx={{ minWidth: 28 }}>
-                  <Circle sx={{ fontSize: 10, color: n.is_read ? 'text.disabled' : (typeColors[n.type] || '#6366f1') }} />
+                  <Circle sx={{ fontSize: 10, color: n.is_read ? 'text.disabled' : (typeColors[n.type] || '#D97706') }} />
                 </ListItemIcon>
                 <ListItemText
                   primary={n.title}

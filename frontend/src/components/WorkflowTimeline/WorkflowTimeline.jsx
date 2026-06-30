@@ -23,7 +23,7 @@ const ACTION_COLORS = {
   submit: { bg: 'rgba(245,158,11,0.12)', icon: '#f59e0b', border: '#f59e0b44' },
   approve: { bg: 'rgba(16,185,129,0.12)', icon: '#10b981', border: '#10b98144' },
   reject: { bg: 'rgba(239,68,68,0.12)', icon: '#ef4444', border: '#ef444444' },
-  pay: { bg: 'rgba(99,102,241,0.12)', icon: '#6366f1', border: '#6366f144' },
+  pay: { bg: 'rgba(217,119,6,0.12)', icon: '#D97706', border: '#D9770644' },
   review: { bg: 'rgba(59,130,246,0.12)', icon: '#3b82f6', border: '#3b82f644' },
   comment: { bg: 'rgba(148,163,184,0.12)', icon: '#94a3b8', border: '#94a3b844' },
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box, Card, CardContent, TextField, Button, Typography, Alert, Stack,
-  Tabs, Tab, IconButton, Tooltip, useMediaQuery, useTheme,
+  Tabs, Tab, IconButton, Tooltip, useMediaQuery, useTheme, Divider,
 } from '@mui/material';
 import { Engineering, DarkMode, LightMode, Construction, AccountTree, Key, Person } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -62,17 +62,17 @@ export default function Login() {
         <Box sx={{
           flex: 1, display: 'flex', flexDirection: 'column',
           justifyContent: 'center', alignItems: 'center', p: 6,
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%)',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0F172A 100%)',
           position: 'relative', overflow: 'hidden',
         }}>
           <Box sx={{
             position: 'absolute', inset: 0,
             opacity: 0.05,
-            background: 'radial-gradient(circle at 30% 40%, #6366f1 0%, transparent 60%), radial-gradient(circle at 70% 60%, #06b6d4 0%, transparent 50%)',
+            background: 'radial-gradient(circle at 30% 40%, #D97706 0%, transparent 60%), radial-gradient(circle at 70% 60%, #0F172A 0%, transparent 50%)',
           }} />
           <Box sx={{
             position: 'absolute', width: 300, height: 300, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(217,119,6,0.15) 0%, transparent 70%)',
             top: '10%', left: '5%',
             '@keyframes float1': {
               '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
@@ -82,7 +82,7 @@ export default function Login() {
           }} />
           <Box sx={{
             position: 'absolute', width: 250, height: 250, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(217,119,6,0.15) 0%, transparent 70%)',
             bottom: '15%', right: '5%',
             '@keyframes float2': {
               '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
@@ -114,7 +114,7 @@ export default function Login() {
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <Engineering sx={{ fontSize: 56, color: '#818cf8' }} />
+                <Engineering sx={{ fontSize: 56, color: '#D97706' }} />
               </motion.div>
               <motion.div
                 animate={{ y: [0, -15, 0] }}
@@ -126,7 +126,7 @@ export default function Login() {
                 animate={{ y: [0, -8, 0] }}
                 transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
               >
-                <AccountTree sx={{ fontSize: 48, color: '#22d3ee', mt: 1 }} />
+                <AccountTree sx={{ fontSize: 48, color: '#D97706', mt: 1 }} />
               </motion.div>
             </Stack>
             <Typography variant="h3" fontWeight={800} color="white" letterSpacing="-0.03em" mb={1}>
@@ -146,7 +146,7 @@ export default function Login() {
         <Box sx={{
           position: 'absolute', inset: 0, overflow: 'hidden',
           opacity: isDark ? 0.04 : 0.06,
-          backgroundImage: `radial-gradient(circle, ${isDark ? '#818cf8' : '#6366f1'} 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(circle, ${isDark ? '#D97706' : '#D97706'} 1px, transparent 1px)`,
           backgroundSize: '30px 30px',
         }} />
         <motion.div
@@ -165,14 +165,14 @@ export default function Login() {
               : '0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
             '&::before': {
               content: '""', position: 'absolute', top: 0, insetInline: 0, height: 4,
-              background: 'linear-gradient(90deg, #6366f1, #06b6d4, #10b981)',
+              background: 'linear-gradient(90deg, #0F172A, #D97706, #0F172A)',
               borderRadius: '14px 14px 0 0',
             },
           }}>
             <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
               {isMobile && (
                 <Stack direction="row" alignItems="center" spacing={1.5} mb={2} justifyContent="center">
-                  <Engineering sx={{ fontSize: 32, color: '#818cf8' }} />
+                  <Engineering sx={{ fontSize: 32, color: '#D97706' }} />
                   <Typography variant="h6" fontWeight={700}>{t('app')}</Typography>
                 </Stack>
               )}
@@ -181,10 +181,10 @@ export default function Login() {
                 '& .MuiTabs-indicator': {
                   height: 3,
                   borderRadius: '3px 3px 0 0',
-                  background: 'linear-gradient(90deg, #6366f1, #06b6d4)',
+                  background: 'linear-gradient(90deg, #0F172A, #D97706)',
                 },
                 '& .Mui-selected': {
-                  color: isDark ? '#a5b4fc' : '#6366f1',
+                  color: isDark ? '#F59E0B' : '#D97706',
                 },
               }}>
                 <Tab icon={<Key />} iconPosition="start" label={t('login')} />
@@ -202,11 +202,11 @@ export default function Login() {
                     '& .MuiOutlinedInput-root': {
                       '&.Mui-focused fieldset': {
                         borderWidth: 2,
-                        borderColor: '#6366f1',
+                        borderColor: '#D97706',
                       },
                     },
                     '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#6366f1',
+                      color: '#D97706',
                     },
                   }}
                 />
@@ -219,11 +219,11 @@ export default function Login() {
                       '& .MuiOutlinedInput-root': {
                         '&.Mui-focused fieldset': {
                           borderWidth: 2,
-                          borderColor: '#6366f1',
+                          borderColor: '#D97706',
                         },
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#6366f1',
+                        color: '#D97706',
                       },
                     }}
                   />
@@ -237,11 +237,11 @@ export default function Login() {
                     '& .MuiOutlinedInput-root': {
                       '&.Mui-focused fieldset': {
                         borderWidth: 2,
-                        borderColor: '#6366f1',
+                        borderColor: '#D97706',
                       },
                     },
                     '& .MuiInputLabel-root.Mui-focused': {
-                      color: '#6366f1',
+                      color: '#D97706',
                     },
                   }}
                 />
@@ -254,11 +254,11 @@ export default function Login() {
                       '& .MuiOutlinedInput-root': {
                         '&.Mui-focused fieldset': {
                           borderWidth: 2,
-                          borderColor: '#6366f1',
+                          borderColor: '#D97706',
                         },
                       },
                       '& .MuiInputLabel-root.Mui-focused': {
-                        color: '#6366f1',
+                        color: '#D97706',
                       },
                     }}
                   />
@@ -305,6 +305,15 @@ export default function Login() {
               {isDark ? <LightMode /> : <DarkMode />}
             </IconButton>
           </Tooltip>
+        </Stack>
+      </Box>
+      <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', py: 1.5, px: 2 }}>
+        <Divider sx={{ mb: 1, opacity: 0.3 }} />
+        <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
+          <Engineering sx={{ fontSize: '0.65rem', color: 'text.secondary', opacity: 0.4 }} />
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', opacity: 0.5, fontWeight: 300, letterSpacing: '0.02em' }}>
+            Engineering Management System v3 — Designed &amp; Engineered by Ahmed Gaffer — Principal System Architect
+          </Typography>
         </Stack>
       </Box>
     </Box>

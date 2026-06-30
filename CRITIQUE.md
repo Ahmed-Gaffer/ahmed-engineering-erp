@@ -21,6 +21,8 @@
 - [ ] **File Upload**: File upload endpoints not implemented for new modules.
 - [ ] **Dashboard Summary**: New entity counts not shown on main dashboard.
 - [ ] **Negida Company Data**: Company profile not yet seeded into database.
+- [ ] **engineering_features/crud.py مفقود**: 4054 سطراً في api.py بدون فصل CRUD — يحتاج استخراج تدريجي مع اختبارات.
+- [ ] **مطلوب Footer**: تم إنشاؤه ✅ مع توقيع Ahmed Gaffer.
 
 ## P3 - منخفضة (Low)
 

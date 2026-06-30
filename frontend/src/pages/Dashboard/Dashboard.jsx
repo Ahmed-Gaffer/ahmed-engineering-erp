@@ -32,7 +32,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
-const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+const COLORS = ['#0F172A', '#D97706', '#10b981', '#f59e0b', '#ef4444', '#1E293B', '#F59E0B', '#14b8a6'];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload) return null;
@@ -57,8 +57,8 @@ const ChartCard = ({ title, children, action, subtitle }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   return (
-    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8, #6366f1)', opacity: 0.7 }} />
+    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', backgroundColor: isDark ? 'rgba(30,30,40,0.75)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}>
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #0F172A, #D97706, #0F172A)', opacity: 0.7 }} />
       <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: { xs: 2, md: 2.5 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
           <Box>
@@ -78,9 +78,9 @@ const ChartCard = ({ title, children, action, subtitle }) => {
 const KpiCard = ({ title, value, percent, color, subtitle, icon, trend }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const c = color || '#6366f1';
+  const c = color || '#D97706';
   return (
-    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? '0 12px 28px rgba(0,0,0,0.5)' : '0 12px 28px rgba(0,0,0,0.06)' } }}>
+    <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden', backgroundColor: isDark ? 'rgba(30,30,40,0.75)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? '0 12px 28px rgba(0,0,0,0.5)' : '0 12px 28px rgba(0,0,0,0.06)' } }}>
       <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${c}, ${c}88)`, opacity: 0.7 }} />
       <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
@@ -133,11 +133,11 @@ const NotificationPanel = ({ open, onClose, notifications, onMarkRead }) => {
         ) : (
           <Stack spacing={1}>
             {notifications.map((n) => (
-              <Card key={n.id} sx={{ bgcolor: n.is_read ? 'transparent' : 'rgba(99,102,241,0.04)', border: '1px solid', borderColor: n.is_read ? 'divider' : 'rgba(99,102,241,0.15)', cursor: 'pointer' }}
+              <Card key={n.id} sx={{ bgcolor: n.is_read ? 'transparent' : 'rgba(15,23,42,0.04)', border: '1px solid', borderColor: n.is_read ? 'divider' : 'rgba(217,119,6,0.15)', cursor: 'pointer' }}
                 onClick={() => { if (!n.is_read) onMarkRead(n.id); }}>
                 <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                   <Stack direction="row" spacing={1.5}>
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: n.type === 'warning' ? '#f59e0b25' : n.type === 'error' ? '#ef444425' : '#6366f125', color: n.type === 'warning' ? '#f59e0b' : n.type === 'error' ? '#ef4444' : '#6366f1' }}>
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: n.type === 'warning' ? '#f59e0b25' : n.type === 'error' ? '#ef444425' : '#D9770625', color: n.type === 'warning' ? '#f59e0b' : n.type === 'error' ? '#ef4444' : '#D97706' }}>
                       {n.type === 'warning' ? <Warning fontSize="small" /> : n.type === 'error' ? <Assignment fontSize="small" /> : <Notifications fontSize="small" />}
                     </Avatar>
                     <Box sx={{ flex: 1 }}>
@@ -147,7 +147,7 @@ const NotificationPanel = ({ open, onClose, notifications, onMarkRead }) => {
                         {n.created_at ? new Date(n.created_at).toLocaleDateString() : ''}
                       </Typography>
                     </Box>
-                    {!n.is_read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#6366f1', mt: 0.5 }} />}
+                    {!n.is_read && <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#D97706', mt: 0.5 }} />}
                   </Stack>
                 </CardContent>
               </Card>
@@ -325,7 +325,7 @@ export default function Dashboard() {
         <Box>
           <Typography variant="h5" fontWeight={800} letterSpacing="-0.02em">
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Box sx={{ width: 34, height: 34, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+              <Box sx={{ width: 34, height: 34, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(15,23,42,0.1)', color: '#D97706' }}>
                 <DashboardIcon sx={{ fontSize: 20 }} />
               </Box>
               <span>{t('dashboard')}</span>
@@ -347,7 +347,7 @@ export default function Dashboard() {
               <NotificationsActive sx={{ fontSize: 20 }} />
             </IconButton>
           </Badge>
-          <IconButton size="small" onClick={handleRefresh} sx={{ bgcolor: isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)', '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.12)' } }}>
+          <IconButton size="small" onClick={handleRefresh} sx={{ bgcolor: isDark ? 'rgba(217,119,6,0.12)' : 'rgba(217,119,6,0.08)', '&:hover': { bgcolor: isDark ? 'rgba(15,23,42,0.2)' : 'rgba(217,119,6,0.12)' } }}>
             <Refresh sx={{ fontSize: 20 }} />
           </IconButton>
           <Button variant="outlined" size="small" startIcon={<Download />} onClick={(e) => setExportAnchor(e.currentTarget)} sx={{ fontWeight: 600 }}>
@@ -390,7 +390,7 @@ export default function Dashboard() {
       <motion.div variants={itemVariants}>
         <Grid container spacing={2} mb={2.5}>
           <Grid item xs={12} sm={6} md={3}>
-            <KpiCard title={t('executionRate')} value={`${formatNumber(overall_execution_rate)}%`} percent={Number(overall_execution_rate)} icon={<Speed />} color="#6366f1" />
+            <KpiCard title={t('executionRate')} value={`${formatNumber(overall_execution_rate)}%`} percent={Number(overall_execution_rate)} icon={<Speed />} color="#D97706" />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
             <KpiCard title={t('financialProgress')} value={`${formatNumber(overall_financial_progress)}%`} percent={Number(overall_financial_progress)} icon={<AccountBalance />} color="#10b981" />
@@ -425,7 +425,7 @@ export default function Dashboard() {
                       {recentActivity.map((a, i) => (
                         <motion.div key={a.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
                           <Stack direction="row" spacing={1.5} sx={{ py: 1, px: 0.5, borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 0 }, position: 'relative' }}>
-                            <Avatar sx={{ width: 28, height: 28, bgcolor: a.action === 'create' ? '#10b98115' : a.action === 'update' ? '#6366f115' : a.action === 'delete' ? '#ef444415' : '#f59e0b15', color: a.action === 'create' ? '#10b981' : a.action === 'update' ? '#6366f1' : a.action === 'delete' ? '#ef4444' : '#f59e0b', fontSize: '0.75rem', fontWeight: 700, border: '2px solid', borderColor: a.action === 'create' ? 'rgba(16,185,129,0.2)' : a.action === 'update' ? 'rgba(99,102,241,0.2)' : a.action === 'delete' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', position: 'relative', zIndex: 1 }}>
+                            <Avatar sx={{ width: 28, height: 28, bgcolor: a.action === 'create' ? '#10b98115' : a.action === 'update' ? '#D9770615' : a.action === 'delete' ? '#ef444415' : '#f59e0b15', color: a.action === 'create' ? '#10b981' : a.action === 'update' ? '#D97706' : a.action === 'delete' ? '#ef4444' : '#f59e0b', fontSize: '0.75rem', fontWeight: 700, border: '2px solid', borderColor: a.action === 'create' ? 'rgba(16,185,129,0.2)' : a.action === 'update' ? 'rgba(15,23,42,0.2)' : a.action === 'delete' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', position: 'relative', zIndex: 1 }}>
                               {a.action?.charAt(0).toUpperCase()}
                             </Avatar>
                             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -514,14 +514,14 @@ export default function Dashboard() {
       <motion.div variants={itemVariants}>
         <Grid container spacing={2} mb={2.5}>
           {[
-            { key: 'totalProjects', value: total_projects, icon: <Folder />, color: '#6366f1' },
+            { key: 'totalProjects', value: total_projects, icon: <Folder />, color: '#D97706' },
             { key: 'totalContractValue', value: formatNumber(total_contract_value), icon: <AccountBalance />, color: '#10b981' },
-            { key: 'totalIpcApproved', value: formatNumber(total_ipc_approved), icon: <ThumbUpAlt />, color: '#06b6d4' },
+            { key: 'totalIpcApproved', value: formatNumber(total_ipc_approved), icon: <ThumbUpAlt />, color: '#D97706' },
             { key: 'totalVoAmount', value: formatNumber(total_vo_amount), icon: <CompareArrows />, color: '#f59e0b' },
-            { key: 'totalRfis', value: total_rfis, icon: <QuestionAnswer />, color: '#8b5cf6' },
+            { key: 'totalRfis', value: total_rfis, icon: <QuestionAnswer />, color: '#D97706' },
             { key: 'totalDrawings', value: total_drawings, icon: <Assessment />, color: '#ec4899' },
             { key: 'totalSchedules', value: total_schedules, icon: <Schedule />, color: '#14b8a6' },
-            { key: 'totalDocuments', value: total_documents, icon: <Description />, color: '#6366f1' },
+            { key: 'totalDocuments', value: total_documents, icon: <Description />, color: '#D97706' },
           ].map((card) => (
             <Grid key={card.key} item xs={6} sm={4} md={3} lg={1.5}>
               <motion.div variants={itemVariants}>
@@ -537,7 +537,7 @@ export default function Dashboard() {
         <Grid item xs={12} md={6}>
           <motion.div variants={itemVariants}>
             <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8)', opacity: 0.6 }} />
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #D97706, #D97706)', opacity: 0.6 }} />
               <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Box>
@@ -558,7 +558,7 @@ export default function Dashboard() {
                     </TableHead>
                     <TableBody>
                       {(top_projects || []).map((p, idx) => (
-                        <TableRow key={p.id} hover sx={{ cursor: 'pointer', '&:hover': { bgcolor: isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.02)' }, bgcolor: idx % 2 === 0 ? 'transparent' : (isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)') }} onClick={() => navigate(`/engineering/projects/${p.id}`)}>
+                        <TableRow key={p.id} hover sx={{ cursor: 'pointer', '&:hover': { bgcolor: isDark ? 'rgba(15,23,42,0.04)' : 'rgba(15,23,42,0.02)' }, bgcolor: idx % 2 === 0 ? 'transparent' : (isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.01)') }} onClick={() => navigate(`/engineering/projects/${p.id}`)}>
                           <TableCell sx={{ fontSize: '0.8rem', fontWeight: 600 }}>{p.code}</TableCell>
                           <TableCell sx={{ fontSize: '0.8rem' }}>{p.name}</TableCell>
                           <TableCell align="right" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>{formatNumber(p.contract_value)}</TableCell>
@@ -585,7 +585,7 @@ export default function Dashboard() {
         <Grid item xs={12} md={6}>
           <motion.div variants={itemVariants}>
             <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #06b6d4, #22d3ee)', opacity: 0.6 }} />
+              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #D97706, #F59E0B)', opacity: 0.6 }} />
               <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                   <Box>
@@ -634,11 +634,11 @@ export default function Dashboard() {
       {evm && (
         <motion.div variants={itemVariants}>
           <Card sx={{ mt: 2.5, position: 'relative', overflow: 'hidden' }}>
-            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #8b5cf6, #a78bfa)', opacity: 0.6 }} />
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #D97706, #a78bfa)', opacity: 0.6 }} />
             <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                  <Box sx={{ width: 34, height: 34, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
+                  <Box sx={{ width: 34, height: 34, borderRadius: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(15,23,42,0.1)', color: '#D97706' }}>
                     <Assessment sx={{ fontSize: 18 }} />
                   </Box>
                   <Typography fontWeight={700} variant="body1" fontSize="0.95rem">Earned Value Management (EVM)</Typography>
@@ -651,12 +651,12 @@ export default function Dashboard() {
               </Stack>
               <Grid container spacing={2}>
                 {[
-                  { label: 'Planned Value (PV)', value: evm.planned_value, color: '#6366f1' },
+                  { label: 'Planned Value (PV)', value: evm.planned_value, color: '#D97706' },
                   { label: 'Earned Value (EV)', value: evm.earned_value, color: '#10b981' },
                   { label: 'Actual Cost (AC)', value: evm.actual_cost, color: '#f59e0b' },
                   { label: 'EAC', value: evm.estimate_at_completion, color: '#ef4444' },
-                  { label: 'ETC', value: evm.estimate_to_complete, color: '#8b5cf6' },
-                  { label: 'VAC', value: evm.variance_at_completion, color: '#06b6d4' },
+                  { label: 'ETC', value: evm.estimate_to_complete, color: '#D97706' },
+                  { label: 'VAC', value: evm.variance_at_completion, color: '#D97706' },
                 ].map((item) => (
                   <Grid key={item.label} item xs={6} sm={4} md={2}>
                     <Box sx={{ pl: 1.5, py: 1.5, pr: 1, borderRadius: '0 8px 8px 0', borderLeft: `3px solid ${item.color}`, bgcolor: isDark ? `${item.color}08` : `${item.color}06` }}>
@@ -695,7 +695,7 @@ export default function Dashboard() {
                       <YAxis tick={{ fontSize: 11 }} />
                       <ReTooltip content={<CustomTooltip />} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar dataKey="Contract" fill="#6366f1" name={t('contractValue')} radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Contract" fill="#D97706" name={t('contractValue')} radius={[4, 4, 0, 0]} />
                       <Bar dataKey="Billed" fill="#10b981" name={t('totalBilled')} radius={[4, 4, 0, 0]} />
                       <Bar dataKey="Paid" fill="#f59e0b" name={t('totalPaid')} radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -735,7 +735,7 @@ export default function Dashboard() {
                       <YAxis tick={{ fontSize: 11 }} />
                       <ReTooltip content={<CustomTooltip />} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Line type="monotone" dataKey="Works" stroke="#6366f1" name={t('totalWorks')} strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="Works" stroke="#D97706" name={t('totalWorks')} strokeWidth={2} dot={{ r: 4 }} />
                       <Line type="monotone" dataKey="Net" stroke="#10b981" name={t('netAmount')} strokeWidth={2} dot={{ r: 4 }} />
                     </LineChart>
                   </ResponsiveContainer>

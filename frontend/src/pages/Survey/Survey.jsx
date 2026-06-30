@@ -162,11 +162,11 @@ export default function Survey() {
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
           <Tooltip title={t('viewReadings')}>
-            <IconButton size="small" onClick={() => handlePointClick(params.row)} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => handlePointClick(params.row)} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <Visibility fontSize="small" />
             </IconButton>
           </Tooltip>
-          <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+          <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
             <Edit fontSize="small" />
           </IconButton>
           <IconButton size="small" onClick={() => setDeleteId(params.row.id)} sx={{ color: '#ef4444', bgcolor: 'rgba(239,68,68,0.08)' }}>
@@ -187,7 +187,7 @@ export default function Survey() {
     { field: 'actions', headerName: t('actions'), width: 120, sortable: false,
       renderCell: (params) => (
         <Stack direction="row" spacing={0.5}>
-          <IconButton size="small" onClick={() => { setEditReading(params.row); setReadingFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+          <IconButton size="small" onClick={() => { setEditReading(params.row); setReadingFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
             <Edit fontSize="small" />
           </IconButton>
           <IconButton size="small" onClick={() => setDeleteReadingId(params.row.id)} sx={{ color: '#ef4444', bgcolor: 'rgba(239,68,68,0.08)' }}>
@@ -271,7 +271,7 @@ export default function Survey() {
                 localeText={i18n.language === 'ar' ? arSD : enUS}
                 sx={{
                   '& .MuiDataGrid-row': { cursor: 'pointer' },
-                  '& .MuiDataGrid-row.selected': { bgcolor: 'rgba(99,102,241,0.08)' },
+                  '& .MuiDataGrid-row.selected': { bgcolor: 'rgba(217,119,6,0.08)' },
                 }}
               />
             </Box>

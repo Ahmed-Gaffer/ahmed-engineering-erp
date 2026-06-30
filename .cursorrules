@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════
-# .cursorrules — نظام استعادة الوعي التلقائي (اللقاح) · v11.1
+# .cursorrules — نظام استعادة الوعي التلقائي (اللقاح) · v11.2
 # يُحقن تلقائياً بواسطة الأداة (Cursor / أي IDE مشابه) في كل رسالة
 # ═══════════════════════════════════════════════════════
 
@@ -74,22 +74,17 @@
   الأعلى عند أي تعارض.
 * `.ai/protocols/PROMPT_AGENT_I.md` — منهجية "نسّاج النسيج" (Agent I) — Always-On،
   يكتب Executable DNA Spec ويفحص الامتثال.
+* `.ai/protocols/PROMPT_AGENT_H.md` — منهجية "السهل الممتنع" (Agent H) — خبير منطق الأعمال.
 * `.ai/AGENT_ACTIVE_STATE.md` — الحالة الحية، تُحدَّث تلقائياً من Agent G
   بعد كل بوابة، وتُقرأ في القسم 0 أعلاه.
 * `.ai/SYSTEM_DNA.md` — إن وُجد، خط الأساس المعماري الذي يقرأه Agent I.
 * `.ai/protocols/PROMPT_INIT.md` / `.ai/protocols/PROMPT_SURGICAL.md` / `.ai/protocols/PROMPT_SESSION_CLOSE.md`
-  / `.ai/protocols/PROMPT_GENESIS.md` — البروتوكولات الكاملة، يُستدعى المناسب منها
+  / `.ai/protocols/PROMPT_GENESIS.md` / `.ai/protocols/PROMPT_AGENT_H.md` — البروتوكولات الكاملة، يُستدعى المناسب منها
   تلقائياً عبر القسم 0، أو يدوياً من المستخدم عند الحاجة.
 
 ---
 
 ## القسم 2 — حارس التراجع داخل الجلسة (Mid-Session Drift Guard)
-
-> القسم 0 يحل مشكلة الانقطاع *بين* الجلسات. هذا القسم يعالج مشكلة
-> مختلفة: تراجع الالتزام بالبروتوكول *خلال نفس الجلسة الطويلة* —
-> "نص المهمة بوعي والنص التاني من غير وعي" يحدث أحياناً بدون أي
-> انقطاع فعلي، فقط بسبب امتلاء الكونتكست تدريجياً وتلاشي الانتباه
-> للتعليمات الطويلة في أول الـ system prompt.
 
 * قبل أن يبدأ Agent B في كتابة **أي** كود — أول مرة، أو بعد استكمال
   طويل، أو في أي نقطة لاحقة في نفس الجلسة — راجع ذهنياً وبسرعة:
@@ -105,45 +100,49 @@
 
 ---
 
-## القسم 3 — قواعد المشروع الخاصة (أضف/احتفظ بقواعدك هنا)
+## 🔴 القسم 3 — قواعد مشروع Engineering Management System
 
-> هذا القسم مخصص لقواعد الأسلوب/البنية الخاصة بمشروعك (لغة البرمجة،
-> أطر العمل، اتفاقيات تسمية إضافية، أوامر تشغيل محلية، إلخ) —
-> أي شيء **لا** يخص اللقاح أو منظومة الوكلاء. أي قواعد مشروع كانت
-> موجودة في `.cursorrules` قديم لديك، انسخها هنا أسفل هذا السطر دون
-> حذف، أو اطلب من Agent B دمجها عبر مهمة SURGICAL صغيرة.
+### المصدر الأول للهوية
+> اقرأ `brand_identity.json` في جذر المشروع قبل أي قرار تصميمي — هو
+> المرجع المطلق للألوان، المصطلحات، والهوية.
 
-<!-- ضع قواعد مشروعك الخاصة هنا -->
+### بيئة التشغيل والمعمارية الأساسية
+- Python 3.11+ · FastAPI · SQLAlchemy 2.0 async · SQLite (تطوير) / PostgreSQL (إنتاج)
+- Frontend: React 19 + MUI 9 + Vite
+- اختبارات الجودة: `pytest backend/tests -v` (تأكد من الحفاظ على نجاح الاختبارات الحالية)
+- البيئة الافتراضية: `.venv/`
 
-## قواعد مشروع Engineering Management System v3
+### الهوية البصرية وتجربة المستخدم (UI Engine)
+- **الطراز العام**: Corporate Luxury Minimalist (مظهر فخم، نظيف، وموجه للمستويات الإدارية العليا والاستشاريين).
+- **الألوان المعتمدة**: Deep Slate Navy #0F172A للخلفيات الحيوية، و Brushed Amber Gold #D97706 للتمييز اللوني والتنبيهات الدقيقة.
+- **تأثيرات الواجهة**: Daylight-Resistant Glassmorphic (backdrop-filter: blur(14px), background: rgba(255,255,255,0.75)) — يضمن وضوح الشاشات تحت إضاءة غرف الاجتماعات.
+- **يمنع منعاً باتاً** استخدام المسميات البلدي أو التنسيقات التقليدية الفقيرة.
+- **بروفايل المهندس**: كل Dashboard رئيسي يعرض: "Engineering Management System — Powered by Ahmed Gaffer, Principal System Architect"
 
-### بيئة التشغيل
-- Python 3.11+ · FastAPI · SQLAlchemy 2.0 async · SQLite (تطوير)
-- Frontend: React 19 + Vite + MUI X DataGrid
-- اختبارات: `pytest backend/tests -v` (حالياً 56)
-- virtualenv: `.venv/`
+### نمط الـ Entity والـ Architecture (LEGO v2)
+- كل كيان (Entity) يجب أن يتبع نمط الـ 4 ملفات بشكل صارم داخل مساره:
 
-### نمط الـ Entity
-كل entity يتبع 4 ملفات:
-```
-backend/app/<entity>/
-  models.py     ← SQLAlchemy model
-  schemas.py    ← Pydantic schemas
-  crud.py       ← GenericCRUD instance
-  api.py        ← FastAPI router
-```
+  ```
+  backend/app/<entity>/
+    models.py     ← SQLAlchemy model
+    schemas.py    ← Pydantic schemas
+    crud.py       ← GenericCRUD instance
+    api.py        ← FastAPI router
+  ```
 
-### قواعد الكود
-- لا import مباشر بين موديولين — استخدم LEGO v2 Connectors/EventBus
-- لا SECRET_KEY في الكود — من environment variable
-- GenericCRUD يوفر: list, get, create, update, delete, bulk_delete
-- API prefix: `/api/<entity>/`
-- كل CRUD endpoints محمية بـ `Depends(get_current_user)`
-- الكتابة تتطلب `require_role("admin", "engineer")`
-- الحذف يتطلب `require_role("admin")`
+- **استثناء واحد**: `engineering_features/` — موديول كبير له models/schemas/api.py موحدة.
+- **حظر الاستدعاء المباشر**: لا يُسمح بعمل `import` مباشر بين موديولين مستقلين في `modules/`. التخاطب وتبادل البيانات يمر أعمى وحصراً عبر `EventBus` و `Connectors`.
+- **الأمان والـ CRUD**: كل كيانات النظام تمر عبر `GenericCRUD`. الـ API prefix يكون دائماً `/api/<entity>/`.
+- جميع الـ Endpoints محمية بـ `Depends(get_current_user)`. عمليات الكتابة تتطلب `require_role("admin", "engineer")` وعمليات الحذف حكر على `require_role("admin")`.
+- لا يتم كتابة الـ SECRET_KEY في الكود أبداً، بل يُقرأ من ملف البيئة المحمي.
 
-### الأوامر السريعة
-- تشغيل التطبيق: `uvicorn main:app --reload` (من الجذر)
-- تشغيل الاختبارات: `pytest backend/tests -v`
-- بناء الفرونت: `cd frontend && npm run build`
-- seed: `cd backend && python seed.py`
+### كيانات النظام الـ 23 المعتمدة (Engineering & Operations Matrix)
+- **الإدارة والتشغيل الهندسي**: SubmittalRegister, InspectionRequest, PunchListItem, Transmittal, WorkOrders, WorkOrderItems.
+- **التصنيفات، الأكواد، والسلامة**: CompanyBranch, ProjectCategory, CostCode, SafetyIncident, SafetyObservation, ProjectCodes, Phases, Drawings, DrawingRevisions, Documents.
+- **الماليات، الحسابات والكميات**: IPCHeader, IPCDetail, BOQItem, Contract, PaymentCertificates, Contractors, Subcontractors, Employees, DailyReports, Schedules (WBS).
+
+### الأوامر السريعة للمشروع
+- تشغيل التطبيق (Backend): `uvicorn main:app --reload` (يُنفذ من `backend/`)
+- تشغيل اختبارات المنظومة: `pytest backend/tests -v`
+- بناء واجهة المستخدم (Frontend): `cd frontend && npm run build`
+- تغذية البيانات الأولية: `cd backend && python seed.py`

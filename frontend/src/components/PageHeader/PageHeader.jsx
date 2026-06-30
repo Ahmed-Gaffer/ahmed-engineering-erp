@@ -25,7 +25,7 @@ export default function PageHeader({
             {icon && (
               <Box sx={{
                 width: 40, height: 40, borderRadius: 2, display: 'flex', alignItems: 'center',
-                justifyContent: 'center', bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1',
+                justifyContent: 'center', bgcolor: 'rgba(15,23,42,0.1)', color: '#D97706',
               }}>
                 {icon}
               </Box>

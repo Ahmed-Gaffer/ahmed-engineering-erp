@@ -22,8 +22,8 @@ const testTypeColors = {
   concrete_slump: { bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
   soil_compaction: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
   soil_proctor: { bg: 'rgba(239,68,68,0.15)', color: '#ef4444' },
-  soil_cbr: { bg: 'rgba(139,92,246,0.15)', color: '#8b5cf6' },
-  steel_tensile: { bg: 'rgba(34,211,238,0.15)', color: '#22d3ee' },
+  soil_cbr: { bg: 'rgba(139,92,246,0.15)', color: '#D97706' },
+  steel_tensile: { bg: 'rgba(34,211,238,0.15)', color: '#F59E0B' },
   steel_bend: { bg: 'rgba(236,72,153,0.15)', color: '#ec4899' },
   other: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
 };
@@ -151,13 +151,13 @@ export default function MaterialTests() {
           )}
           {params.row.status === 'tested' && (
             <Tooltip title={t('verify')}>
-              <IconButton size="small" onClick={() => { setActionDialog({ open: true, id: params.row.id, action: 'verify' }); setActionData({ passed: true }); }} sx={{ color: '#8b5cf6', bgcolor: 'rgba(139,92,246,0.08)' }}>
+              <IconButton size="small" onClick={() => { setActionDialog({ open: true, id: params.row.id, action: 'verify' }); setActionData({ passed: true }); }} sx={{ color: '#D97706', bgcolor: 'rgba(139,92,246,0.08)' }}>
                 <Assignment fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
           {params.row.status === 'requested' && (
-            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <Edit fontSize="small" />
             </IconButton>
           )}

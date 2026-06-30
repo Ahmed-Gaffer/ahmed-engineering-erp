@@ -1,0 +1,80 @@
+/* Engineering Management System v3 — Glassmorphism Utility Classes */
+
+.ems-glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ems-glass-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+}
+
+.ems-gold-bar {
+  height: 3px;
+  background: linear-gradient(90deg, #D97706, #F59E0B);
+  border-radius: 0 0 4px 4px;
+}
+
+.ems-gold-text {
+  color: #D97706;
+  font-weight: 600;
+}
+
+.ems-nav-gradient {
+  background: linear-gradient(135deg, #0F172A, #1E293B);
+}
+
+.ems-btn-primary {
+  background: linear-gradient(135deg, #0F172A, #1E293B);
+  color: #FFFFFF;
+  border-radius: 8px;
+  border: none;
+  padding: 8px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ems-btn-primary:hover {
+  background: linear-gradient(135deg, #1E293B, #334155);
+}
+
+.ems-btn-gold {
+  background: linear-gradient(135deg, #D97706, #F59E0B);
+  color: #FFFFFF;
+  border-radius: 8px;
+  border: none;
+  padding: 8px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ems-btn-gold:hover {
+  background: linear-gradient(135deg, #B45309, #D97706);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.25);
+}

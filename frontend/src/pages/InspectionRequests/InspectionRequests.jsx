@@ -14,9 +14,9 @@ import { useSnackbar } from 'notistack';
 import { useAuth } from '../../contexts/AuthContext';
 
 const statusColors = {
-  planned: { bg: 'rgba(99,102,241,0.15)', color: '#818cf8' },
+  planned: { bg: 'rgba(217,119,6,0.15)', color: '#D97706' },
   submitted: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
-  inspected: { bg: 'rgba(99,102,241,0.2)', color: '#6366f1' },
+  inspected: { bg: 'rgba(15,23,42,0.2)', color: '#D97706' },
   passed: { bg: 'rgba(16,185,129,0.2)', color: '#10b981' },
   failed: { bg: 'rgba(239,68,68,0.2)', color: '#ef4444' },
   re_inspection: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
@@ -147,14 +147,14 @@ export default function InspectionRequests() {
                   <Send fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+              <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                 <Edit fontSize="small" />
               </IconButton>
             </>
           )}
           {params.row.status === 'submitted' && (
             <Tooltip title={t('inspect')}>
-              <IconButton size="small" onClick={() => setInspectDialog({ open: true, id: params.row.id })} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+              <IconButton size="small" onClick={() => setInspectDialog({ open: true, id: params.row.id })} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
                 <Visibility fontSize="small" />
               </IconButton>
             </Tooltip>

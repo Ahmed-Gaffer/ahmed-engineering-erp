@@ -51,7 +51,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const incidentStatusColors = {
   reported: { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
   investigating: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
-  action_taken: { bg: 'rgba(139,92,246,0.15)', color: '#8b5cf6' },
+  action_taken: { bg: 'rgba(139,92,246,0.15)', color: '#D97706' },
   closed: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
 };
 
@@ -84,7 +84,7 @@ const KpiCard = ({ title, value, color, icon, subtitle }) => (
 
 const ChartCard = ({ title, subtitle, children }) => (
   <Card sx={{ height: '100%', position: 'relative', overflow: 'hidden' }}>
-    <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #6366f1, #818cf8)', opacity: 0.6 }} />
+    <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: 'linear-gradient(90deg, #D97706, #D97706)', opacity: 0.6 }} />
     <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: { xs: 2, md: 2.5 } }}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
         <Box>
@@ -193,7 +193,7 @@ export default function HSEDashboard() {
               <KpiCard title={t('totalObservations')} value={data.total_observations || 0} icon={<Visibility />} color="#3b82f6" subtitle={t('allRecorded')} />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <KpiCard title={t('openObservations')} value={(data.observations_by_status || []).filter(s => s.status !== 'closed').reduce((sum, s) => sum + s.count, 0)} icon={<Assignment />} color="#8b5cf6" subtitle={t('notClosed')} />
+              <KpiCard title={t('openObservations')} value={(data.observations_by_status || []).filter(s => s.status !== 'closed').reduce((sum, s) => sum + s.count, 0)} icon={<Assignment />} color="#D97706" subtitle={t('notClosed')} />
             </Grid>
           </Grid>
 
@@ -233,7 +233,7 @@ export default function HSEDashboard() {
                         <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                         <ReTooltip content={<CustomTooltip />} />
-                        <Bar dataKey="value" name={t('count')} fill="#6366f1" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" name={t('count')} fill="#D97706" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}

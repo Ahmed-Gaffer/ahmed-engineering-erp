@@ -5,11 +5,12 @@ from app.database import get_db
 from app.dependencies import require_role
 from app.core.audit import AuditLog
 from app.auth.models import User
+from .schemas import ActivityListResponse, ActivityResponse
 
 router = APIRouter(prefix="/api/activities", tags=["activities"])
 
 
-@router.get("/")
+@router.get("/", response_model=ActivityListResponse)
 async def list_activities(
     page: int = Query(1, ge=1),
     limit: int = Query(30, ge=1, le=100),
@@ -38,11 +39,13 @@ async def list_activities(
     result = await db.execute(query)
     rows = result.all()
 
-    items = [{
-        "id": r.id, "user_id": r.user_id, "username": r.username or "system",
-        "action": r.action, "entity_type": r.entity_type, "entity_id": r.entity_id,
-        "details": r.details,
-        "created_at": r.created_at.isoformat() if r.created_at else None,
-    } for r in rows]
+    items = [
+        ActivityResponse(
+            id=r.id, user_id=r.user_id, username=r.username or "system",
+            action=r.action, entity_type=r.entity_type, entity_id=r.entity_id,
+            details=r.details,
+            created_at=r.created_at,
+        ) for r in rows
+    ]
 
-    return {"items": items, "total": total, "page": page, "limit": limit}
+    return ActivityListResponse(items=items, total=total, page=page, limit=limit)

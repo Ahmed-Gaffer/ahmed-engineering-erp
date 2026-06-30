@@ -7,12 +7,12 @@ const getTheme = (lang, mode = 'light') => {
     direction: lang === 'ar' ? 'rtl' : 'ltr',
     palette: {
       mode,
-      primary: { main: '#6366f1', light: '#818cf8', dark: '#4f46e5', contrastText: '#fff' },
-      secondary: { main: '#06b6d4', light: '#22d3ee', dark: '#0891b2', contrastText: '#fff' },
+      primary: { main: '#1E293B', light: '#334155', dark: '#0F172A', contrastText: '#fff' },
+      secondary: { main: '#D97706', light: '#F59E0B', dark: '#B45309', contrastText: '#fff' },
       success: { main: '#10b981', light: '#34d399', dark: '#059669', contrastText: '#fff' },
-      warning: { main: '#f59e0b', light: '#fbbf24', dark: '#d97706', contrastText: '#fff' },
+      warning: { main: '#D97706', light: '#F59E0B', dark: '#B45309', contrastText: '#fff' },
       error: { main: '#ef4444', light: '#f87171', dark: '#dc2626', contrastText: '#fff' },
-      info: { main: '#3b82f6', light: '#60a5fa', dark: '#2563eb', contrastText: '#fff' },
+      info: { main: '#0F172A', light: '#1E293B', dark: '#0F172A', contrastText: '#fff' },
       ...(isDark ? {
         background: { default: '#0f172a', paper: '#1e293b' },
         text: { primary: '#f1f5f9', secondary: '#94a3b8' },
@@ -25,8 +25,11 @@ const getTheme = (lang, mode = 'light') => {
     },
     typography: {
       fontFamily: lang === 'ar' ? '"Cairo", sans-serif' : '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-      h4: { fontWeight: 700, letterSpacing: '-0.02em' },
-      h5: { fontWeight: 600, letterSpacing: '-0.01em' },
+      h1: { fontFamily: '"Montserrat", "Inter", sans-serif', fontWeight: 800, letterSpacing: '-0.03em' },
+      h2: { fontFamily: '"Montserrat", "Inter", sans-serif', fontWeight: 700, letterSpacing: '-0.02em' },
+      h3: { fontFamily: '"Montserrat", "Inter", sans-serif', fontWeight: 700, letterSpacing: '-0.02em' },
+      h4: { fontFamily: '"Montserrat", "Inter", sans-serif', fontWeight: 700, letterSpacing: '-0.02em' },
+      h5: { fontFamily: '"Montserrat", "Inter", sans-serif', fontWeight: 600, letterSpacing: '-0.01em' },
       h6: { fontWeight: 600 },
       body1: { fontSize: '0.9375rem', lineHeight: 1.6 },
       body2: { fontSize: '0.8125rem', lineHeight: 1.5 },
@@ -95,7 +98,7 @@ const getTheme = (lang, mode = 'light') => {
       },
       MuiButtonBase: {
         defaultProps: { disableRipple: false },
-        styleOverrides: { root: { '&.Mui-focusVisible': { outline: `2px solid #6366f1`, outlineOffset: 2 } } },
+        styleOverrides: {         root: { '&.Mui-focusVisible': { outline: `2px solid #D97706`, outlineOffset: 2 } } },
       },
       MuiButton: {
         styleOverrides: {
@@ -105,8 +108,8 @@ const getTheme = (lang, mode = 'light') => {
             '&:hover': { transform: 'translateY(-1px)' },
             '&:active': { transform: 'translateY(0)' },
           },
-          containedPrimary: { background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(99,102,241,0.35)' } },
-          containedSecondary: { background: 'linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(6,182,212,0.35)' } },
+          containedPrimary: { background: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(30,41,59,0.35)' } },
+          containedSecondary: { background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(217,119,6,0.35)' } },
           containedSuccess: { background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(16,185,129,0.35)' } },
           containedWarning: { background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#1e293b', '&:hover': { boxShadow: '0 6px 20px rgba(245,158,11,0.35)' } },
           containedError: { background: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(239,68,68,0.35)' } },
@@ -165,8 +168,8 @@ const getTheme = (lang, mode = 'light') => {
             '& .MuiDataGrid-cell': { py: 1.5, '&:focus': { outline: 'none' } },
             '& .MuiDataGrid-row': {
               transition: 'background-color 0.2s ease',
-              '&:hover': { backgroundColor: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.03)' },
-              '&.Mui-selected': { backgroundColor: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.06)' },
+                '&:hover': { backgroundColor: isDark ? 'rgba(217,119,6,0.08)' : 'rgba(217,119,6,0.03)' },
+                '&.Mui-selected': { backgroundColor: isDark ? 'rgba(217,119,6,0.15)' : 'rgba(217,119,6,0.06)' },
             },
             '& .MuiDataGrid-columnHeaders': {
               borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
@@ -188,7 +191,7 @@ const getTheme = (lang, mode = 'light') => {
               backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fff',
               transition: 'box-shadow 0.2s ease, background-color 0.2s ease',
               '&:hover': { boxShadow: `0 2px 8px ${isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)'}` },
-              '&.Mui-focused': { boxShadow: '0 2px 12px rgba(99,102,241,0.12)' },
+              '&.Mui-focused': { boxShadow: '0 2px 12px rgba(217,119,6,0.12)' },
             },
             '& .MuiInputBase-input': {
               color: isDark ? '#f1f5f9' : undefined,
@@ -223,8 +226,8 @@ const getTheme = (lang, mode = 'light') => {
         styleOverrides: {
           root: { fontWeight: 600, fontSize: '0.75rem', borderRadius: 6, transition: 'all 0.2s ease' },
           filled: {
-            '&.MuiChip-colorPrimary': { backgroundColor: isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.1)', color: isDark ? '#a5b4fc' : '#4f46e5' },
-            '&.MuiChip-colorSecondary': { backgroundColor: isDark ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.1)', color: isDark ? '#67e8f9' : '#0891b2' },
+            '&.MuiChip-colorPrimary': { backgroundColor: isDark ? 'rgba(217,119,6,0.2)' : 'rgba(217,119,6,0.1)', color: isDark ? '#F59E0B' : '#D97706' },
+            '&.MuiChip-colorSecondary': { backgroundColor: isDark ? 'rgba(217,119,6,0.2)' : 'rgba(217,119,6,0.1)', color: isDark ? '#F59E0B' : '#D97706' },
             '&.MuiChip-colorSuccess': { backgroundColor: isDark ? 'rgba(16,185,129,0.2)' : 'rgba(16,185,129,0.12)', color: isDark ? '#34d399' : '#059669' },
             '&.MuiChip-colorWarning': { backgroundColor: isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.12)', color: isDark ? '#fbbf24' : '#b45309' },
             '&.MuiChip-colorError': { backgroundColor: isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.12)', color: isDark ? '#fca5a5' : '#dc2626' },
@@ -232,7 +235,7 @@ const getTheme = (lang, mode = 'light') => {
           },
           outlined: {
             borderWidth: 1.5,
-            '&.MuiChip-colorPrimary': { borderColor: isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.3)', color: isDark ? '#a5b4fc' : '#6366f1' },
+            '&.MuiChip-colorPrimary': { borderColor: isDark ? 'rgba(217,119,6,0.4)' : 'rgba(217,119,6,0.3)', color: isDark ? '#F59E0B' : '#D97706' },
             '&.MuiChip-colorSuccess': { borderColor: isDark ? 'rgba(16,185,129,0.4)' : 'rgba(16,185,129,0.3)', color: isDark ? '#34d399' : '#10b981' },
             '&.MuiChip-colorWarning': { borderColor: isDark ? 'rgba(245,158,11,0.4)' : 'rgba(245,158,11,0.3)', color: isDark ? '#fbbf24' : '#f59e0b' },
             '&.MuiChip-colorError': { borderColor: isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.3)', color: isDark ? '#fca5a5' : '#ef4444' },
@@ -246,7 +249,7 @@ const getTheme = (lang, mode = 'light') => {
       MuiInputLabel: {
         styleOverrides: {
           root: {
-            '&.Mui-focused': { color: '#6366f1' },
+            '&.Mui-focused': { color: '#D97706' },
           },
         },
       },
@@ -255,14 +258,14 @@ const getTheme = (lang, mode = 'light') => {
           root: {
             textTransform: 'none', fontWeight: 600, fontSize: '0.875rem',
             borderRadius: 8, minHeight: 40, padding: '6px 16px',
-            '&.Mui-selected': { color: '#6366f1' },
-            '&.Mui-focusVisible': { outline: '2px solid #6366f1', outlineOffset: -2 },
+            '&.Mui-selected': { color: '#D97706' },
+            '&.Mui-focusVisible': { outline: '2px solid #D97706', outlineOffset: -2 },
           },
         },
       },
       MuiTabs: {
         styleOverrides: {
-          indicator: { height: 3, borderRadius: '3px 3px 0 0', background: 'linear-gradient(90deg, #6366f1, #818cf8)' },
+          indicator: { height: 3, borderRadius: '3px 3px 0 0', background: 'linear-gradient(90deg, #D97706, #F59E0B)' },
         },
       },
       MuiAlert: {
@@ -284,7 +287,7 @@ const getTheme = (lang, mode = 'light') => {
         styleOverrides: { root: { borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'}`, padding: 2 } },
       },
       MuiToggleButton: {
-        styleOverrides: { root: { textTransform: 'none', fontWeight: 600, borderRadius: 6, border: 'none', padding: '4px 14px', '&.Mui-selected': { backgroundColor: isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.1)', color: '#6366f1' } } },
+        styleOverrides: { root: { textTransform: 'none', fontWeight: 600, borderRadius: 6, border: 'none', padding: '4px 14px', '&.Mui-selected': { backgroundColor: isDark ? 'rgba(217,119,6,0.2)' : 'rgba(217,119,6,0.1)', color: '#D97706' } } },
       },
       MuiAutocomplete: {
         styleOverrides: {
@@ -299,17 +302,17 @@ const getTheme = (lang, mode = 'light') => {
         },
       },
       MuiMenuItem: {
-        styleOverrides: { root: { borderRadius: 6, margin: '2px 4px', padding: '8px 12px', '&.Mui-selected': { backgroundColor: isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.08)' }, '&:hover': { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' } } },
+        styleOverrides: { root: { borderRadius: 6, margin: '2px 4px', padding: '8px 12px', '&.Mui-selected': { backgroundColor: isDark ? 'rgba(217,119,6,0.15)' : 'rgba(217,119,6,0.08)' }, '&:hover': { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' } } },
       },
       MuiSelect: {
         styleOverrides: { root: { borderRadius: 8 }, select: { padding: '8px 14px' } },
       },
       MuiCheckbox: {
-        styleOverrides: { root: { borderRadius: 6, '&.Mui-checked': { color: '#6366f1' } } },
+        styleOverrides: { root: { borderRadius: 6, '&.Mui-checked': { color: '#D97706' } } },
       },
       MuiSwitch: {
         styleOverrides: {
-          root: { width: 42, height: 26, padding: 0, '& .MuiSwitch-switchBase': { padding: 0, margin: 2, '&.Mui-checked': { transform: 'translateX(16px)', color: '#fff', '&+.MuiSwitch-track': { backgroundColor: '#6366f1', opacity: 1 } } } },
+          root: { width: 42, height: 26, padding: 0, '& .MuiSwitch-switchBase': { padding: 0, margin: 2, '&.Mui-checked': { transform: 'translateX(16px)', color: '#fff', '&+.MuiSwitch-track': { backgroundColor: '#D97706', opacity: 1 } } } },
           thumb: { width: 22, height: 22, boxShadow: '0 2px 4px rgba(0,0,0,0.2)' },
           track: { borderRadius: 13, backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)', opacity: 1 },
         },
@@ -321,8 +324,8 @@ const getTheme = (lang, mode = 'light') => {
         styleOverrides: {
           root: { borderRadius: 4, height: 6, backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' },
           bar: { borderRadius: 4 },
-          barColorPrimary: { background: 'linear-gradient(90deg, #6366f1, #818cf8)' },
-          barColorSecondary: { background: 'linear-gradient(90deg, #06b6d4, #22d3ee)' },
+          barColorPrimary: { background: 'linear-gradient(90deg, #1E293B, #334155)' },
+          barColorSecondary: { background: 'linear-gradient(90deg, #D97706, #F59E0B)' },
         },
       },
       MuiBadge: {
@@ -342,7 +345,7 @@ const getTheme = (lang, mode = 'light') => {
           root: {
             transition: 'background-color 0.15s ease',
             '&:hover': { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' },
-            '&.Mui-selected': { backgroundColor: isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.04)' },
+            '&.Mui-selected': { backgroundColor: isDark ? 'rgba(217,119,6,0.1)' : 'rgba(217,119,6,0.04)' },
           },
         },
       },
@@ -362,10 +365,10 @@ const getTheme = (lang, mode = 'light') => {
         styleOverrides: { root: { borderRadius: 10, fontWeight: 500 } },
       },
       MuiStepLabel: {
-        styleOverrides: { label: { fontWeight: 600, '&.Mui-active': { color: '#6366f1' }, '&.Mui-completed': { color: '#10b981' } } },
+        styleOverrides: { label: { fontWeight: 600, '&.Mui-active': { color: '#D97706' }, '&.Mui-completed': { color: '#10b981' } } },
       },
       MuiStepIcon: {
-        styleOverrides: { root: { '&.Mui-active': { color: '#6366f1' }, '&.Mui-completed': { color: '#10b981' } } },
+        styleOverrides: { root: { '&.Mui-active': { color: '#D97706' }, '&.Mui-completed': { color: '#10b981' } } },
       },
       MuiBreadcrumbs: {
         styleOverrides: { separator: { color: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' } },

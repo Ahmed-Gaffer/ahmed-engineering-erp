@@ -21,7 +21,7 @@ const permitTypeColors = {
   hot_work: { bg: 'rgba(239,68,68,0.15)', color: '#ef4444' },
   excavation: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b' },
   height: { bg: 'rgba(59,130,246,0.15)', color: '#3b82f6' },
-  confined_space: { bg: 'rgba(139,92,246,0.15)', color: '#8b5cf6' },
+  confined_space: { bg: 'rgba(139,92,246,0.15)', color: '#D97706' },
   electrical: { bg: 'rgba(245,158,11,0.2)', color: '#eab308' },
   lifting: { bg: 'rgba(16,185,129,0.15)', color: '#10b981' },
   other: { bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
@@ -169,7 +169,7 @@ export default function Permits() {
           )}
           {params.row.status === 'approved' && (
             <Tooltip title={t('issue')}>
-              <IconButton size="small" onClick={() => handleAction(params.row.id, 'issue')} sx={{ color: '#8b5cf6', bgcolor: 'rgba(139,92,246,0.08)' }}>
+              <IconButton size="small" onClick={() => handleAction(params.row.id, 'issue')} sx={{ color: '#D97706', bgcolor: 'rgba(139,92,246,0.08)' }}>
                 <Send fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -196,7 +196,7 @@ export default function Permits() {
             </Tooltip>
           )}
           {params.row.status === 'requested' && (
-            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#6366f1', bgcolor: 'rgba(99,102,241,0.08)' }}>
+            <IconButton size="small" onClick={() => { setEditItem(params.row); setFormOpen(true); }} sx={{ color: '#D97706', bgcolor: 'rgba(217,119,6,0.08)' }}>
               <Edit fontSize="small" />
             </IconButton>
           )}

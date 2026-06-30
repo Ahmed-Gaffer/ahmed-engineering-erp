@@ -1,8 +1,8 @@
 import { Card, CardContent, Typography, Stack, Box, Chip, useTheme } from '@mui/material';
 
 const gradientMap = {
-  primary: 'linear-gradient(135deg, #6366f1, #818cf8)',
-  secondary: 'linear-gradient(135deg, #06b6d4, #22d3ee)',
+  primary: 'linear-gradient(135deg, #0F172A, #1E293B)',
+  secondary: 'linear-gradient(135deg, #D97706, #F59E0B)',
   success: 'linear-gradient(135deg, #10b981, #34d399)',
   warning: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
   error: 'linear-gradient(135deg, #ef4444, #f87171)',
@@ -10,7 +10,7 @@ const gradientMap = {
 };
 
 const chipBgMap = {
-  primary: 'rgba(99,102,241,0.1)',
+  primary: 'rgba(15,23,42,0.1)',
   secondary: 'rgba(6,182,212,0.1)',
   success: 'rgba(16,185,129,0.1)',
   warning: 'rgba(245,158,11,0.1)',
@@ -39,8 +39,8 @@ export default function StatsCard({ title, value, icon, color = 'primary', trend
             : '0 24px 28px rgba(0,0,0,0.06), 0 12px 12px rgba(0,0,0,0.03)',
         },
         '&:active': onClick ? { transform: 'translateY(-2px) scale(0.99)' } : undefined,
-        backgroundColor: isDark ? 'rgba(30,30,40,0.95)' : undefined,
-        backdropFilter: onClick ? 'blur(0px)' : undefined,
+        backgroundColor: isDark ? 'rgba(30,30,40,0.75)' : 'rgba(255,255,255,0.7)',
+        backdropFilter: 'blur(12px)',
       }}
     >
       <Box sx={{
@@ -79,7 +79,7 @@ export default function StatsCard({ title, value, icon, color = 'primary', trend
             width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center',
             justifyContent: 'center', flexShrink: 0,
             background: isDark
-              ? `linear-gradient(135deg, ${color === 'primary' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.08)'}, ${color === 'primary' ? 'rgba(129,140,248,0.15)' : 'rgba(255,255,255,0.03)'})`
+              ? `linear-gradient(135deg, ${color === 'primary' ? 'rgba(15,23,42,0.2)' : 'rgba(255,255,255,0.08)'}, ${color === 'primary' ? 'rgba(129,140,248,0.15)' : 'rgba(255,255,255,0.03)'})`
               : `linear-gradient(135deg, ${chipBgMap[color]}, rgba(255,255,255,0.5))`,
             backdropFilter: 'blur(8px)',
             border: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(255,255,255,0.8)',
