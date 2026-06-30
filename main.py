@@ -65,8 +65,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Engineering Management System",
-    description="نظام إدارة المشاريع الهندسية -- LEGO v2 Modular Architecture",
+    title="360 Engineering ERP",
+    description="360 Engineering ERP — APEX Enterprise Platform. LEGO v2 Modular Architecture",
     version="3.0.0",
     lifespan=lifespan
 )

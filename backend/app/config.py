@@ -2,12 +2,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 import os
 import secrets
+from pathlib import Path
 
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = BACKEND_DIR / "engineering.db"
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
-    DATABASE_URL: str = "sqlite+aiosqlite:///./engineering.db"
+    DATABASE_URL: str = f"sqlite+aiosqlite:///{DB_PATH.as_posix()}"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "") or secrets.token_hex(32)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -26,7 +29,7 @@ class AGCoreSettings(BaseSettings):
     CHIEF_SYSTEM_ARCHITECT: str = "Ahmed Gaffer"
     ARCHITECT_ROLE: str = "Principal System Architect & Technical Provider"
 
-    DATABASE_URL: str = Field(default="sqlite+aiosqlite:///./engineering.db", alias="EMS_DATABASE_URL")
+    DATABASE_URL: str = Field(default=f"sqlite+aiosqlite:///{DB_PATH.as_posix()}", alias="EMS_DATABASE_URL")
     SECRET_KEY: str = Field(default=os.getenv("SECRET_KEY", ""), alias="EMS_SECRET_KEY")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440

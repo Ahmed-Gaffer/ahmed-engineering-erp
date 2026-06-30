@@ -7,12 +7,12 @@ const getTheme = (lang, mode = 'light') => {
     direction: lang === 'ar' ? 'rtl' : 'ltr',
     palette: {
       mode,
-      primary: { main: '#1E293B', light: '#334155', dark: '#0F172A', contrastText: '#fff' },
+      primary: { main: '#0F172A', light: '#1E293B', dark: '#0B1222', contrastText: '#fff' },
       secondary: { main: '#D97706', light: '#F59E0B', dark: '#B45309', contrastText: '#fff' },
       success: { main: '#10b981', light: '#34d399', dark: '#059669', contrastText: '#fff' },
       warning: { main: '#D97706', light: '#F59E0B', dark: '#B45309', contrastText: '#fff' },
       error: { main: '#ef4444', light: '#f87171', dark: '#dc2626', contrastText: '#fff' },
-      info: { main: '#0F172A', light: '#1E293B', dark: '#0F172A', contrastText: '#fff' },
+      info: { main: '#3b82f6', light: '#60a5fa', dark: '#2563eb', contrastText: '#fff' },
       ...(isDark ? {
         background: { default: '#0f172a', paper: '#1e293b' },
         text: { primary: '#f1f5f9', secondary: '#94a3b8' },
@@ -108,7 +108,7 @@ const getTheme = (lang, mode = 'light') => {
             '&:hover': { transform: 'translateY(-1px)' },
             '&:active': { transform: 'translateY(0)' },
           },
-          containedPrimary: { background: 'linear-gradient(135deg, #1E293B 0%, #334155 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(30,41,59,0.35)' } },
+          containedPrimary: { background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(15,23,42,0.35)' } },
           containedSecondary: { background: 'linear-gradient(135deg, #D97706 0%, #F59E0B 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(217,119,6,0.35)' } },
           containedSuccess: { background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', '&:hover': { boxShadow: '0 6px 20px rgba(16,185,129,0.35)' } },
           containedWarning: { background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', color: '#1e293b', '&:hover': { boxShadow: '0 6px 20px rgba(245,158,11,0.35)' } },
@@ -324,7 +324,7 @@ const getTheme = (lang, mode = 'light') => {
         styleOverrides: {
           root: { borderRadius: 4, height: 6, backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' },
           bar: { borderRadius: 4 },
-          barColorPrimary: { background: 'linear-gradient(90deg, #1E293B, #334155)' },
+          barColorPrimary: { background: 'linear-gradient(90deg, #0F172A, #1E293B)' },
           barColorSecondary: { background: 'linear-gradient(90deg, #D97706, #F59E0B)' },
         },
       },
