@@ -307,14 +307,11 @@ export default function Login() {
           </Tooltip>
         </Stack>
       </Box>
-      <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', py: 1.5, px: 2 }}>
-        <Divider sx={{ mb: 1, opacity: 0.3 }} />
-        <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
-          <Engineering sx={{ fontSize: '0.65rem', color: 'text.secondary', opacity: 0.4 }} />
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', opacity: 0.5, fontWeight: 300, letterSpacing: '0.02em' }}>
-            Engineering Management System v3 — Designed &amp; Engineered by Ahmed Gaffer — Principal System Architect
-          </Typography>
-        </Stack>
+      <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, textAlign: 'center', py: 1, px: 2 }}>
+        <Divider sx={{ mb: 0.5, opacity: 0.2 }} />
+        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', opacity: 0.4, fontWeight: 300, letterSpacing: '0.04em' }}>
+          360 Engineering ERP — APEX Enterprise
+        </Typography>
       </Box>
     </Box>
   );

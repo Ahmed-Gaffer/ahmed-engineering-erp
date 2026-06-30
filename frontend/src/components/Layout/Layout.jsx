@@ -184,7 +184,7 @@ export default function Layout() {
                 <Typography variant="caption" color="text.secondary">{user?.role || 'user'}</Typography>
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', opacity: 0.7 }}>
-                  Engineering Management System v3
+                  360 Engineering ERP — APEX Enterprise
                 </Typography>
                 <Typography variant="caption" color="primary" sx={{ fontSize: '0.6rem', display: 'block' }}>
                   Ahmed Gaffer — Principal System Architect

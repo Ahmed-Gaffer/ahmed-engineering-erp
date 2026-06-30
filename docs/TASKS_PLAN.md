@@ -45,4 +45,7 @@
 - ✅ EventBus مهاجر بالكامل — 32 استدعاء `_create_notification()` ← `emit_event()`
 - ✅ GenericCRUD مربوط لـ 12 entity (get/update/delete)
 - ✅ 15 مشروع حقيقي لشركة نجيده للمقاولات في قاعدة البيانات
+- ✅ Root cleanup: 15 ملف .md نُقلت إلى `docs/`، dead code أزيل (`db/`, `tests/`, `modules/inventory/`, `modules/finance/`, `modules/hr/employees/`, `core/shared/` empties)
+- ✅ Brand identity مضبوط: title ← "360 Engineering ERP | APEX Enterprise"، favicon حقيقي، إخفاء التوقيع من Login
+- ✅ Seed scripts موحّدة: `seed_demo.py` فقط
 - Users: `admin/admin123`, `engineer/eng123`, `viewer/view123`

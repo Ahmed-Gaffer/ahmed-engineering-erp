@@ -1,7 +1,7 @@
 # ENGINEERING_BUSINESS_RULES.md — قواعد منطق أعمال الهندسة
 ## Engineering Management System v3 · المستخلص من واقع النظام والمعايير الهندسية
 
-> ⚠️ **المرجع**: هذا الملف يُقرأ مع `brand_identity.json` (الهوية البصرية) و`architecture_blueprint.md` (المعمارية) لتكوين الصورة الكاملة.
+> ⚠️ **المرجع**: هذا الملف يُقرأ مع `brand_identity.json` (الهوية البصرية في الجذر) و`docs/architecture/architecture_blueprint.md` (المعمارية) لتكوين الصورة الكاملة.
 > **المهندس المعماري**: Ahmed Gaffer — Principal System Architect & Technical Provider
 
 ---

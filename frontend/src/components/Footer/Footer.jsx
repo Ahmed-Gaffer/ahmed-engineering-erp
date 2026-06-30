@@ -19,7 +19,7 @@ export default function Footer() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Engineering sx={{ fontSize: '0.75rem', color: 'text.secondary', opacity: 0.5 }} />
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', opacity: 0.6 }}>
-            Engineering Management System v3
+            360 Engineering ERP — APEX Enterprise
           </Typography>
         </Box>
         <Typography

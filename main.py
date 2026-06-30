@@ -99,7 +99,7 @@ app.include_router(workflow_router)
 async def health_check():
     return {
         "status": "healthy",
-        "system": "Engineering Management System v3",
+        "system": "360 Engineering ERP — APEX Enterprise",
         "architecture": "LEGO v2",
         "modules": module_registry.list_modules()
     }
