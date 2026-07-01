@@ -14,6 +14,7 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from app.database import get_db
 from app.dependencies import get_current_user, require_role
 from app.projects.models import Project
+from app.work_orders.models import WorkOrder
 
 from .models import (
     BOQItem, Contract, IPCHeader, IPCDetail,
@@ -1675,6 +1676,214 @@ async def report_dashboard_export(db: AsyncSession = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=dashboard_export.csv"},
     )
+
+
+@router.get("/reports/financial")
+async def report_financial_summary(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Contract))
+    contracts = result.scalars().all()
+    total_contract_value = sum(c.value for c in contracts)
+
+    boq_result = await db.execute(select(BOQItem))
+    boq_items = boq_result.scalars().all()
+    total_boq_value = sum(i.total_price for i in boq_items)
+
+    ipc_result = await db.execute(select(IPCHeader))
+    ipcs = ipc_result.scalars().all()
+    total_ipc_count = len(ipcs)
+    total_ipc_paid = sum(i.net_amount for i in ipcs if i.status == "paid")
+    total_ipc_amount = sum(i.net_amount for i in ipcs)
+
+    project_result = await db.execute(select(Project))
+    projects = project_result.scalars().all()
+    project_breakdown = []
+    for p in projects:
+        p_ipcs = [i for i in ipcs if i.project_id == p.id]
+        ipc_total = sum(i.net_amount for i in p_ipcs)
+        ipc_paid = sum(i.net_amount for i in p_ipcs if i.status == "paid")
+        project_breakdown.append({
+            "id": p.id, "code": p.code, "name": p.name,
+            "contract_value": float(p.budget_estimated or 0),
+            "ipc_total": float(ipc_total), "ipc_paid": float(ipc_paid),
+        })
+
+    status_counts = {}
+    for c in contracts:
+        status_counts[c.status] = status_counts.get(c.status, 0) + 1
+    contracts_by_status = [{"status": k, "count": v} for k, v in status_counts.items()]
+
+    ipc_status_counts = {}
+    for i in ipcs:
+        ipc_status_counts[i.status] = ipc_status_counts.get(i.status, 0) + 1
+    ipc_by_status = [{"status": k, "count": v} for k, v in ipc_status_counts.items()]
+
+    remaining_balance = total_contract_value - total_ipc_paid
+    return {
+        "total_contracts": len(contracts),
+        "total_ipcs": total_ipc_count,
+        "contracts_by_status": contracts_by_status,
+        "ipc_by_status": ipc_by_status,
+        "project_breakdown": project_breakdown,
+        "total_contract_value": float(total_contract_value),
+        "total_boq_value": float(total_boq_value),
+        "total_ipc_paid": float(total_ipc_paid),
+        "total_ipc_amount": float(total_ipc_amount),
+        "remaining_balance": float(remaining_balance),
+    }
+
+
+@router.get("/reports/progress")
+async def report_progress_summary(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Project))
+    projects = result.scalars().all()
+
+    total_projects = len(projects)
+    delayed = 0
+    total_progress = Decimal("0")
+    status_counts = {}
+    project_list = []
+    for p in projects:
+        status_counts[p.status] = status_counts.get(p.status, 0) + 1
+
+        sched_result = await db.execute(
+            select(func.avg(Schedule.progress_percent)).where(Schedule.project_id == p.id)
+        )
+        avg_raw = sched_result.scalar()
+        avg_prog = Decimal(str(avg_raw)) if avg_raw is not None else Decimal("0")
+        total_progress += avg_prog
+
+        ipc_result = await db.execute(
+            select(func.coalesce(func.sum(IPCHeader.net_amount), 0))
+            .where(IPCHeader.project_id == p.id, IPCHeader.status == "paid")
+        )
+        ipc_raw = ipc_result.scalar()
+        ipc_paid = Decimal(str(ipc_raw)) if ipc_raw is not None else Decimal("0")
+
+        if p.status == "delayed":
+            delayed += 1
+
+        project_list.append({
+            "id": p.id, "code": p.code, "name": p.name,
+            "schedule_progress": float(avg_prog),
+            "ipc_paid": float(ipc_paid),
+        })
+
+    avg_progress = float(total_progress / total_projects) if total_projects else 0
+    projects_by_status = [{"status": k, "count": v} for k, v in status_counts.items()]
+
+    return {
+        "total_projects": total_projects,
+        "delayed_projects": delayed,
+        "avg_progress": avg_progress,
+        "projects_by_status": projects_by_status,
+        "projects": project_list,
+    }
+
+
+@router.get("/reports/work-orders")
+async def report_work_orders(
+    status: str = Query(None),
+    priority: str = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    q = select(WorkOrder)
+    if status:
+        q = q.where(WorkOrder.status == status)
+    if priority:
+        q = q.where(WorkOrder.priority == priority)
+    result = await db.execute(q)
+    orders = result.scalars().all()
+
+    orders_list = []
+    for o in orders:
+        p = await db.get(Project, o.project_id)
+        orders_list.append({
+            "id": o.id, "wo_number": o.wo_number, "title": o.title,
+            "project_id": o.project_id, "project_name": p.name if p else "",
+            "priority": o.priority, "status": o.status,
+            "issue_date": str(o.issue_date) if o.issue_date else None,
+            "due_date": str(o.due_date) if o.due_date else None,
+            "total_amount": float(o.total_amount),
+        })
+
+    priority_counts = {}
+    status_counts = {}
+    for o in orders:
+        priority_counts[o.priority] = priority_counts.get(o.priority, 0) + 1
+        status_counts[o.status] = status_counts.get(o.status, 0) + 1
+
+    return {
+        "total": len(orders),
+        "orders": orders_list,
+        "by_priority": [{"priority": k, "count": v} for k, v in priority_counts.items()],
+        "by_status": [{"status": k, "count": v} for k, v in status_counts.items()],
+    }
+
+
+@router.get("/reports/schedules")
+async def report_schedules(
+    project_id: int = Query(None),
+    status: str = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    q = select(Schedule)
+    if project_id:
+        q = q.where(Schedule.project_id == project_id)
+    if status:
+        q = q.where(Schedule.status == status)
+    result = await db.execute(q)
+    schedules = result.scalars().all()
+
+    sched_list = []
+    total_progress = Decimal("0")
+    status_counts = {}
+    for s in schedules:
+        p = await db.get(Project, s.project_id)
+        sched_list.append({
+            "id": s.id, "project_id": s.project_id, "project_name": p.name if p else "",
+            "task_name": s.task_name, "start_date": str(s.start_date) if s.start_date else None,
+            "end_date": str(s.end_date) if s.end_date else None,
+            "duration_days": s.duration_days, "progress_percent": float(s.progress_percent),
+            "status": s.status, "responsible": s.responsible,
+        })
+        total_progress += Decimal(str(s.progress_percent)) if s.progress_percent is not None else Decimal("0")
+        status_counts[s.status] = status_counts.get(s.status, 0) + 1
+
+    return {
+        "total": len(schedules),
+        "schedules": sched_list,
+        "avg_progress": float(total_progress / len(schedules)) if schedules else 0,
+        "by_status": [{"status": k, "count": v} for k, v in status_counts.items()],
+    }
+
+
+@router.get("/reports/daily")
+async def report_daily_summary(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DailyReport))
+    reports = result.scalars().all()
+
+    report_list = []
+    total_manpower = 0
+    total_equipment = 0
+    for r in reports:
+        p = await db.get(Project, r.project_id)
+        report_list.append({
+            "id": r.id, "project_id": r.project_id, "project_name": p.name if p else "",
+            "report_date": str(r.report_date) if r.report_date else None,
+            "weather": r.weather, "manpower_count": r.manpower_count,
+            "equipment_count": r.equipment_count,
+            "work_description": r.work_description, "issues": r.issues,
+            "created_by": r.created_by,
+        })
+        total_manpower += (r.manpower_count or 0)
+        total_equipment += (r.equipment_count or 0)
+
+    return {
+        "total_reports": len(reports),
+        "total_manpower": total_manpower,
+        "total_equipment": total_equipment,
+        "reports": report_list,
+    }
 
 
 # ─── Non-Conformance Reports (NCR) ───

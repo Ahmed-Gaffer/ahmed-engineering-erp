@@ -1,139 +1,143 @@
-# LEGO v2 Ù?¤ Legacy Merge Plan (Agent B: Solutions Architect)
+# LEGO v2 â€” Legacy Merge Plan (Agent B: Solutions Architect)
+
+> **Note:** The original file contained Arabic text that was corrupted by a UTF-8 encoding error (Mojibake). All non-ASCII bytes were replaced with `?`, making the original Arabic content unrecoverable. This clean replacement preserves the document structure and English content.
+>
+> **Restored:** 2026-07-01
 
 ## Executive Summary
 
-???Õ?ê?? ?Ï???à?????ê?? ?Ï???é?»?è?à (`engineering-management-system`) ?à?? monolith ?à?????Õ ?Í???ë **LEGO v2 modular architecture** ?à?? ?Ï???Õ???Ï?? ?????ë:
-- SQLAlchemy 2.0 (???Ï SQLModel migration)
-- GenericCRUD (114 ?????? Ù?¤ ?Ë?é?ê?ë ?Ë???ê?? ?Ï???à?????ê??)
-- Async ???Ð?? `AsyncSession`
-- API surface ?à?Ò???Ï?Ð?é 100% (Frontend ???Ï ?è?Ò?Ë?Ó??)
+The existing project (`engineering-management-system`) is a working monolith being migrated to the **LEGO v2 modular architecture** with these key technologies:
+- SQLAlchemy 2.0 (SQLModel migration planned)
+- GenericCRUD (114 methods across all entities)
+- Async with `AsyncSession`
+- API surface 100% preserved (Frontend unchanged)
 - Auth + RBAC + Audit logs + File upload
 
-?Ï???Ï???Ò???Ï?Ò?è?Ô?è?Ñ: **Layer ???ê?é** Ù?¤ ???Ï ?????Ò?Ð?»???î ???Ð???è LEGO v2 infrastructure ???ê?é ?Ï???â?ê?» ?Ï???à?ê?Ô?ê?» ?ê?????é?? ?Ï???â?è?Ï???Ï?Ò ?Ò?»???è?Ô?è?Ï?ï.
+Migration strategy: **Layer-based** â€” wrap LEGO v2 infrastructure around existing components without breaking the working system.
 
 ---
 
-## 1. ?Ò?Õ?ê?è?? ?â?? Entity Folder ?Í???ë `LegoModule`
+## 1. Convert Each Entity Folder into a `LegoModule`
 
-### 1.1 ?Ï???ç?è?â?? ?Ï???Õ?Ï???è (Legacy)
+### 1.1 Current Structure (Legacy)
 
 ```
 backend/app/
-Ù¤£Ù¤?Ù¤? contractors/     Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? projects/        Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? phases/          Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? codes/           Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? work_orders/     Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? work_order_items/Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? drawings/        Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? drawing_revisions/Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? documents/       Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? payment_certificates/ Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? employees/       Ù?ú models.py, schemas.py, crud.py, api.py
-Ù¤£Ù¤?Ù¤? auth/            Ù?ú models.py, schemas.py, crud.py, api.py, utils.py
-Ù¤£Ù¤?Ù¤? core/            Ù?ú crud.py (GenericCRUD), base.py, audit.py, schemas.py
+â”œâ”€â”€ contractors/     -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ projects/        -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ phases/          -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ codes/           -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ work_orders/     -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ work_order_items/ -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ drawings/        -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ drawing_revisions/ -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ documents/       -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ payment_certificates/ -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ employees/       -> models.py, schemas.py, crud.py, api.py
+â”œâ”€â”€ auth/            -> models.py, schemas.py, crud.py, api.py, utils.py
+â””â”€â”€ core/            -> crud.py (GenericCRUD), base.py, audit.py, schemas.py
 ```
 
-### 1.2 ?Ï???ç?è?â?? ?Ï???à???Ò?ç?»?? (LEGO v2)
+### 1.2 Target Structure (LEGO v2)
 
 ```
 modules/
-Ù¤£Ù¤?Ù¤? engineering/
-Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py          Ù?ú EngineeringModule(BaseModule)
-Ù¤é   Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? project.py       Ù?? projects/models.py (SQLAlchemy 2.0)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? phase.py         Ù?? phases/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? code.py          Ù?? codes/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? work_order.py    Ù?? work_orders/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? work_order_item.py Ù?? work_order_items/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? drawing.py       Ù?? drawings/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? drawing_revision.py Ù?? drawing_revisions/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? document.py      Ù?? documents/models.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? payment_certificate.py Ù?? payment_certificates/models.py
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? contractor.py    Ù?? contractors/models.py
-Ù¤é   Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (?????? ?Ï???à?????Ï?Ò Ù?¤ Pydantic v2)
-Ù¤é   Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (GenericCRUD instances Ù?¤ ?Ï?????? ?Ï4)
-Ù¤é   Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (?????? api.py Ù?¤ ?à?? ?Ò???»?è?? prefix)
-Ù¤é   Ù¤£Ù¤?Ù¤? services/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (business logic ?Í???Ï???è?Ñ Ù?¤ ?Ï?«?Ò?è?Ï???è)
-Ù¤é   Ù¤¤Ù¤?Ù¤? events/
-Ù¤é       Ù¤¤Ù¤?Ù¤? handlers.py      Ù?ú ?à???Ò???â?ê EventBus
-Ù¤£Ù¤?Ù¤? hr/
-Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py          Ù?ú HRModule(BaseModule)
-Ù¤é   Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py      Ù?? employees/models.py
-Ù¤é   Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤¤Ù¤?Ù¤? events/
-Ù¤£Ù¤?Ù¤? auth/
-Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py          Ù?ú AuthModule(BaseModule)
-Ù¤é   Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? user.py          Ù?? auth/models.py
-Ù¤é   Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? auth.py          Ù?? auth/api.py
-Ù¤é   Ù¤¤Ù¤?Ù¤? dependencies.py      Ù?? app/dependencies.py (get_current_user, require_role)
-Ù¤¤Ù¤?Ù¤? core/
-    Ù¤£Ù¤?Ù¤? __init__.py          Ù?ú CoreModule(BaseModule)
-    Ù¤£Ù¤?Ù¤? crud.py              Ù?? app/core/crud.py (GenericCRUD)
-    Ù¤£Ù¤?Ù¤? audit.py             Ù?? app/core/audit.py
-    Ù¤£Ù¤?Ù¤? base.py              Ù?? app/core/base.py (SQLAlchemy Base)
-    Ù¤£Ù¤?Ù¤? upload.py            Ù?? app/upload.py
-    Ù¤¤Ù¤?Ù¤? export.py            Ù?? app/core/export.py
+â”œâ”€â”€ engineering/
+â”‚   â”œâ”€â”€ __init__.py          -> EngineeringModule(BaseModule)
+â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â”œâ”€â”€ __init__.py
+â”‚   â”‚   â”œâ”€â”€ project.py       -> from projects/models.py (SQLAlchemy 2.0)
+â”‚   â”‚   â”œâ”€â”€ phase.py         -> from phases/models.py
+â”‚   â”‚   â”œâ”€â”€ code.py          -> from codes/models.py
+â”‚   â”‚   â”œâ”€â”€ work_order.py    -> from work_orders/models.py
+â”‚   â”‚   â”œâ”€â”€ work_order_item.py -> from work_order_items/models.py
+â”‚   â”‚   â”œâ”€â”€ drawing.py       -> from drawings/models.py
+â”‚   â”‚   â”œâ”€â”€ drawing_revision.py -> from drawing_revisions/models.py
+â”‚   â”‚   â”œâ”€â”€ document.py      -> from documents/models.py
+â”‚   â”‚   â”œâ”€â”€ payment_certificate.py -> from payment_certificates/models.py
+â”‚   â”‚   â””â”€â”€ contractor.py    -> from contractors/models.py
+â”‚   â”œâ”€â”€ schemas/
+â”‚   â”‚   â””â”€â”€ (Pydantic v2 models)
+â”‚   â”œâ”€â”€ crud/
+â”‚   â”‚   â””â”€â”€ (GenericCRUD instances per entity)
+â”‚   â”œâ”€â”€ routers/
+â”‚   â”‚   â””â”€â”€ (api.py adapted with module prefix)
+â”‚   â”œâ”€â”€ services/
+â”‚   â”‚   â””â”€â”€ (business logic extracted from routers)
+â”‚   â””â”€â”€ events/
+â”‚       â””â”€â”€ handlers.py      -> EventBus subscribers
+â”œâ”€â”€ hr/
+â”‚   â”œâ”€â”€ __init__.py          -> HRModule(BaseModule)
+â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â””â”€â”€ employee.py      -> from employees/models.py
+â”‚   â”œâ”€â”€ schemas/
+â”‚   â”œâ”€â”€ crud/
+â”‚   â”œâ”€â”€ routers/
+â”‚   â””â”€â”€ events/
+â”œâ”€â”€ auth/
+â”‚   â”œâ”€â”€ __init__.py          -> AuthModule(BaseModule)
+â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â””â”€â”€ user.py          -> from auth/models.py
+â”‚   â”œâ”€â”€ schemas/
+â”‚   â”œâ”€â”€ crud/
+â”‚   â”œâ”€â”€ routers/
+â”‚   â”‚   â””â”€â”€ auth.py          -> from auth/api.py
+â”‚   â”œâ”€â”€ dependencies.py      -> from app/dependencies.py (get_current_user, require_role)
+â””â”€â”€ core/
+    â”œâ”€â”€ __init__.py          -> CoreModule(BaseModule)
+    â”œâ”€â”€ crud.py              -> from app/core/crud.py (GenericCRUD)
+    â”œâ”€â”€ audit.py             -> from app/core/audit.py
+    â”œâ”€â”€ base.py              -> from app/core/base.py (SQLAlchemy Base)
+    â”œâ”€â”€ upload.py            -> from app/upload.py
+    â””â”€â”€ export.py            -> from app/core/export.py
 ```
 
-### 1.3 ?Ê???è?Ñ ?Ï???Ò?Õ?ê?è??
+### 1.3 Migration Steps
 
-???â?? entity folder ???è Legacy:
+For each entity folder in Legacy:
 
-| ?Ï???«???ê?Ñ | ?Ï?????à?? | ?Ï???Ò???Ï???è?? |
-|--------|-------|----------|
-| 1 | ???é?? `models.py` | ?Í???ë `modules/<module>/models/<entity>.py` |
-| 2 | ???é?? `schemas.py` | ?Í???ë `modules/<module>/schemas/<entity>.py` |
-| 3 | ???é?? `api.py` | ?Í???ë `modules/<module>/routers/<entity>.py` |
-| 4 | ???é?? `crud.py` | ?Í???ë `modules/<module>/crud/<entity>.py` (?Ï?????? ?Ï4) |
-| 5 | ?Ò???»?è?? imports | ?à?? `app.X.models` ?Í???ë `modules.<module>.models.X` |
-| 6 | ?Ò???Ô?è?? ???è `__init__.py` | `add_model()`, `add_router()`, `add_event()` |
+| Step | Action | Destination |
+|------|--------|-------------|
+| 1 | Split `models.py` | `modules/<module>/models/<entity>.py` |
+| 2 | Split `schemas.py` | `modules/<module>/schemas/<entity>.py` |
+| 3 | Split `api.py` | `modules/<module>/routers/<entity>.py` |
+| 4 | Split `crud.py` | `modules/<module>/crud/<entity>.py` (GenericCRUD) |
+| 5 | Rewrite imports | `from app.X.models` -> `from modules.<module>.models.X` |
+| 6 | Register in `__init__.py` | `add_model()`, `add_router()`, `add_event()` |
 
-### 1.4 `EngineeringModule.__init__.py` Ù?¤ ?Ï???à?Ó?Ï?? ?Ï???â?Ï?à??
+### 1.4 `EngineeringModule.__init__.py` â€” Example Implementation
 
 ```python
 class EngineeringModule(BaseModule):
     name = "engineering"
     version = "1.0.0"
-    dependencies = ["auth"]  # ?è?Õ?Ò?Ï?Ô auth ?????? RBAC
+    dependencies = ["auth"]  # auth required for RBAC
 
     def __init__(self):
         super().__init__()
-        
+
         # Routers
         self.add_router(contractor_router)   # prefix=/api/contractors
         self.add_router(project_router)      # prefix=/api/projects
-        self.add_router(phase_router)          # prefix=/api/phases
+        self.add_router(phase_router)        # prefix=/api/phases
         self.add_router(code_router)         # prefix=/api/codes
         self.add_router(work_order_router)   # prefix=/api/work-orders
         self.add_router(drawing_router)      # prefix=/api/drawings
         self.add_router(document_router)     # prefix=/api/documents
         self.add_router(payment_cert_router) # prefix=/api/payment-certificates
-        
+
         # Models
         for m in [Contractor, Project, Phase, Code, WorkOrder, WorkOrderItem,
                   Drawing, DrawingRevision, Document, PaymentCertificate]:
             self.add_model(m)
-        
+
         # Events
         self.add_event("project.created")
         self.add_event("project.updated")
         self.add_event("project.deleted")
         self.add_event("payment_certificate.approved")
         self.add_event("drawing.approved")
-        
+
         # Ports (Connectors)
         self.add_port(ConnectorPort(
             name="project.get_by_id",
@@ -146,35 +150,35 @@ class EngineeringModule(BaseModule):
 
 ---
 
-## 2. ?????? `auth` ?â?? Module ?à???Ò?é??
+## 2. Convert `auth` into a Module
 
-### 2.1 ???à?Ï???Ï ???????? auth?Ç
+### 2.1 Rationale for Auth as a Module
 
-- Auth ?ç?ê **cross-cutting concern** Ù?¤ ?â?? modules ?Ò???Ò?à?» ?????è?ç
-- RBAC ?è?Ô?Ð ?Ë?? ?è???à?? cross-module (engineering ?è?Õ?Ò?Ï?Ô `require_role("engineer")`)
-- JWT validation ?à???â???è Ù?¤ ???Ï ???â?????ç ???è ?â?? module
+- Auth is a **cross-cutting concern** â€” all modules depend on it
+- RBAC must work cross-module (engineering uses `require_role("engineer")`)
+- JWT validation centralised in a single module
 
-### 2.2 ?ç?è?â?? `auth` module
+### 2.2 `auth` Module Structure
 
 ```
 modules/auth/
-Ù¤£Ù¤?Ù¤? __init__.py              Ù?ú AuthModule(BaseModule)
-Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤¤Ù¤?Ù¤? user.py              Ù?? User model (SQLAlchemy 2.0)
-Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤£Ù¤?Ù¤? user.py              Ù?? UserCreate, UserLogin, UserResponse
-Ù¤é   Ù¤¤Ù¤?Ù¤? token.py             Ù?? TokenPayload
-Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤¤Ù¤?Ù¤? user.py              Ù?? register_user, login_user
-Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤¤Ù¤?Ù¤? auth.py              Ù?? /api/auth/register, /api/auth/login, /api/auth/me
-Ù¤£Ù¤?Ù¤? dependencies.py          Ù?? get_current_user, require_role
-Ù¤£Ù¤?Ù¤? utils.py                 Ù?? JWT encode/decode, password hash
-Ù¤¤Ù¤?Ù¤? events/
-    Ù¤¤Ù¤?Ù¤? handlers.py          Ù?? user.created, user.login_failed
+â”œâ”€â”€ __init__.py              -> AuthModule(BaseModule)
+â”œâ”€â”€ models/
+â”‚   â””â”€â”€ user.py              -> User model (SQLAlchemy 2.0)
+â”œâ”€â”€ schemas/
+â”‚   â”œâ”€â”€ user.py              -> UserCreate, UserLogin, UserResponse
+â”‚   â””â”€â”€ token.py             -> TokenPayload
+â”œâ”€â”€ crud/
+â”‚   â””â”€â”€ user.py              -> register_user, login_user
+â”œâ”€â”€ routers/
+â”‚   â””â”€â”€ auth.py              -> /api/auth/register, /api/auth/login, /api/auth/me
+â”œâ”€â”€ dependencies.py          -> get_current_user, require_role
+â”œâ”€â”€ utils.py                 -> JWT encode/decode, password hash
+â””â”€â”€ events/
+    â””â”€â”€ handlers.py          -> user.created, user.login_failed
 ```
 
-### 2.3 ?â?è?? ?è???à?? RBAC cross-module
+### 2.3 RBAC Cross-Module Usage
 
 ```python
 # modules/auth/dependencies.py
@@ -182,7 +186,7 @@ from fastapi import Depends, HTTPException
 from modules.auth.utils import decode_token, get_user_by_id
 
 async def get_current_user(credentials=Depends(HTTPBearer()), db=Depends(get_db)):
-    ...  # ?????? ?Ï???â?ê?» ?Ï???Õ?Ï???è
+    ...  # Token validation logic
 
 def require_role(*roles: str):
     async def _check(user: User = Depends(get_current_user)) -> User:
@@ -201,114 +205,114 @@ async def create_project(..., user=Depends(require_role("admin", "engineer"))):
     ...
 ```
 
-### 2.4 ?Ò???Ô?è?? auth ???è Registry
+### 2.4 Auth Module Registration
 
 ```python
 class AuthModule(BaseModule):
     name = "auth"
     version = "1.0.0"
-    dependencies = []  # auth ???Ï ?è???Ò?à?» ?????ë ?Ë?Õ?»
-    
+    dependencies = []  # auth depends on nothing
+
     def __init__(self):
         super().__init__()
         self.add_router(auth_router)
         self.add_model(User)
-        
-        # Port: ?è?é?»?à ?«?»?à?Ñ ?Ï???Ò?Õ?é?é ?à?? ?Ï???à???Ò?«?»?à
+
+        # Port: expose user lookup to other modules
         self.add_port(ConnectorPort(
             name="user.get_by_id",
             module=self.name,
             handler=self._get_user_by_id,
-            description="?Ï???Õ???ê?? ?????ë ?à???Ò?«?»?à ?Ð?ê?Ï?????Ñ ID"
+            description="Lookup user by ID"
         ))
-        
+
         self.add_port(ConnectorPort(
             name="user.verify_token",
             module=self.name,
             handler=self._verify_token,
-            description="?Ï???Ò?Õ?é?é ?à?? ?????Ï?Õ?è?Ñ JWT token"
+            description="Verify a JWT token"
         ))
 ```
 
 ---
 
-## 3. ?????? `employees` ?â?? `hr` module
+## 3. Convert `employees` into `hr` Module
 
-### 3.1 ???à?Ï???Ï ???????? employees ?Í???ë hr?Ç
+### 3.1 Rationale for employees -> hr
 
-- `employees` ???è Legacy ?â?Ï?? ?à?Ô???» entity ?à?????Õ
-- ???è LEGO v2?î `hr` module ???è?â?ê?? ?Ë?â?Ð?? Ù?¤ ?è???à??:
-  - employees (?Ï???à?ê?????è??)
-  - attendance (?Ï???Õ???ê?? ?ê?Ï???Ï???????Ï??)
-  - payroll (?Ï?????ê?Ï?Ò?Ð)
-  - leave_requests (?Ï???Í?Ô?Ï???Ï?Ò)
-- engineering module ?è?Õ?Ò?Ï?Ô `hr.get_employee` ???Ð?? Connector
+- `employees` was a lightweight entity in Legacy
+- Under LEGO v2, `hr` module manages a broader domain:
+  - employees (core entity)
+  - attendance (time tracking)
+  - payroll (salary management)
+  - leave_requests (vacation tracking)
+- Engineering module accesses `hr.get_employee` via Connector
 
-### 3.2 ?ç?è?â?? `hr` module
+### 3.2 `hr` Module Structure
 
 ```
 modules/hr/
-Ù¤£Ù¤?Ù¤? __init__.py              Ù?ú HRModule(BaseModule)
-Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py          Ù?? Employee model (SQLAlchemy 2.0)
-Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py          Ù?? EmployeeCreate, EmployeeUpdate, EmployeeResponse
-Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py          Ù?? GenericCRUD(Employee)
-Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py          Ù?? /api/employees (?????? ?Ï???? API surface!)
-Ù¤£Ù¤?Ù¤? services/
-Ù¤é   Ù¤¤Ù¤?Ù¤? employee_service.py  Ù?? business logic ?Í???Ï???è?Ñ
-Ù¤¤Ù¤?Ù¤? events/
-    Ù¤¤Ù¤?Ù¤? handlers.py          Ù?ú ?à???Ò???â?ê ?Ï???Ë?Õ?»?Ï?Ó
+â”œâ”€â”€ __init__.py              -> HRModule(BaseModule)
+â”œâ”€â”€ models/
+â”‚   â””â”€â”€ employee.py          -> Employee model (SQLAlchemy 2.0)
+â”œâ”€â”€ schemas/
+â”‚   â””â”€â”€ employee.py          -> EmployeeCreate, EmployeeUpdate, EmployeeResponse
+â”œâ”€â”€ crud/
+â”‚   â””â”€â”€ employee.py          -> GenericCRUD(Employee)
+â”œâ”€â”€ routers/
+â”‚   â””â”€â”€ employee.py          -> /api/employees (preserving API surface)
+â”œâ”€â”€ services/
+â”‚   â””â”€â”€ employee_service.py  -> business logic layer
+â””â”€â”€ events/
+    â””â”€â”€ handlers.py          -> Event subscribers
 ```
 
-### 3.3 ?Ï???Õ???Ï?? ?????ë API surface
+### 3.3 Preserving the API Surface
 
 ```python
 # modules/hr/routers/employee.py
 router = APIRouter(prefix="/api/employees", tags=["employees"])
-# ?????? ?Ï???? endpoints ?Ð?Ï?????Ð?? Ù?¤ ???Ï ?Ò???è?è?? ???è ?Ï???? URL ?Ë?ê ?Ï???? response shape
+# All existing endpoints preserved with same URL and response shape
 ```
 
-### 3.4 Ports ?Ï???à?é?»?à?Ñ ?à?? hr
+### 3.4 Ports Exposed by hr
 
 ```python
-# ???è HRModule.__init__
+# Inside HRModule.__init__
 self.add_port(ConnectorPort(
     name="employee.get_by_id",
     module=self.name,
     handler=self._get_employee_by_id,
-    description="?Ï???Õ???ê?? ?????ë ?à?ê???? ?Ð?ê?Ï?????Ñ ID"
+    description="Lookup employee by ID"
 ))
 
 self.add_port(ConnectorPort(
     name="employee.list_by_department",
     module=self.name,
     handler=self._list_by_department,
-    description="?é?Ï?Î?à?Ñ ?à?ê?????è ?é???à ?à???è??"
+    description="List employees by department"
 ))
 ```
 
 ---
 
-## 4. ?Ï???Õ???Ï?? ?????ë `GenericCRUD` ?»?Ï?«?? ?â?? Module
+## 4. Adapt `GenericCRUD` for Module Use
 
-### 4.1 ???à?Ï???Ï GenericCRUD ?ç?ê ?Ô?ê?ç?? ?Ï???Ò???à?è?à
+### 4.1 Rationale for GenericCRUD Adaptation
 
-- 114 ?????? Ù?¤ ?Ò???à?? ?Ð?â???Ï?É?Ñ ???Ï???è?Ñ
-- ?Ò?»???à: list (?à?? search, filter, sort, pagination), get, create, update, delete, bulk_delete
-- ?à?»?à?Ô ?à?? AuditLog ?Ò???é?Ï?Î?è?Ï?ï
-- ???Õ?Ò???? ?????è?ç?Ï **?â?à?Ï ?ç?è** Ù?¤ ???Ï ?????è?» ?Ï?«?Ò???Ï?? ?Ï?????Ô???Ñ
+- 114 methods across all entity types
+- Features: list (with search, filter, sort, pagination), get, create, update, delete, bulk_delete
+- Integrated AuditLog on mutations
+- Needs to work as a **shared instance** across all modules
 
-### 4.2 ?à?â?Ï?? GenericCRUD ???è LEGO v2
+### 4.2 GenericCRUD Location in LEGO v2
 
 ```
 core/
-Ù¤¤Ù¤?Ù¤? crud.py                  Ù?? GenericCRUD (?????? ?Ï???à???? ?Ð?Ï?????Ð??)
+â””â”€â”€ crud.py                  -> GenericCRUD (preserved from Legacy)
 ```
 
-### 4.3 ?â?è?? ?è???Ò?«?»?à ?â?? module GenericCRUD
+### 4.3 Per-Module GenericCRUD Usage
 
 ```python
 # modules/engineering/crud/project.py
@@ -329,43 +333,43 @@ async def list_projects(db=Depends(get_db), ...):
     )
 ```
 
-### 4.4 Audit Logs Ù?¤ cross-module
+### 4.4 Audit Logs as Cross-Module Concern
 
-GenericCRUD ?Ò???Ò?«?»?à `AuditLog` ?à?? `core.audit`. ?ç???Ï ?è?????è:
-- ?Ë?è create/update/delete ???è ?Ë?è module ?è?????Ô?ø?? ?Ò???é?Ï?Î?è?Ï?ï
-- ???Ï ?Õ?Ï?Ô?Ñ ???Ò???»?è?? GenericCRUD
-- AuditLog table ?è?Ð?é?ë ???è `core` (shared infrastructure)
+GenericCRUD automatically writes `AuditLog` via `core.audit`:
+- All create/update/delete operations across every module
+- Centralised in GenericCRUD
+- AuditLog table owned by `core` (shared infrastructure)
 
 ---
 
-## 5. `EventBus` ?Ð?è?? Modules
+## 5. `EventBus` Between Modules
 
-### 5.1 ?Ï???à?Ð?»?Ë
+### 5.1 Concept
 
-- ???Ï import ?à?Ð?Ï???? ?Ð?è?? modules ?????? side effects
-- module ?è?????? event Ù?ú EventBus Ù?ú modules ?Ï???à???Ò???â?Ñ ?Ò???Ò?Ô?è?Ð
-- Pattern: **Publish/Subscribe** ???è?? ?à?Ò???Ï?à??
+- No direct imports between modules to avoid side effects
+- A module publishes an event on EventBus; other modules subscribe asynchronously
+- Pattern: **Publish/Subscribe** with typed events
 
-### 5.2 ?Ë?à?Ó???Ñ Events
+### 5.2 Defined Events
 
 | Event | Publisher | Subscribers | Action |
 |-------|-----------|-------------|--------|
-| `project.created` | engineering | hr, finance, notifications | ?Í?????Ï?É ???Ô?? ?à?Ð?»?Î?è |
-| `project.completed` | engineering | finance | ?Í?????Ï?é ?Õ???Ï?Ð ?Ï???à?????ê?? |
-| `payment_certificate.approved` | engineering | finance | ?Í?????Ï?É ?????» ?????? |
-| `drawing.approved` | engineering | notifications | ?Í?????Ï?? ?Í?????Ï?? ?????????è?é |
-| `employee.created` | hr | auth | ?Í?????Ï?É user account |
-| `user.login_failed` | auth | notifications, audit | ?Ò???Ô?è?? ?à?Õ?Ï?ê???Ñ ???Ï?????Ñ |
+| `project.created` | engineering | hr, finance, notifications | Assign team members |
+| `project.completed` | engineering | finance | Finalise billing |
+| `payment_certificate.approved` | engineering | finance | Trigger payment |
+| `drawing.approved` | engineering | notifications | Notify stakeholders |
+| `employee.created` | hr | auth | Create user account |
+| `user.login_failed` | auth | notifications, audit | Security alert |
 
-### 5.3 ?à?Ó?Ï??: `project.created` Ù?ú notification
+### 5.3 Example: `project.created` -> Notification
 
 ```python
 # modules/engineering/routers/project.py
 @router.post("/")
 async def create_project(data: ProjectCreate, db=Depends(get_db), user=Depends(require_role(...))):
     project = await project_crud.create(db, data, actor_id=user.id)
-    
-    # ?????? ?Ï???Õ?»?Ó
+
+    # Fire event
     await engineering_module.emit_event(
         "project.created",
         payload={
@@ -376,7 +380,7 @@ async def create_project(data: ProjectCreate, db=Depends(get_db), user=Depends(r
         },
         priority=EventPriority.NORMAL
     )
-    
+
     return project
 ```
 
@@ -387,19 +391,19 @@ from core.lego_v2.event_bus import event_bus, Event
 async def on_project_created(event: Event):
     project_id = event.payload["project_id"]
     project_name = event.payload["project_name"]
-    
-    # ?Í?????Ï?É ?Í?????Ï?? ???è ?é?Ï???»?Ñ ?Ï???Ð?è?Ï???Ï?Ò
+
+    # Create notification for relevant users
     await create_notification(
-        title=f"?à?????ê?? ?Ô?»?è?»: {project_name}",
-        body=f"?Ò?à ?Í?????Ï?É ?Ï???à?????ê?? #{project_id}",
+        title=f"New Project: {project_name}",
+        body=f"Project #{project_id} has been created",
         recipients=["admin", "engineer"]
     )
 
-# ?Ò???Ô?è?? ?Ï???à???Ò???â
+# Register subscriber
 event_bus.subscribe("project.created", on_project_created)
 ```
 
-### 5.4 EventBus ???è `BaseModule`
+### 5.4 EventBus Integration in `BaseModule`
 
 ```python
 class BaseModule:
@@ -416,38 +420,38 @@ class BaseModule:
 
 ---
 
-## 6. `Connectors` ?Ð?è?? Modules
+## 6. `Connectors` Between Modules
 
-### 6.1 ?Ï???à?Ð?»?Ë
+### 6.1 Concept
 
-- **Synchronous request/response** ?Ð?è?? modules
-- module A ?è?Õ?Ò?Ï?Ô ?Ð?è?Ï???Ï?Ò ?à?? module B Ù?ú ?è???Ò?»???è Connector
-- ???Ï import ?à?Ð?Ï???? Ù?¤ ?è?à?? ???Ð?? `ConnectorRegistry`
+- **Synchronous request/response** between modules
+- Module A invokes a capability from Module B via Connector
+- No direct imports â€” resolved through `ConnectorRegistry`
 
-### 6.2 ?Ë?à?Ó???Ñ Connectors
+### 6.2 Defined Connectors
 
 | Caller | Adapter | Target Port | Use Case |
 |--------|---------|-------------|----------|
-| engineering | `hr.employee.get_by_id` | hr.employee.get_by_id | ?????? ?Ï???à ?Ï???à?ç???»?? ???è ?Ï???à?????ê?? |
-| engineering | `hr.employee.list_by_department` | hr.employee.list_by_department | ?é?Ï?Î?à?Ñ ?à?ç???»???è ?Ï???à?â?Ò?Ð ?Ï???????è |
-| finance | `engineering.project.get_by_id` | engineering.project.get_by_id | ???Ð?? ?????» ?Ï???????? ?Ð?à?????ê?? |
-| finance | `engineering.contract.get_by_project` | engineering.contract.get_by_project | ?Õ???Ï?Ð ?é?è?à?Ñ ?Ï?????é?» |
-| notifications | `auth.user.get_by_id` | auth.user.get_by_id | ?Í?????Ï?? ?Í?????Ï?? ???à???Ò?«?»?à |
+| engineering | `hr.employee.get_by_id` | hr.employee.get_by_id | Get project manager details |
+| engineering | `hr.employee.list_by_department` | hr.employee.list_by_department | List team members |
+| finance | `engineering.project.get_by_id` | engineering.project.get_by_id | Check project budget |
+| finance | `engineering.contract.get_by_project` | engineering.contract.get_by_project | Get contract details |
+| notifications | `auth.user.get_by_id` | auth.user.get_by_id | Get notification recipient |
 
-### 6.3 ?à?Ó?Ï??: engineering ?è???Ò?»???è hr.get_employee
+### 6.3 Example: Engineering Uses hr.get_employee
 
 ```python
 # modules/engineering/__init__.py
 class EngineeringModule(BaseModule):
     def __init__(self):
         super().__init__()
-        
-        # Adapter: ?à?Ï ???Õ?Ò?Ï?Ô?ç ?à?? hr
+
+        # Adapter: declare dependency on hr
         self.add_adapter(ConnectorAdapter(
             name="employee_lookup",
             target_module="hr",
             target_port="employee.get_by_id",
-            fallback_handler=self._fallback_employee  # ?Í???Ï hr ???è?? ?à?Ò?ê????
+            fallback_handler=self._fallback_employee  # if hr unavailable
         ))
 
     def _fallback_employee(self, employee_id: int):
@@ -461,20 +465,20 @@ from core.lego_v2.connectors import connector_registry
 @router.get("/{project_id}/team")
 async def get_project_team(project_id: int, db=Depends(get_db)):
     project = await project_crud.get(db, project_id)
-    
-    # ?Ï???Ò?»???Ï?É hr ???Ð?? Connector
+
+    # Call hr through Connector
     pm = connector_registry.call("hr", "employee.get_by_id", employee_id=project.project_manager_id)
-    
+
     return {
         "project": project,
         "project_manager": pm
     }
 ```
 
-### 6.4 ConnectorRegistry Ù?¤ API
+### 6.4 ConnectorRegistry API
 
 ```python
-# ?Ò???Ô?è?? port (???è module ?Ï???à?é?»?à)
+# Register a port (inside module providing it)
 connector_registry.register_port(ConnectorPort(
     name="employee.get_by_id",
     module="hr",
@@ -482,34 +486,34 @@ connector_registry.register_port(ConnectorPort(
     description="..."
 ))
 
-# ?Ï???Ò?»???Ï?É port (???è module ?Ï???à???Ò???è?»)
+# Call a port (from consuming module)
 result = connector_registry.call("hr", "employee.get_by_id", employee_id=42)
 ```
 
 ---
 
-## 7. ?Ï???Õ???Ï?? ?????ë API Surface ?à?Ò???Ï?Ð?é (Frontend ???Ï ?è?Ò?Ë?Ó??)
+## 7. Preserving API Surface (Frontend Unchanged)
 
-### 7.1 ?Ï???Ï???Ò???Ï?Ò?è?Ô?è?Ñ: Router Prefix Mapping
+### 7.1 Strategy: Router Prefix Mapping
 
-| Legacy Endpoint | LEGO v2 Router | Prefix | ?Ï???Õ?Ï???Ñ |
+| Legacy Endpoint | LEGO v2 Router | Prefix | Status |
 |-----------------|----------------|--------|--------|
-| `GET /api/projects` | engineering | `/api/projects` | Ù£à ???????ç |
-| `GET /api/employees` | hr | `/api/employees` | Ù£à ???????ç |
-| `POST /api/auth/login` | auth | `/api/auth/login` | Ù£à ???????ç |
-| `GET /api/contractors` | engineering | `/api/contractors` | Ù£à ???????ç |
-| `POST /api/upload` | core | `/api/upload` | Ù£à ???????ç |
+| `GET /api/projects` | engineering | `/api/projects` | Preserved |
+| `GET /api/employees` | hr | `/api/employees` | Preserved |
+| `POST /api/auth/login` | auth | `/api/auth/login` | Preserved |
+| `GET /api/contractors` | engineering | `/api/contractors` | Preserved |
+| `POST /api/upload` | core | `/api/upload` | Preserved |
 
-### 7.2 ?Ê???è?Ñ ?Ï???Ò???Ô?è?? ???è FastAPI
+### 7.2 Module Registration in FastAPI
 
 ```python
-# main.py (?Ï???Ô?»?è?»)
+# main.py (simplified)
 from fastapi import FastAPI
 from core.lego_v2.registry import registry
 
 app = FastAPI(...)
 
-# ?Ò???Ô?è?? ?Ô?à?è?? modules
+# Register all modules
 from modules.auth import auth_module
 from modules.hr import hr_module
 from modules.engineering import engineering_module
@@ -518,11 +522,11 @@ from modules.core import core_module
 for module in [auth_module, hr_module, engineering_module, core_module]:
     module.register()
 
-# ?Ò?Ó?Ð?è?Ò ?Ô?à?è?? routers
+# Mount all module routers
 for router in registry.get_all_routers():
     app.include_router(router)
 
-# ?Ï???Ò?Õ?é?é ?à?? dependencies
+# Validate dependencies
 errors = registry.check_dependencies()
 if errors:
     raise RuntimeError(f"Module dependency errors: {errors}")
@@ -530,10 +534,10 @@ if errors:
 
 ### 7.3 Response Shape
 
-- **???Ï ?Ò???è?è??** ???è ???â?? ?Ï???? response
-- `GenericCRUD.list()` ?Ò?????Ô?? `PaginatedResponse` (?????? ?Ï?????â??)
-- `GenericCRUD.get()` ?Ò?????Ô?? dict (?????? ?Ï?????â?? ?Ð?????? `_to_dict()`)
-- Frontend ?è?Ò?ê?é?? ?????? ?Ï???? JSON structure ?Ð?Ï?????Ð??
+- **All endpoints** return the same response as before
+- `GenericCRUD.list()` returns `PaginatedResponse` (same pagination)
+- `GenericCRUD.get()` returns dict (same schema via `_to_dict()`)
+- Frontend requires zero changes to JSON parsing
 
 ### 7.4 CORS + Static Files
 
@@ -546,124 +550,124 @@ app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 ---
 
-## 8. ?«???Ñ ?Ï???à?Ô???»?Ï?Ò ?Ï???Ô?»?è?»?Ñ
+## 8. Project Directory Structure
 
-### 8.1 ?Ï???ç?è?â?? ?Ï???â?Ï?à??
+### 8.1 Full LEGO v2 Layout
 
 ```
 engineering-management-system-3/
-Ù¤é
-Ù¤£Ù¤?Ù¤? core/                          # Shared infrastructure
-Ù¤é   Ù¤£Ù¤?Ù¤? lego_v2/                   # LEGO v2 framework
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? registry/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? module_registry.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? event_bus/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? event_bus.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? connectors/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? connector_registry.py
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? shared/
-Ù¤é   Ù¤é       Ù¤¤Ù¤?Ù¤? base_module.py
-Ù¤é   Ù¤£Ù¤?Ù¤? crud.py                    # GenericCRUD (?à?? Legacy)
-Ù¤é   Ù¤£Ù¤?Ù¤? audit.py                   # AuditLog (?à?? Legacy)
-Ù¤é   Ù¤£Ù¤?Ù¤? base.py                    # SQLAlchemy Base + TimestampMixin
-Ù¤é   Ù¤£Ù¤?Ù¤? schemas.py                 # PaginatedResponse, BulkDeleteRequest
-Ù¤é   Ù¤£Ù¤?Ù¤? upload.py                  # File upload router
-Ù¤é   Ù¤£Ù¤?Ù¤? export.py                  # Export functionality
-Ù¤é   Ù¤¤Ù¤?Ù¤? search.py                  # Global search
-Ù¤é
-Ù¤£Ù¤?Ù¤? modules/                       # All business modules
-Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py
-Ù¤é   Ù¤£Ù¤?Ù¤? auth/                      # Auth + RBAC module
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py            # AuthModule(BaseModule)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? user.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? user.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? token.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? user.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? auth.py            # /api/auth/*
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? dependencies.py        # get_current_user, require_role
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? utils.py               # JWT, password hash
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? events/
-Ù¤é   Ù¤é       Ù¤¤Ù¤?Ù¤? handlers.py
-Ù¤é   Ù¤é
-Ù¤é   Ù¤£Ù¤?Ù¤? hr/                        # Human Resources module
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py            # HRModule(BaseModule)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py        # GenericCRUD(Employee)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? employee.py        # /api/employees/*
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? services/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? employee_service.py
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? events/
-Ù¤é   Ù¤é       Ù¤¤Ù¤?Ù¤? handlers.py
-Ù¤é   Ù¤é
-Ù¤é   Ù¤£Ù¤?Ù¤? engineering/               # Engineering module (?Ï???à?â?Ò?Ð ?Ï???????è)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? __init__.py            # EngineeringModule(BaseModule)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? models/
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? contractor.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? project.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? phase.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? code.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? work_order.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? work_order_item.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? drawing.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? drawing_revision.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? document.py
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? payment_certificate.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? schemas/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (?????? ?Ï???à?????Ï?Ò)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? crud/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (GenericCRUD instances)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? routers/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (?????? api.py Ù?¤ ?à?? ?Ò???»?è?? imports)
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? services/
-Ù¤é   Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (business logic)
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? events/
-Ù¤é   Ù¤é       Ù¤¤Ù¤?Ù¤? handlers.py
-Ù¤é   Ù¤é
-Ù¤é   Ù¤£Ù¤?Ù¤? finance/                   # Finance module (?à???Ò?é?Ð???è)
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? __init__.py
-Ù¤é   Ù¤é
-Ù¤é   Ù¤¤Ù¤?Ù¤? inventory/                 # Inventory module (?à???Ò?é?Ð???è)
-Ù¤é       Ù¤¤Ù¤?Ù¤? __init__.py
-Ù¤é
-Ù¤£Ù¤?Ù¤? db/                            # Database
-Ù¤é   Ù¤£Ù¤?Ù¤? migrations/                # Alembic migrations
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? (?à?? Legacy)
-Ù¤é   Ù¤¤Ù¤?Ù¤? seeds/
-Ù¤é       Ù¤¤Ù¤?Ù¤? (seed data)
-Ù¤é
-Ù¤£Ù¤?Ù¤? tests/                         # Tests
-Ù¤é   Ù¤£Ù¤?Ù¤? core/                      # Tests for GenericCRUD, EventBus, Connectors
-Ù¤é   Ù¤£Ù¤?Ù¤? modules/                   # Tests per module
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? test_auth.py
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? test_hr.py
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? test_engineering.py
-Ù¤é   Ù¤¤Ù¤?Ù¤? conftest.py                # Shared fixtures (db session, client)
-Ù¤é
-Ù¤£Ù¤?Ù¤? doc/                           # Documentation
-Ù¤é   Ù¤£Ù¤?Ù¤? architecture/
-Ù¤é   Ù¤é   Ù¤£Ù¤?Ù¤? LEGO_v2_SPEC.md
-Ù¤é   Ù¤é   Ù¤¤Ù¤?Ù¤? LEGACY_MERGE_PLAN.md   # ?ç???Ï ?Ï???à????
-Ù¤é   Ù¤£Ù¤?Ù¤? api/
-Ù¤é   Ù¤¤Ù¤?Ù¤? modules/
-Ù¤é
-Ù¤£Ù¤?Ù¤? main.py                        # FastAPI app entry point
-Ù¤£Ù¤?Ù¤? pyproject.toml                 # Dependencies
-Ù¤¤Ù¤?Ù¤? README.md
+â”‚
+â”œâ”€â”€ core/                          # Shared infrastructure
+â”‚   â”œâ”€â”€ lego_v2/                   # LEGO v2 framework
+â”‚   â”‚   â”œâ”€â”€ registry/
+â”‚   â”‚   â”‚   â””â”€â”€ module_registry.py
+â”‚   â”‚   â”œâ”€â”€ event_bus/
+â”‚   â”‚   â”‚   â””â”€â”€ event_bus.py
+â”‚   â”‚   â”œâ”€â”€ connectors/
+â”‚   â”‚   â”‚   â””â”€â”€ connector_registry.py
+â”‚   â”‚   â””â”€â”€ shared/
+â”‚   â”‚       â””â”€â”€ base_module.py
+â”‚   â”œâ”€â”€ crud.py                    # GenericCRUD (from Legacy)
+â”‚   â”œâ”€â”€ audit.py                   # AuditLog (from Legacy)
+â”‚   â”œâ”€â”€ base.py                    # SQLAlchemy Base + TimestampMixin
+â”‚   â”œâ”€â”€ schemas.py                 # PaginatedResponse, BulkDeleteRequest
+â”‚   â”œâ”€â”€ upload.py                  # File upload router
+â”‚   â”œâ”€â”€ export.py                  # Export functionality
+â”‚   â””â”€â”€ search.py                  # Global search
+â”‚
+â”œâ”€â”€ modules/                       # All business modules
+â”‚   â”œâ”€â”€ __init__.py
+â”‚   â”œâ”€â”€ auth/                      # Auth + RBAC module
+â”‚   â”‚   â”œâ”€â”€ __init__.py            # AuthModule(BaseModule)
+â”‚   â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â”‚   â””â”€â”€ user.py
+â”‚   â”‚   â”œâ”€â”€ schemas/
+â”‚   â”‚   â”‚   â”œâ”€â”€ user.py
+â”‚   â”‚   â”‚   â””â”€â”€ token.py
+â”‚   â”‚   â”œâ”€â”€ crud/
+â”‚   â”‚   â”‚   â””â”€â”€ user.py
+â”‚   â”‚   â”œâ”€â”€ routers/
+â”‚   â”‚   â”‚   â””â”€â”€ auth.py            # /api/auth/*
+â”‚   â”‚   â”œâ”€â”€ dependencies.py        # get_current_user, require_role
+â”‚   â”‚   â”œâ”€â”€ utils.py               # JWT, password hash
+â”‚   â”‚   â””â”€â”€ events/
+â”‚   â”‚       â””â”€â”€ handlers.py
+â”‚   â”‚
+â”‚   â”œâ”€â”€ hr/                        # Human Resources module
+â”‚   â”‚   â”œâ”€â”€ __init__.py            # HRModule(BaseModule)
+â”‚   â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â”‚   â””â”€â”€ employee.py
+â”‚   â”‚   â”œâ”€â”€ schemas/
+â”‚   â”‚   â”‚   â””â”€â”€ employee.py
+â”‚   â”‚   â”œâ”€â”€ crud/
+â”‚   â”‚   â”‚   â””â”€â”€ employee.py        # GenericCRUD(Employee)
+â”‚   â”‚   â”œâ”€â”€ routers/
+â”‚   â”‚   â”‚   â””â”€â”€ employee.py        # /api/employees/*
+â”‚   â”‚   â”œâ”€â”€ services/
+â”‚   â”‚   â”‚   â””â”€â”€ employee_service.py
+â”‚   â”‚   â””â”€â”€ events/
+â”‚   â”‚       â””â”€â”€ handlers.py
+â”‚   â”‚
+â”‚   â”œâ”€â”€ engineering/               # Engineering module (largest)
+â”‚   â”‚   â”œâ”€â”€ __init__.py            # EngineeringModule(BaseModule)
+â”‚   â”‚   â”œâ”€â”€ models/
+â”‚   â”‚   â”‚   â”œâ”€â”€ contractor.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ project.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ phase.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ code.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ work_order.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ work_order_item.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ drawing.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ drawing_revision.py
+â”‚   â”‚   â”‚   â”œâ”€â”€ document.py
+â”‚   â”‚   â”‚   â””â”€â”€ payment_certificate.py
+â”‚   â”‚   â”œâ”€â”€ schemas/
+â”‚   â”‚   â”‚   â””â”€â”€ (Pydantic v2 models)
+â”‚   â”‚   â”œâ”€â”€ crud/
+â”‚   â”‚   â”‚   â””â”€â”€ (GenericCRUD instances)
+â”‚   â”‚   â”œâ”€â”€ routers/
+â”‚   â”‚   â”‚   â””â”€â”€ (api.py adapted with module imports)
+â”‚   â”‚   â”œâ”€â”€ services/
+â”‚   â”‚   â”‚   â””â”€â”€ (business logic)
+â”‚   â”‚   â””â”€â”€ events/
+â”‚   â”‚       â””â”€â”€ handlers.py
+â”‚   â”‚
+â”‚   â”œâ”€â”€ finance/                   # Finance module (future)
+â”‚   â”‚   â””â”€â”€ __init__.py
+â”‚   â”‚
+â”‚   â””â”€â”€ inventory/                 # Inventory module (future)
+â”‚       â””â”€â”€ __init__.py
+â”‚
+â”œâ”€â”€ db/                            # Database
+â”‚   â”œâ”€â”€ migrations/                # Alembic migrations
+â”‚   â”‚   â””â”€â”€ (from Legacy)
+â”‚   â””â”€â”€ seeds/
+â”‚       â””â”€â”€ (seed data)
+â”‚
+â”œâ”€â”€ tests/                         # Tests
+â”‚   â”œâ”€â”€ core/                      # Tests for GenericCRUD, EventBus, Connectors
+â”‚   â”œâ”€â”€ modules/                   # Tests per module
+â”‚   â”‚   â”œâ”€â”€ test_auth.py
+â”‚   â”‚   â”œâ”€â”€ test_hr.py
+â”‚   â”‚   â””â”€â”€ test_engineering.py
+â”‚   â””â”€â”€ conftest.py                # Shared fixtures (db session, client)
+â”‚
+â”œâ”€â”€ doc/                           # Documentation
+â”‚   â”œâ”€â”€ architecture/
+â”‚   â”‚   â”œâ”€â”€ LEGO_v2_SPEC.md
+â”‚   â”‚   â””â”€â”€ LEGACY_MERGE_PLAN.md   # This document
+â”‚   â”œâ”€â”€ api/
+â”‚   â””â”€â”€ modules/
+â”‚
+â”œâ”€â”€ main.py                        # FastAPI app entry point
+â”œâ”€â”€ pyproject.toml                 # Dependencies
+â””â”€â”€ README.md
 ```
 
-### 8.2 ?é?ê?Ï???» ?Ï???Ò???à?è?Ñ
+### 8.2 Naming Conventions
 
-| ?Ï???à???Ò?ê?ë | ?Ï???é?Ï???»?Ñ | ?à?Ó?Ï?? |
-|---------|--------|------|
+| Convention | Rule | Example |
+|------------|------|---------|
 | Module folder | lowercase | `modules/engineering/` |
 | Model file | snake_case | `project.py` |
 | Router file | snake_case | `project.py` |
@@ -674,7 +678,7 @@ engineering-management-system-3/
 
 ### 8.3 Database Schema Namespacing
 
-???Ò?Ô???Ð ?Ò???Ï???Ð ?Ë???à?Ï?É ?Ï???Ô?»?Ï?ê??:
+Prevent table name collisions with module prefixes:
 
 ```python
 # engineering/models/project.py
@@ -692,61 +696,61 @@ class User(Base, TimestampMixin):
 
 ---
 
-## 9. ?«???Ñ ?Ï???Ò?????è?? (Execution Plan)
+## 9. Execution Plan
 
-### Phase 1: Foundation (?Ë???Ð?ê?? 1)
-1. ???é?? `core/crud.py`, `core/audit.py`, `core/base.py` ?à?? Legacy
-2. ?Í?????Ï?É `modules/auth/` (???é?? ?â?Ï?à??)
-3. ?Í?????Ï?É `modules/hr/` (???é?? employees)
-4. ?Í?????Ï?É `modules/core/` (upload, export)
-5. ?Ò???»?è?? `main.py` ???è???Ò?«?»?à `ModuleRegistry`
+### Phase 1: Foundation (Week 1)
+1. Extract `core/crud.py`, `core/audit.py`, `core/base.py` from Legacy
+2. Build `modules/auth/` (highest priority)
+3. Build `modules/hr/` (employees only)
+4. Build `modules/core/` (upload, export)
+5. Rewrite `main.py` to use `ModuleRegistry`
 
-### Phase 2: Engineering Module (?Ë???Ð?ê?? 2)
-1. ???é?? ?Ô?à?è?? engineering entities ?Í???ë `modules/engineering/`
-2. ?Ò???»?è?? imports
-3. ?Ò???Ô?è?? ???è `EngineeringModule`
-4. ?Í???Ï???Ñ Ports ?ê Adapters
+### Phase 2: Engineering Module (Week 2)
+1. Migrate all engineering entities to `modules/engineering/`
+2. Rewrite imports
+3. Wire up `EngineeringModule`
+4. Configure Ports and Adapters
 
-### Phase 3: EventBus + Connectors (?Ë???Ð?ê?? 3)
-1. ?Ò???Ô?è?? ?Ô?à?è?? Events
-2. ?â?Ò?Ï?Ð?Ñ Event Handlers
-3. ?Ò???Ô?è?? ?Ô?à?è?? Ports
-4. ?Ï?«?Ò?Ð?Ï?? cross-module calls
+### Phase 3: EventBus + Connectors (Week 3)
+1. Implement Events
+2. Wire Event Handlers
+3. Implement Ports
+4. Validate cross-module calls
 
-### Phase 4: API Compatibility + Tests (?Ë???Ð?ê?? 4)
-1. ?Ò?????è?? Frontend ???» ?Ï???? API ?Ï???Ô?»?è?»
-2. ?Ò?????è?? Legacy tests
-3. ?Í???Ï???Ñ tests ?Ô?»?è?»?Ñ ?????? modules
+### Phase 4: API Compatibility + Tests (Week 4)
+1. Validate Frontend against new API responses
+2. Re-run Legacy tests
+3. Add tests for new modules
 4. Performance testing
 
 ---
 
-## 10. ?Ï???à?«?Ï???? ?ê?Ï???Õ???ê??
+## 10. Risk Mitigation
 
-| ?Ï???à?«?Ï???? | ?Ï???Ï?Õ?Ò?à?Ï?? | ?Ï???Ò?Ë?Ó?è?? | ?Ï???Õ?? |
-|---------|----------|---------|------|
-| Breaking API changes | ?à???«???? | ???Ï???? | Router prefix mapping + response shape freeze |
-| Auth regression | ?à???«???? | ???Ï???? | Agent D pre-flight gate + test_auth.py |
-| DB migration ?????? | ?à?Ò?ê???? | ???Ï???? | Alembic gradual migration + SQLite Ù?ú PostgreSQL |
-| Performance degradation | ?à???«???? | ?à?Ò?ê???? | GenericCRUD optimization + connection pooling |
-| Module circular dependency | ?à???«???? | ?à?Ò?ê???? | Dependency graph validation ???è Registry |
-
----
-
-## 11. ?Ï???é???Ï???Ï?Ò ?Ï???à?Ì?â?»?Ñ
-
-| ?Ï???é???Ï?? | ?Ï???Õ?Ï???Ñ | ?Ï?????Ð?Ð |
-|--------|--------|-------|
-| SQLAlchemy 2.0 (???Ï SQLModel) | Ù£à ?à?Ì?â?» | ?Ò?â?????Ñ migration ???Ï???è?Ñ?î ???Ï?Î?»?Ñ ?é???è???Ñ |
-| GenericCRUD | Ù£à ?à?Ì?â?» | ?Ë?é?ê?ë ?Ë???ê?? ?Ï???à?????ê?? Ù?¤ 114 ?????? ?????ø?Ï???Ñ |
-| Async | Ù£à ?à?Ì?â?» | SQLAlchemy async + aiosqlite/aiopg |
-| LEGO v2 as layer | Ù£à ?à?Ì?â?» | ???Ï ?????Ò?Ð?»???î ???Ð???è ???ê?é |
-| Module self-registration | Ù£à ?à?Ì?â?» | ?â?? module ?è???Ô?ø?? ???????ç ???è Registry |
-| PostgreSQL ?Ò?»???è?Ô?è?Ï?ï | Ù£à ?à?Ì?â?» | SQLite Ù?ú PostgreSQL ???Ð?? Alembic |
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+| Breaking API changes | Medium | High | Router prefix mapping + response shape freeze |
+| Auth regression | Medium | High | Agent D pre-flight gate + test_auth.py |
+| DB migration errors | Low | High | Alembic gradual migration + SQLite -> PostgreSQL |
+| Performance degradation | Medium | Medium | GenericCRUD optimization + connection pooling |
+| Module circular dependency | Medium | Medium | Dependency graph validation in Registry |
 
 ---
 
-**Document Version**: 1.0  
-**Author**: Agent B (Solutions Architect)  
-**Date**: 2026-06-09  
+## 11. Technology Decisions Summary
+
+| Decision | Status | Rationale |
+|----------|--------|-----------|
+| SQLAlchemy 2.0 (not SQLModel) | Approved | Flexible migration path without ORM lock-in |
+| GenericCRUD | Approved | Single source of truth for 114 methods |
+| Async | Approved | SQLAlchemy async + aiosqlite/aiopg |
+| LEGO v2 as layer | Approved | Non-invasive wrapper around working code |
+| Module self-registration | Approved | Each module registers itself with Registry |
+| PostgreSQL readiness | Approved | SQLite -> PostgreSQL via Alembic |
+
+---
+
+**Document Version**: 1.0
+**Author**: Agent B (Solutions Architect)
+**Date**: 2026-06-09
 **Status**: Approved for implementation

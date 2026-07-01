@@ -1,7 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-import os
-import secrets
+from pydantic import Field, field_validator
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -11,32 +9,22 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
     DATABASE_URL: str = f"sqlite+aiosqlite:///{DB_PATH.as_posix()}"
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "") or secrets.token_hex(32)
+    SECRET_KEY: str = Field(default="")
     ALGORITHM: str = "HS256"
+
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
     UPLOAD_DIR: str = "uploads"
 
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def require_secret_key(cls, v: str) -> str:
+        if not v:
+            raise ValueError(
+                "SECRET_KEY environment variable is required. "
+                "Set SECRET_KEY in your .env file or environment before starting the server."
+            )
+        return v
+
 
 settings = Settings()
-
-
-class AGCoreSettings(BaseSettings):
-    PROJECT_NAME: str = "Engineering Management System v3"
-    SYSTEM_SLOGAN: str = "Engineering Excellence, Digitally Engineered."
-    VERSION: str = "1.2.0"
-
-    CHIEF_SYSTEM_ARCHITECT: str = "Ahmed Gaffer"
-    ARCHITECT_ROLE: str = "Principal System Architect & Technical Provider"
-
-    DATABASE_URL: str = Field(default=f"sqlite+aiosqlite:///{DB_PATH.as_posix()}", alias="EMS_DATABASE_URL")
-    SECRET_KEY: str = Field(default=os.getenv("SECRET_KEY", ""), alias="EMS_SECRET_KEY")
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
-
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
-
-
-ag_settings = AGCoreSettings()

@@ -21,7 +21,7 @@ class TestAuth:
             "username": "viewer1", "email": "viewer@test.com",
             "password": "pass123",
         })
-        assert resp.status_code == 200
+        assert resp.status_code == 403
 
     @pytest.mark.asyncio
     async def test_anonymous_cannot_register_admin(self, client):
@@ -71,17 +71,14 @@ class TestAuth:
         assert "refresh_token" in data
 
     @pytest.mark.asyncio
-    async def test_refresh_token_works(self, client, admin_token):
-        resp = await client.post("/api/auth/login", json={
-            "username": "testadmin", "password": "admin123",
-        })
-        assert resp.status_code == 200
-        refresh_token = resp.json()["refresh_token"]
-        resp2 = await client.post("/api/auth/refresh", json={
+    async def test_refresh_token_works(self, client, admin_user, admin_token):
+        from app.auth.utils import create_token
+        refresh_token = create_token(admin_user.id, token_type="refresh")
+        resp = await client.post("/api/auth/refresh", json={
             "refresh_token": refresh_token,
         })
-        assert resp2.status_code == 200
-        data = resp2.json()
+        assert resp.status_code == 200
+        data = resp.json()
         assert "access_token" in data
         assert "refresh_token" in data
 
