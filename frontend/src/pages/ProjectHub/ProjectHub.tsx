@@ -7,7 +7,7 @@ import {
 import {
   FolderOpen, Business, Image, WarningAmber, QuestionAnswer, CheckCircle,
   CalendarMonth, Description, Schedule, Receipt, CompareArrows, Engineering,
-  Add, ArrowForward, TrendingUp, Bolt,
+  Add, ArrowForward, TrendingUp, Bolt, Science, Layers,
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -51,12 +51,22 @@ export default function ProjectHub() {
     { key: 'ncrs', icon: <WarningAmber />, color: '#ef4444', labelKey: 'ncr', link: (pid: string) => `/engineering/ncr?project_id=${pid}` },
     { key: 'rfis', icon: <QuestionAnswer />, color: gold, labelKey: 'rfis', link: (pid: string) => `/engineering/rfis?project_id=${pid}` },
     { key: 'mar', icon: <CheckCircle />, color: '#f97316', labelKey: 'mar', link: (pid: string) => `/engineering/mar?project_id=${pid}` },
+    { key: 'submittals', icon: <Description />, color: '#6366f1', labelKey: 'submittals', link: (pid: string) => `/engineering/submittals?project_id=${pid}` },
+    { key: 'inspections', icon: <CheckCircle />, color: '#0891b2', labelKey: 'inspectionRequests', link: (pid: string) => `/engineering/inspection-requests?project_id=${pid}` },
     { key: 'meeting_minutes', icon: <Description />, color: '#10b981', labelKey: 'meetingMinutes', link: (pid: string) => `/engineering/projects/${pid}/meeting-minutes` },
     { key: 'daily_reports', icon: <CalendarMonth />, color: '#f59e0b', labelKey: 'dailyReportsPage', link: (pid: string) => `/engineering/daily-reports?project_id=${pid}` },
     { key: 'schedules', icon: <Schedule />, color: '#84cc16', labelKey: 'schedulesPage', link: (pid: string) => `/engineering/schedules?project_id=${pid}` },
     { key: 'boq_items', icon: <Receipt />, color: '#14b8a6', labelKey: 'boq', link: (pid: string) => `/engineering/boq?project_id=${pid}` },
     { key: 'variation_orders', icon: <CompareArrows />, color: '#f43f5e', labelKey: 'variationOrders', link: (pid: string) => `/engineering/variation-orders?project_id=${pid}` },
     { key: 'ipcs', icon: <Engineering />, color: '#3b82f6', labelKey: 'ipc', link: (pid: string) => `/engineering/ipc?project_id=${pid}` },
+    { key: 'transmittals', icon: <Description />, color: '#8b5cf6', labelKey: 'transmittals', link: (pid: string) => `/engineering/transmittals?project_id=${pid}` },
+    { key: 'punch_list', icon: <CheckCircle />, color: '#ec4899', labelKey: 'punchList', link: (pid: string) => `/engineering/punch-list?project_id=${pid}` },
+    { key: 'cost_codes', icon: <Receipt />, color: '#6b7280', labelKey: 'costCodes', link: (pid: string) => `/engineering/cost-codes?project_id=${pid}` },
+    { key: 'safety_incidents', icon: <WarningAmber />, color: '#ef4444', labelKey: 'safetyIncidents', link: (pid: string) => `/engineering/safety-incidents?project_id=${pid}` },
+    { key: 'safety_observations', icon: <WarningAmber />, color: '#f97316', labelKey: 'safetyObservations', link: (pid: string) => `/engineering/safety-observations?project_id=${pid}` },
+    { key: 'work_orders', icon: <Engineering />, color: '#3b82f6', labelKey: 'workOrders', link: (pid: string) => `/engineering/work-orders?project_id=${pid}` },
+    { key: 'material_tests', icon: <Science />, color: '#10b981', labelKey: 'materialTests', link: (pid: string) => `/engineering/material-tests?project_id=${pid}` },
+    { key: 'phases', icon: <Layers />, color: '#84cc16', labelKey: 'phases', link: (pid: string) => `/engineering/phases?project_id=${pid}` },
   ];
 
   const quickActions = [

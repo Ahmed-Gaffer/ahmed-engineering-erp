@@ -1,4 +1,5 @@
 import csv
+import json
 from typing import List
 from decimal import Decimal
 from datetime import date, datetime
@@ -206,6 +207,35 @@ async def project_summary(project_id: int, db: AsyncSession = Depends(get_db)):
     # Safety Observations
     r = await db.execute(select(func.count()).select_from(SafetyObservation).where(SafetyObservation.project_id == project_id))
     counts["safety_observations"] = r.scalar()
+
+    # Work Orders
+    r = await db.execute(select(func.count()).select_from(WorkOrder).where(WorkOrder.project_id == project_id))
+    counts["work_orders"] = r.scalar()
+
+    # Material Tests
+    r = await db.execute(select(func.count()).select_from(MaterialTest).where(MaterialTest.project_id == project_id))
+    counts["material_tests"] = r.scalar()
+
+    # ITPs
+    r = await db.execute(select(func.count()).select_from(ITP).where(ITP.project_id == project_id))
+    counts["itps"] = r.scalar()
+
+    # Method Statements
+    r = await db.execute(select(func.count()).select_from(MethodStatement).where(MethodStatement.project_id == project_id))
+    counts["method_statements"] = r.scalar()
+
+    # Permits
+    r = await db.execute(select(func.count()).select_from(PermitToWork).where(PermitToWork.project_id == project_id))
+    counts["permits"] = r.scalar()
+
+    # Survey Points
+    r = await db.execute(select(func.count()).select_from(SurveyPoint).where(SurveyPoint.project_id == project_id))
+    counts["survey_points"] = r.scalar()
+
+    # Phases
+    from app.phases.models import ProjectPhase
+    r = await db.execute(select(func.count()).select_from(ProjectPhase).where(ProjectPhase.project_id == project_id))
+    counts["phases"] = r.scalar()
 
     # Recent NCRs
     r = await db.execute(select(NonConformanceReport).where(NonConformanceReport.project_id == project_id).order_by(NonConformanceReport.created_at.desc()).limit(5))
@@ -509,7 +539,7 @@ async def get_ipc(ipc_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/ipcs/{ipc_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
-async def submit_ipc(ipc_id: int, comment: str = None, assigned_to: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def submit_ipc(ipc_id: int, comment: str = Body(None), assigned_to: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status != "draft":
         raise HTTPException(400, "IPC cannot be submitted")
@@ -523,7 +553,7 @@ async def submit_ipc(ipc_id: int, comment: str = None, assigned_to: str = None, 
 
 
 @router.post("/ipcs/{ipc_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
-async def approve_ipc(ipc_id: int, comment: str = None, assigned_to: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def approve_ipc(ipc_id: int, comment: str = Body(None), assigned_to: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status not in ("draft", "submitted"):
         raise HTTPException(400, "IPC cannot be approved")
@@ -537,7 +567,7 @@ async def approve_ipc(ipc_id: int, comment: str = None, assigned_to: str = None,
 
 
 @router.post("/ipcs/{ipc_id}/reject", dependencies=[Depends(require_role("admin", "engineer"))])
-async def reject_ipc(ipc_id: int, comment: str = None, assigned_to: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def reject_ipc(ipc_id: int, comment: str = Body(None), assigned_to: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status != "submitted":
         raise HTTPException(400, "IPC cannot be rejected")
@@ -551,7 +581,7 @@ async def reject_ipc(ipc_id: int, comment: str = None, assigned_to: str = None, 
 
 
 @router.post("/ipcs/{ipc_id}/pay", dependencies=[Depends(require_role("admin", "engineer"))])
-async def pay_ipc(ipc_id: int, comment: str = None, assigned_to: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def pay_ipc(ipc_id: int, comment: str = Body(None), assigned_to: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     ipc = await db.get(IPCHeader, ipc_id)
     if not ipc or ipc.status != "approved":
         raise HTTPException(400, "IPC cannot be paid")
@@ -963,7 +993,7 @@ async def list_schedules(project_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/schedules/{schedule_id}/progress", dependencies=[Depends(require_role("admin", "engineer"))])
-async def update_schedule_progress(schedule_id: int, progress: float, db: AsyncSession = Depends(get_db)):
+async def update_schedule_progress(schedule_id: int, progress: float = Body(...), db: AsyncSession = Depends(get_db)):
     sched = await db.get(Schedule, schedule_id)
     if not sched:
         raise HTTPException(404, "Schedule not found")
@@ -1055,11 +1085,11 @@ async def calculate_critical_path(project_id: int, db: AsyncSession = Depends(ge
 
 
 @router.patch("/schedules/{schedule_id}/dependencies")
-async def update_dependencies(schedule_id: int, dependencies: str, db: AsyncSession = Depends(get_db)):
+async def update_dependencies(schedule_id: int, dependencies: list = Body(...), db: AsyncSession = Depends(get_db)):
     sched = await db.get(Schedule, schedule_id)
     if not sched:
         raise HTTPException(404, "Schedule not found")
-    sched.dependencies = dependencies
+    sched.dependencies = json.dumps(dependencies)
     await db.commit()
     await db.refresh(sched)
     return sched
@@ -1069,9 +1099,9 @@ async def update_dependencies(schedule_id: int, dependencies: str, db: AsyncSess
 
 @router.post("/documents", dependencies=[Depends(require_role("admin", "engineer"))])
 async def create_document(
-    project_id: int, title: str, doc_type: str = "correspondence",
-    reference_number: str = None, file_path: str = None,
-    status: str = "draft", created_by: str = None,
+    project_id: int = Body(...), title: str = Body(...), doc_type: str = Body("correspondence"),
+    reference_number: str = Body(None), file_path: str = Body(None),
+    status: str = Body("draft"), created_by: str = Body(None),
     db: AsyncSession = Depends(get_db),
 ):
     doc = EngDocument(
@@ -2260,7 +2290,7 @@ async def delete_submittal(submittal_id: int, db: AsyncSession = Depends(get_db)
 
 
 @router.post("/submittals/{submittal_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
-async def submit_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def submit_submittal(submittal_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     sub = await db.get(SubmittalRegister, submittal_id)
     if not sub:
         raise HTTPException(404, "Submittal not found")
@@ -2276,7 +2306,7 @@ async def submit_submittal(submittal_id: int, comment: str = None, db: AsyncSess
 
 
 @router.post("/submittals/{submittal_id}/approve", dependencies=[Depends(require_role("admin", "engineer"))])
-async def approve_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def approve_submittal(submittal_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     sub = await db.get(SubmittalRegister, submittal_id)
     if not sub:
         raise HTTPException(404, "Submittal not found")
@@ -2314,7 +2344,7 @@ async def reject_submittal_with_comments(submittal_id: int, data: SubmittalUpdat
 
 
 @router.post("/submittals/{submittal_id}/resubmit", dependencies=[Depends(require_role("admin", "engineer"))])
-async def resubmit_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def resubmit_submittal(submittal_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     sub = await db.get(SubmittalRegister, submittal_id)
     if not sub:
         raise HTTPException(404, "Submittal not found")
@@ -2330,7 +2360,7 @@ async def resubmit_submittal(submittal_id: int, comment: str = None, db: AsyncSe
 
 
 @router.post("/submittals/{submittal_id}/close", dependencies=[Depends(require_role("admin", "engineer"))])
-async def close_submittal(submittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def close_submittal(submittal_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     sub = await db.get(SubmittalRegister, submittal_id)
     if not sub:
         raise HTTPException(404, "Submittal not found")
@@ -2397,7 +2427,7 @@ async def delete_inspection(inspection_id: int, db: AsyncSession = Depends(get_d
 
 
 @router.post("/inspection-requests/{inspection_id}/submit", dependencies=[Depends(require_role("admin", "engineer"))])
-async def submit_inspection(inspection_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def submit_inspection(inspection_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     insp = await db.get(InspectionRequest, inspection_id)
     if not insp:
         raise HTTPException(404, "Inspection request not found")
@@ -2434,7 +2464,7 @@ async def perform_inspection(inspection_id: int, data: InspectionUpdate, db: Asy
 
 
 @router.post("/inspection-requests/{inspection_id}/pass", dependencies=[Depends(require_role("admin", "engineer"))])
-async def pass_inspection(inspection_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def pass_inspection(inspection_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     insp = await db.get(InspectionRequest, inspection_id)
     if not insp:
         raise HTTPException(404, "Inspection request not found")
@@ -2486,7 +2516,7 @@ async def fail_inspection(inspection_id: int, data: InspectionUpdate, db: AsyncS
 
 
 @router.post("/inspection-requests/{inspection_id}/schedule-reinspection", dependencies=[Depends(require_role("admin", "engineer"))])
-async def schedule_reinspection(inspection_id: int, scheduled_date: date, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def schedule_reinspection(inspection_id: int, scheduled_date: date = Body(...), comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     insp = await db.get(InspectionRequest, inspection_id)
     if not insp:
         raise HTTPException(404, "Inspection request not found")
@@ -2570,7 +2600,7 @@ async def start_punch_item(item_id: int, comment: str = None, db: AsyncSession =
 
 
 @router.post("/punch-list-items/{item_id}/complete", dependencies=[Depends(require_role("admin", "engineer"))])
-async def complete_punch_item(item_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def complete_punch_item(item_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     item = await db.get(PunchListItem, item_id)
     if not item:
         raise HTTPException(404, "Punch list item not found")
@@ -2587,7 +2617,7 @@ async def complete_punch_item(item_id: int, comment: str = None, db: AsyncSessio
 
 
 @router.post("/punch-list-items/{item_id}/verify", dependencies=[Depends(require_role("admin", "engineer"))])
-async def verify_punch_item(item_id: int, verified_by: str = None, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def verify_punch_item(item_id: int, verified_by: str = Body(None), comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     item = await db.get(PunchListItem, item_id)
     if not item:
         raise HTTPException(404, "Punch list item not found")
@@ -2691,7 +2721,7 @@ async def delete_transmittal(transmittal_id: int, db: AsyncSession = Depends(get
 
 
 @router.post("/transmittals/{transmittal_id}/send", dependencies=[Depends(require_role("admin", "engineer"))])
-async def send_transmittal(transmittal_id: int, sent_date: date = None, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def send_transmittal(transmittal_id: int, sent_date: date = Body(None), comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     trans = await db.get(Transmittal, transmittal_id)
     if not trans:
         raise HTTPException(404, "Transmittal not found")
@@ -2708,7 +2738,7 @@ async def send_transmittal(transmittal_id: int, sent_date: date = None, comment:
 
 
 @router.post("/transmittals/{transmittal_id}/mark-received", dependencies=[Depends(require_role("admin", "engineer"))])
-async def mark_transmittal_received(transmittal_id: int, received_date: date = None, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def mark_transmittal_received(transmittal_id: int, received_date: date = Body(None), comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     trans = await db.get(Transmittal, transmittal_id)
     if not trans:
         raise HTTPException(404, "Transmittal not found")
@@ -2725,7 +2755,7 @@ async def mark_transmittal_received(transmittal_id: int, received_date: date = N
 
 
 @router.post("/transmittals/{transmittal_id}/acknowledge", dependencies=[Depends(require_role("admin", "engineer"))])
-async def acknowledge_transmittal(transmittal_id: int, comment: str = None, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
+async def acknowledge_transmittal(transmittal_id: int, comment: str = Body(None), db: AsyncSession = Depends(get_db), user=Depends(get_current_user)):
     trans = await db.get(Transmittal, transmittal_id)
     if not trans:
         raise HTTPException(404, "Transmittal not found")

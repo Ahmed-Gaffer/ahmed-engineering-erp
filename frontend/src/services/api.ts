@@ -237,7 +237,7 @@ export const engineeringApi = {
     delete: (id: number | string) => api.delete(`/engineering/submittals/${id}`),
     submit: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/submittals/${id}/submit`, data),
     approve: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/submittals/${id}/approve`, data),
-    reject: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/submittals/${id}/reject`, data),
+    reject: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/submittals/${id}/reject-with-comments`, data),
     resubmit: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/submittals/${id}/resubmit`, data),
     close: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/submittals/${id}/close`, data),
   },
@@ -251,7 +251,7 @@ export const engineeringApi = {
     inspect: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/inspection-requests/${id}/inspect`, data),
     pass: (id: number | string) => api.post(`/engineering/inspection-requests/${id}/pass`),
     fail: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/inspection-requests/${id}/fail`, data),
-    scheduleReinspection: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/inspection-requests/${id}/re-inspection`, data),
+    scheduleReinspection: (id: number | string, data?: Record<string, unknown>) => api.post(`/engineering/inspection-requests/${id}/schedule-reinspection`, data),
   },
   punchList: {
     create: (data: Record<string, unknown>) => api.post('/engineering/punch-list-items', data),
@@ -334,13 +334,13 @@ export const engineeringApi = {
   },
   materialTests: {
     create: (data: Record<string, unknown>) => api.post('/engineering/material-tests', data),
-    listByProject: (projectId: number | string) => api.get(`/engineering/projects/${projectId}/material-tests`),
+    listByProject: (projectId: number | string) => api.get(`/engineering/material-tests`, { params: { project_id: projectId } }),
     get: (id: number | string) => api.get(`/engineering/material-tests/${id}`),
     update: (id: number | string, data: Record<string, unknown>) => api.put(`/engineering/material-tests/${id}`, data),
     delete: (id: number | string) => api.delete(`/engineering/material-tests/${id}`),
-    stats: (projectId: number | string) => api.get(`/engineering/projects/${projectId}/material-tests/stats`),
-    recordResult: (id: number | string, data: Record<string, unknown>) => api.post(`/engineering/material-tests/${id}/record-result`, data),
-    verify: (id: number | string, data: Record<string, unknown>) => api.post(`/engineering/material-tests/${id}/verify`, data),
+    stats: (projectId?: number | string) => api.get(`/engineering/material-tests/stats/overview`, { params: projectId ? { project_id: projectId } : undefined }),
+    recordResult: (id: number | string, data: Record<string, unknown>) => api.put(`/engineering/material-tests/${id}/record-result`, data),
+    verify: (id: number | string, data: Record<string, unknown>) => api.put(`/engineering/material-tests/${id}/verify`, data),
   },
   itps: {
     listByProject: (projectId: number | string) => api.get(`/engineering/projects/${projectId}/itps`),
@@ -406,8 +406,8 @@ export const engineeringApi = {
     update: (id: number | string, data: Record<string, unknown>) => api.put(`/engineering/specifications/${id}`, data),
     delete: (id: number | string) => api.delete(`/engineering/specifications/${id}`),
     createSection: (specId: number | string, data: Record<string, unknown>) => api.post(`/engineering/specifications/${specId}/sections`, data),
-    updateSection: (sectionId: number | string, data: Record<string, unknown>) => api.put(`/engineering/specifications/sections/${sectionId}`, data),
-    deleteSection: (sectionId: number | string) => api.delete(`/engineering/specifications/sections/${sectionId}`),
+    updateSection: (sectionId: number | string, data: Record<string, unknown>) => api.put(`/engineering/spec-sections/${sectionId}`, data),
+    deleteSection: (sectionId: number | string) => api.delete(`/engineering/spec-sections/${sectionId}`),
   },
 };
 
