@@ -1,18 +1,19 @@
 import { ReactNode } from 'react';
+import { AxiosResponse } from 'axios';
 import { engineeringApi, contractorsService, projectsService, phasesService, codesService, workOrdersService, workOrderItemsService, drawingsService, drawingRevisionsService, documentsService, paymentCertificatesService, employeesService } from '../../services/api';
 import { FieldDef, SubItemConfig } from './EntityDetail';
 import {
   Business, Image, WarningAmber, QuestionAnswer, Description, CheckCircle, CalendarMonth,
-  Schedule, Receipt, CompareArrows, Engineering, Science, FolderOpen, Assignment,
-  SafetyCheck, Architecture, Handyman, Category, Money, People, Badge, Notifications,
-  AdminPanelSettings, AccountBalance, LocalShipping, Build, School, Plumbing, Search,
+  Schedule, Receipt, CompareArrows, Engineering, FolderOpen, Assignment,
+  SafetyCheck, Architecture, Handyman, Category, Money, People, Badge,
+  AccountBalance, LocalShipping, Build, School, Plumbing, Search,
 } from '@mui/icons-material';
 
 interface DetailRouteConfig {
   path: string;
   titleKey: string;
   backPath: string;
-  fetchById: (id: number | string) => Promise<any>;
+  fetchById: (id: number | string) => Promise<AxiosResponse>;
   fields?: FieldDef[];
   subItems?: SubItemConfig[];
   icon?: ReactNode;
@@ -33,21 +34,10 @@ export const detailRoutes: DetailRouteConfig[] = [
   {
     path: 'contracts-list', titleKey: 'contractsPage', backPath: '/engineering/contracts-list',
     fetchById: (id) => engineeringApi.contracts.get(id), icon: <Assignment />,
-    subItems: [{
-      titleKey: 'boq', fetchFn: (pid) => engineeringApi.boqItems.listByProject(pid),
-      columns: [{ field: 'item_code', labelKey: 'itemCode' }, { field: 'description', labelKey: 'description' }, { field: 'quantity', labelKey: 'quantity', type: 'number' }, { field: 'unit_price', labelKey: 'unitPrice', type: 'number' }],
-    }],
   },
   {
     path: 'ipc', titleKey: 'ipc', backPath: '/engineering/ipc',
     fetchById: (id) => engineeringApi.ipcs.get(id), icon: <Engineering />,
-    subItems: [{
-      titleKey: 'ipcItems', fetchFn: (ipcId) => engineeringApi.ipcs.get(ipcId).then((r) => {
-        const items = (r.data as any).items || (r.data as any).details || [];
-        return { data: Array.isArray(items) ? items : [] };
-      }),
-      columns: [{ field: 'item_code', labelKey: 'itemCode' }, { field: 'description', labelKey: 'description' }, { field: 'quantity', labelKey: 'quantity', type: 'number' }, { field: 'unit_price', labelKey: 'unitPrice', type: 'number' }, { field: 'total', labelKey: 'total', type: 'number' }],
-    }],
   },
   {
     path: 'daily-reports', titleKey: 'dailyReportsPage', backPath: '/engineering/daily-reports',
@@ -120,13 +110,6 @@ export const detailRoutes: DetailRouteConfig[] = [
   {
     path: 'itps', titleKey: 'itp', backPath: '/engineering/itps',
     fetchById: (id) => engineeringApi.itps.get(id), icon: <Assignment />,
-    subItems: [{
-      titleKey: 'itpItems', fetchFn: (itpId) => engineeringApi.itps.get(itpId).then((r) => {
-        const items = (r.data as any).items || (r.data as any).checkpoints || [];
-        return { data: Array.isArray(items) ? items : [] };
-      }),
-      columns: [{ field: 'item_code', labelKey: 'itemCode' }, { field: 'description', labelKey: 'description' }, { field: 'status', labelKey: 'status' }],
-    }],
   },
   {
     path: 'method-statements', titleKey: 'methodStatements', backPath: '/engineering/method-statements',

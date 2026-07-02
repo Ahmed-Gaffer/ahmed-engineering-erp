@@ -1,40 +1,34 @@
 # AGENT_ACTIVE_STATE.md — الحالة الحية للنظام
-## آخر تحديث: 2026-06-29
+## آخر تحديث: 2026-07-02
 
-status: COMPLETE
-session_type: GENESIS
-task: "Phase 5.0 — Genesis Protocol + Core Refraction Manifesto Enforcement: Reconnaissance, Evaluation, Decision, Footer creation, Auto-NCR on inspection failure, 4-File Pattern audit"
+status: PRE_FLIGHT
+task: "Phase 2.3 — Hierarchical Navigation: EntityDetail pages + detail routes + onView"
 
 gates:
-  agent_G_continuity: done (HANDOFF.md found from Phase 4.5 — continued)
-  agent_0_compliance: done (Case B declared — Legacy Takeover, brand_identity.json enforced)
-  agent_A_impact_analysis: done (full reconnaissance — 18 modules audited, 72% 4-file compliant)
-  agent_I_refinement: done (DNA audit — engineering_features needs crud.py extraction)
-  agent_D_security_gate: passed (no security regressions — JWT, rate limiting, audit trails intact)
-  agent_B_implementation: done
-    - Footer.jsx: NEW — 40 lines, "Designed & Engineered by Ahmed Gaffer — Principal System Architect"
-    - Layout.jsx: MODIFIED — added Footer to main content area
-    - engineering_features/api.py: MODIFIED — auto-NCR on inspection failure
-    - .TASKS_PLAN.md: MODIFIED — added new tasks from Manifesto
-    - CRITIQUE.md: MODIFIED — added engineering_features crud.py gap
-    - HANDOFF.md: MODIFIED — comprehensive session handoff
-  agent_C_destructive_qa: passed (no model changes — CSS/frontend only for Footer, backend logic only for auto-NCR)
-  agent_I_integration_review: done (Fabric Score: 9/10 — Manifesto Sections 2/3/4 enforced, no APEX remnants, consistent identity)
-  agent_E_critique: done (2 items: NORMAL — engineering_features still needs crud.py extraction, NORMAL — activities module needs rebuild)
-  agent_F_verdict: done (proceed — Genesis complete, handoff to normal protocols)
-  state_sync: done
-  agent_G_handoff: done
+  api_fixes_round: done
+  dockerfile_fix: done
+  github_push: done
+  entity_detail_v1: done (initial)
+  entity_detail_refactor_v2: done (useQuery + strict types after protocol violation fix)
+  protocol_enforcement: done (HANDOFF.md updated with pre-flight checklist)
+  verification_build: passed (0 errors)
 
 notes_for_recovery:
   active_file: "HANDOFF.md"
-  last_location: "Phase 5.0 — Genesis Protocol + Core Refraction Manifesto Enforcement"
+  critical_lesson: |
+    في الجلسة السابقة (2026-07-02)، خالف الكود البروتوكول (FRONTEND_MODERNIZATION_PROTOCOL.md)
+    باستخدام useEffect بدلاً من useQuery. تم修正 ذلك في v2.
+    قبل أي كود جديد في المستقبل، اقرأ FRONTEND_MODERNIZATION_PROTOCOL.md + SYSTEM_DNA.md أولاً.
+  pre_flight_checklist:
+    - "اقرأ FRONTEND_MODERNIZATION_PROTOCOL.md كاملاً — حدد Phase المناسب"
+    - "اقرأ SYSTEM_DNA.md — القواعد المعمارية"
+    - "اقرأ HANDOFF.md — الدروس المستفادة"
+    - "استخدم useQuery لا useEffect للـ API calls"
+    - "حدد الأنواع (TypeScript) — لا any"
   context: |
-    Genesis Protocol completed with full Phase 1-5.
-    Case B (Legacy Takeover) — system evaluated, decisions made.
-    Key changes:
-    - Created Footer.jsx with architectural signature (Manifesto Section 3)
-    - Added auto-NCR creation on inspection failure (Manifesto Section 4)
-    - Audited Entity 4-File Pattern compliance (72% OK, engineering_features needs refactor)
-    - Updated .TASKS_PLAN.md and CRITIQUE.md
-    System is ready for normal protocol flow (PROMPT_INIT → PROMPT_SURGICAL).
-    Next: HF Space deploy fix + GitHub push + integration testing.
+    Hierarchical navigation implemented:
+    - EntityDetail component (generic, TanStack Query-based)
+    - detailRegistry with 30+ entities
+    - Detail routes in App.tsx (generated)
+    - View button in DataTable + EntityPage
+    Build: 0 errors. GitHub pushed. HF Space auto-deploys on push to develop.

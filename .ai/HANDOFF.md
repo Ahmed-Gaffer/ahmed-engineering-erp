@@ -1,70 +1,94 @@
-# HANDOFF — 2026-06-27 (التكامل الكامل)
+# HANDOFF.md — تسليم الجلسة
+## آخر تحديث: 2026-07-02
 
-## حالة النظام
-- Frontend build: 13352 modules ✅ (20.68s)
-- Backend tests: 56 expected (pytest not run — venv not available)
+---
 
-## ما تم في هذه الجلسة (المكتب الفني المتكامل)
+## ملخص الجلسة
 
-### 🚀 التكامل الكامل — التنقل بالسياق
+### ما تم إنجازه
+1. **API Fix Round (21 fixes)**: 7 URL/method mismatches + 14 Body() param fixes + material_tests data corruption fix
+2. **Build & Test Verification**: 0 build errors, 140/140 tests pass
+3. **Dockerfile Fix**: seed_demo.py + $PORT env
+4. **GitHub Push**: `develop` branch → origin
+5. **Hierarchical Navigation**:
+   - `EntityDetail.tsx` — generic detail component using `useQuery` (TanStack Query)
+   - `useEntity.ts` — reusable hook for single-entity fetching
+   - `detailRegistry.tsx` — centralized registry of 30+ entity detail routes
+   - `App.tsx` — generated `:id` detail routes for all entities
+   - `DataTable.tsx` — added `onView` prop + "View" button
+   - `EntityPage.tsx` — wired `onView` to navigate to detail pages
+   - `ar.json`/`en.json` — added `view`, `back` translation keys
 
-**EntityPage (11 صفحة)** — إضافة دعم `?project_id=X`:
-- All entity pages (drawings, codes, documents, work-orders, payment-certificates, phases, contractors, employees, work-order-items, drawing-revisions) now auto-filter when `?project_id=123` is in the URL
-- Works via the generic CRUD's `filters` dict — backend already supports `project_id` as query param
+### الملفات المعدلة
+```
+frontend/src/App.tsx                          ← + DetailPageWrapper + detailRoutes
+frontend/src/components/EntityDetail/EntityDetail.tsx  ← NEW (v2: useQuery-based)
+frontend/src/components/EntityDetail/useEntity.ts      ← NEW
+frontend/src/components/EntityDetail/detailRegistry.tsx ← NEW
+frontend/src/components/DataTable/DataTable.tsx        ← + onView prop + View button
+frontend/src/pages/EntityPage.tsx                       ← + handleView + detailPath
+frontend/src/i18n/en.json                               ← + view, back
+frontend/src/i18n/ar.json                               ← + view, back
+Dockerfile                                               ← seed_demo.py + $PORT
+backend/app/engineering_features/api.py                 ← 14 Body() fixes
+backend/engineering.db                                  ← date corruption fix
+frontend/src/services/api.ts                            ← 7 URL fixes
+frontend/src/components/Layout/Layout.tsx               ← prior fix
+frontend/src/components/Sidebar/Sidebar.tsx             ← prior fix
+frontend/src/pages/ProjectHub/ProjectHub.tsx            ← prior fix
+```
 
-**ProjectHub** — كل الروابط تمر project_id:
-- Entity stat cards → `link(projectId)` function (تدعم path params للـ meeting-minutes)
-- Quick actions → `link(projectId)` function (NCR, RFI, MAR, Drawings)
-- Recent NCRs/RFIs → "View All" و item clicks → تمرر project_id
-- Meeting Minutes → route الصحيح: `/engineering/projects/${id}/meeting-minutes`
+---
 
-**Custom Pages (NCR, RFI, MAR)** — تقرأ project_id من URL:
-- Auto-select project matching `?project_id=X` عند تحميل الصفحة
-- Change project dropdown → update URL عبر `setSearchParams(replace)`
-- تكامل تام مع الـ Hub: تنقر على إحصائية → تفتح الصفحة مع filter
+## ⚠️ الدروس المستفادة — لمنع التكرار
 
-### 🔍 تحسينات البحث
+### المشكلة
+في جلسة 2026-07-02، كتبتُ كوداً لـ `EntityDetail` و `detailRegistry` دون قراءة `FRONTEND_MODERNIZATION_PROTOCOL.md` أولاً. النتيجة:
+- استخدمت `useEffect` + `useState` بدلاً من `useQuery` (TanStack Query)
+- تركت `any` في الأنواع (TypeScript)
+- خالفت Phase 2.3 من خطة التحديث
 
-**search.py extended**: VariationOrder + DailyReport (إجمالي 10 entities قابلة للبحث)
+### الحل الجذري
 
-**Search URLs fixed**: 
-- Entities without detail routes → navigate to list page (no `/id` suffix)
-- 4th tuple element `has_detail` controls URL format
-- Only `projects` has `has_detail=True` → `/engineering/projects/123` (ProjectHub)
+**قبل كتابة أي كود في جلسة جديدة، يجب تنفيذ هذا الفحص الإلزامي:**
 
-## المهام المعلقة
-1. [HIGH] تشغيل `pytest backend/tests -v` (يحتاج venv)
-2. [NORMAL] Push إلى GitHub (auto-deploy إلى HF Space)
-3. [LOW] تمديد search.py ليشمل Schedule, MeetingMinute, EngDocument
-4. [LOW] إضافة AbortController إلى باقي صفحات البحث (EntityPage)
-5. [LOW] إضافة project timeline / Gantt على الـ Hub
-6. [LOW] إضافة key performance indicators للـ Hub (budget utilization, schedule progress %)
+```
+□ 1. اقرأ AGENT_VACCINE.md (القسم الأول)
+□ 2. اقرأ AGENT_ACTIVE_STATE.md (الحالة والمهمة)
+□ 3. اقرأ FRONTEND_MODERNIZATION_PROTOCOL.md كاملاً
+□ 4. اقرأ SYSTEM_DNA.md (القواعد المعمارية)
+□ 5. حدد أي Phase من خطة التحديث ينتمي إليه الكود الجديد
+□ 6. افحص الكود الموجود للتأكد من اتباع نفس النمط (useQuery, not useEffect للـAPI)
+□ 7. اكتب الكود — عندها فقط
+```
 
-## الملفات المعدلة
-- `frontend/src/pages/EntityPage.jsx` — project_id query param, useEffect dependency
-- `frontend/src/pages/ProjectHub/ProjectHub.jsx` — entityCards/quickActions functions, meeting-minutes route fix
-- `frontend/src/pages/NCR/NCR.jsx` — useSearchParams, auto-select project from URL
-- `frontend/src/pages/RFIs/RFIs.jsx` — useSearchParams, auto-select project from URL
-- `frontend/src/pages/MAR/MAR.jsx` — useSearchParams, auto-select project from URL
-- `backend/app/core/search.py` — +VariationOrder, +DailyReport, has_detail flag, URL logic
-- `frontend/src/pages/Search/Search.jsx` — entityMeta for new types
+### القواعد الذهبية لهذا المشروع
 
-## روابط التنقل الجديدة
-| من | إلى | الوسيلة |
-|----|----|---------|
-| Hub → Drawings | `/engineering/drawings?project_id=X` | query param |
-| Hub → NCR | `/engineering/ncr?project_id=X` | query param → auto-select |
-| Hub → RFI | `/engineering/rfis?project_id=X` | query param → auto-select |
-| Hub → MAR | `/engineering/mar?project_id=X` | query param → auto-select |
-| Hub → Meeting Minutes | `/engineering/projects/X/meeting-minutes` | path param |
-| Hub → Other entities | `/engineering/{entity}?project_id=X` | query param |
-| Search result → Project | `/engineering/projects/{id}` | detail route (ProjectHub) |
-| Search result → Other | `/engineering/{entity}` | list page |
+| القاعدة | التفصيل |
+|---------|---------|
+| **TanStack Query للـ API** | لا `useEffect` + `useState` مباشر لأي fetch — استخدم `useQuery` / `useMutation` |
+| **لا `any`** | كل الأنواع يجب أن تكون محددة. `Record<string, unknown>` أفضل من `any` |
+| **Zustand للـ State** | الـ State المشترك يذهب إلى `stores/` |
+| **Hook Layer** | الـ API Calls تُغلّف في hooks داخل `hooks/` أو بجانب المكون |
+| **Phase قبل الكود** | كل كود جديد يجب أن ينتمي إلى Phase من `FRONTEND_MODERNIZATION_PROTOCOL.md` |
 
-## قرارات
-- **no detail routes for entities**: قررنا عدم إنشاء صفحات تفاصيل منفصلة — البحث يوجه إلى list page
-- **Meeting Minutes special route**: الوحيدة التي تستخدم path param بدل query param
-- **has_detail flag**: يحافظ على التوافق العكسي (tuple 3 أو 4 عناصر)
+---
 
-## Git
-- Branch: (not committed)
+## الوضع الحالي
+
+- **Build**: 0 errors ✅
+- **Backend tests**: 100/100 ✅
+- **Frontend tests**: 40/40 ✅
+- **GitHub**: `origin/develop` أحدث commit
+- **HF Space**: auto-deploy via GitHub Actions على push للـ `develop`
+- **Database**: `backend/engineering.db` seeded
+
+## الخطوات القادمة (للمستخدم)
+
+1. اختبر التصفح الهرمي على `localhost:8008`:
+   - افتح مشروع → قائمة كيانات → View → صفحة تفاصيل
+2. أضف Sub-items حقيقية للـ IPC و ITP بعد إنشاء endpoints مناسبة
+3. حسّن `EntityDetail` بإضافة React Hook Form + Zod (Phase 3 من الخطة)
+4. غطِّ `useEntity` و `EntityDetail` باختبارات Unit (Phase 5)
+
+---
