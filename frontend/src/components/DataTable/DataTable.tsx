@@ -4,7 +4,7 @@ import { Box, Card, TextField, Button, Stack, IconButton, Chip, Typography, Divi
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
 import { arSD, enUS } from '@mui/x-data-grid/locales';
-import { Add, Edit, Delete, SearchOutlined, FilterList } from '@mui/icons-material';
+import { Add, Edit, Delete, SearchOutlined, FilterList, Visibility } from '@mui/icons-material';
 import { statusColors, formatNumber, formatDate } from '../../utils/helpers';
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
 import { useSnackbar } from 'notistack';
@@ -40,6 +40,7 @@ interface DataTableProps {
   onSearchChange?: (value: string) => void;
   onAdd?: () => void;
   onEdit?: (row: any) => void;
+  onView?: (row: any) => void;
   onDelete?: () => void;
   onBulkDelete?: () => void;
   service?: Service;
@@ -90,6 +91,7 @@ export default function DataTable({
   onSearchChange,
   onAdd,
   onEdit,
+  onView,
   onDelete,
   onBulkDelete,
   service,
@@ -133,10 +135,17 @@ export default function DataTable({
     {
       field: 'actions',
       headerName: t('actions'),
-      width: 100,
+      width: 150,
       sortable: false,
       renderCell: (params: { row: any }) => (
         <Stack direction="row" spacing={0.5}>
+          {onView && (
+            <Tooltip title={t('view')}>
+              <IconButton size="medium" onClick={() => onView(params.row)} sx={{ color: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', '&:hover': { backgroundColor: 'rgba(59,130,246,0.16)' } }}>
+                <Visibility fontSize="medium" />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title={t('edit')}>
             <IconButton size="medium" onClick={() => onEdit?.(params.row)} sx={{ color: '#D97706', backgroundColor: 'rgba(217,119,6,0.08)', '&:hover': { backgroundColor: 'rgba(217,119,6,0.16)' } }}>
               <Edit fontSize="medium" />

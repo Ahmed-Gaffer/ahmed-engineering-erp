@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Box, SxProps, Theme } from '@mui/material';
 import { motion } from 'framer-motion';
@@ -61,12 +61,14 @@ interface EntityPageProps {
   stats?: StatsItem[];
   icon?: React.ReactNode;
   accentColor?: string;
+  detailPath?: string;
 }
 
-export default function EntityPage({ service, columns, fields, title, subtitle, stats, icon, accentColor = '#D97706' }: EntityPageProps) {
+export default function EntityPage({ service, columns, fields, title, subtitle, stats, icon, accentColor = '#D97706', detailPath }: EntityPageProps) {
   const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const projectFilter = searchParams.get('project_id');
   const [page, setPage] = useState(1);
@@ -110,6 +112,22 @@ export default function EntityPage({ service, columns, fields, title, subtitle, 
 
   const handleAdd = () => { setEditItem(null); setFormOpen(true); };
   const handleEdit = (row: any) => { setEditItem(row); setFormOpen(true); };
+  const handleView = (row: any) => {
+    const pathPrefix = detailPath || ({
+      contractors: '/engineering/contractors',
+      workOrders: '/engineering/work-orders',
+      workOrderItems: '/engineering/work-order-items',
+      employees: '/engineering/employees',
+      codes: '/engineering/codes',
+      phases: '/engineering/phases',
+      paymentCertificates: '/engineering/payment-certificates',
+      documents: '/engineering/documents',
+      drawingRevisions: '/engineering/drawing-revisions',
+      drawings: '/engineering/drawings',
+      projects: '/engineering/projects',
+    } as Record<string, string>)[title] || `/engineering/${title}`;
+    navigate(`${pathPrefix}/${row.id}`);
+  };
   const handleSubmit = (formData: Record<string, any>) => mutation.mutate(formData);
 
   const isEmpty = !isLoading && items.length === 0 && !search;
@@ -153,6 +171,7 @@ export default function EntityPage({ service, columns, fields, title, subtitle, 
             onSearchChange={handleSearchChange}
             onAdd={handleAdd}
             onEdit={handleEdit}
+            onView={handleView}
             onDelete={() => queryClient.invalidateQueries({ queryKey })}
             service={service}
             entityName={title}

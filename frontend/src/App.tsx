@@ -10,6 +10,8 @@ import Layout from './components/Layout/Layout';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
+import EntityDetail from './components/EntityDetail/EntityDetail';
+import { detailRoutes } from './components/EntityDetail/detailRegistry';
 
 const Contractors = lazy(() => import('./pages/Contractors/Contractors'));
 const Projects = lazy(() => import('./pages/Projects/Projects'));
@@ -57,6 +59,20 @@ const MethodStatements = lazy(() => import('./pages/MethodStatements/MethodState
 const Specifications = lazy(() => import('./pages/Specifications/Specifications'));
 const Permits = lazy(() => import('./pages/Permits/Permits'));
 const Survey = lazy(() => import('./pages/Survey/Survey'));
+
+function DetailPageWrapper({ config }: { config: typeof detailRoutes[0] }) {
+  return (
+    <MotionOutlet>
+      <EntityDetail
+        titleKey={config.titleKey}
+        backPath={config.backPath}
+        fetchById={config.fetchById}
+        subItems={config.subItems}
+        icon={config.icon}
+      />
+    </MotionOutlet>
+  );
+}
 
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -153,6 +169,9 @@ function AppContent() {
             <Route path="permits" element={<MotionOutlet><Permits /></MotionOutlet>} />
             <Route path="survey" element={<MotionOutlet><Survey /></MotionOutlet>} />
             <Route path="search" element={<MotionOutlet><SearchPage /></MotionOutlet>} />
+            {detailRoutes.map((cfg) => (
+              <Route key={cfg.path} path={`${cfg.path}/:id`} element={<DetailPageWrapper config={cfg} />} />
+            ))}
           </Route>
           <Route path="*" element={<Navigate to="/engineering/dashboard" replace />} />
         </Routes>
